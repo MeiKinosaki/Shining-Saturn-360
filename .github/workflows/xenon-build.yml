@@ -327,8 +327,8 @@ jobs:
           set -euo pipefail
           package="ShiningSaturn360_v0.41b"
           mkdir -p "$package/src/saturn" "$package/tests"
-          cp repo-source/src/saturn/sh2_core.hpp repo-source/src/saturn/sh2_core.cpp repo-source/src/saturn/memory_bus.hpp repo-source/src/saturn/memory_bus.cpp "$package/src/saturn/"
-          cp repo-source/tests/test_sh2_core.cpp repo-source/tests/test_memory_bus.cpp repo-source/tests/run-sh2-core-tests.sh "$package/tests/"
+          cp repo-source/src/saturn/sh2_core.hpp repo-source/src/saturn/sh2_core.cpp repo-source/src/saturn/memory_bus.hpp repo-source/src/saturn/memory_bus.cpp repo-source/src/saturn/game_library.hpp repo-source/src/saturn/game_library.cpp "$package/src/saturn/"
+          cp repo-source/tests/test_sh2_core.cpp repo-source/tests/test_memory_bus.cpp repo-source/tests/test_game_library.cpp repo-source/tests/run-sh2-core-tests.sh "$package/tests/"
           cp repo-source/README.md "$package/"
           cp repo-source/VERSION "$package/"
           cp repo-source/VERSION_v0.41b.md "$package/"
