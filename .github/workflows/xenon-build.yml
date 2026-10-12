@@ -243,7 +243,7 @@ jobs:
           from pathlib import Path
           p = Path(sys.argv[1])
           b = p.read_bytes()
-          if b[:4] != b"\\x7fELF" or b[4] != 1 or b[5] != 2:
+          if b[:4] != bytes((0x7F, 0x45, 0x4C, 0x46)) or b[4] != 1 or b[5] != 2:
               raise SystemExit("expected ELF32 big-endian input")
           machine = struct.unpack_from(">H", b, 18)[0]
           entry, phoff = struct.unpack_from(">II", b, 24)
