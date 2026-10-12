@@ -60,6 +60,45 @@ StepResult Sh2Core::step(Bus& bus) {
         r[n] ^= r[m];
     } else if ((op & 0xf00f) == 0x200b) { // OR Rm,Rn
         r[n] |= r[m];
+    } else if (op == 0x0008) { // CLRT
+        sr &= ~kTBit;
+    } else if (op == 0x0018) { // SETT
+        sr |= kTBit;
+    } else if (op == 0x0028) { // CLRMAC
+        mach = macl = 0;
+    } else if (op == 0x0029) { // MOVT Rn
+        r[n] = sr & kTBit;
+    } else if ((op & 0xf0ff) == 0x4000) { // SHLL Rn
+        sr = (sr & ~kTBit) | ((r[n] >> 31) & kTBit);
+        r[n] <<= 1;
+    } else if ((op & 0xf0ff) == 0x4001) { // SHLR Rn
+        sr = (sr & ~kTBit) | (r[n] & kTBit);
+        r[n] >>= 1;
+    } else if ((op & 0xf0ff) == 0x4020) { // SHAL Rn
+        sr = (sr & ~kTBit) | ((r[n] >> 31) & kTBit);
+        r[n] <<= 1;
+    } else if ((op & 0xf0ff) == 0x4021) { // SHAR Rn
+        sr = (sr & ~kTBit) | (r[n] & kTBit);
+        r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(r[n]) >> 1);
+    } else if ((op & 0xf0ff) == 0x4010) { // DT Rn
+        --r[n];
+        sr = (sr & ~kTBit) | (r[n] == 0 ? kTBit : 0u);
+    } else if ((op & 0xf0ff) == 0x4011) { // CMP/PZ Rn
+        sr = (sr & ~kTBit) | (static_cast<std::int32_t>(r[n]) >= 0 ? kTBit : 0u);
+    } else if ((op & 0xf0ff) == 0x4015) { // CMP/PL Rn
+        sr = (sr & ~kTBit) | (static_cast<std::int32_t>(r[n]) > 0 ? kTBit : 0u);
+    } else if ((op & 0xf00f) == 0x6007) { // NOT Rm,Rn
+        r[n] = ~r[m];
+    } else if ((op & 0xf00f) == 0x600b) { // NEG Rm,Rn
+        r[n] = 0u - r[m];
+    } else if ((op & 0xf0ff) == 0xc800) { // TST #imm,R0
+        sr = (sr & ~kTBit) | ((r[0] & (op & 0xff)) == 0 ? kTBit : 0u);
+    } else if ((op & 0xf0ff) == 0xc900) { // AND #imm,R0
+        r[0] &= op & 0xff;
+    } else if ((op & 0xf0ff) == 0xca00) { // XOR #imm,R0
+        r[0] ^= op & 0xff;
+    } else if ((op & 0xf0ff) == 0xcb00) { // OR #imm,R0
+        r[0] |= op & 0xff;
     } else if ((op & 0xf00f) == 0x6000) { // MOV.B @Rm,Rn
         r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(static_cast<std::int8_t>(bus.read8(r[m]))));
     } else if ((op & 0xf00f) == 0x6001) { // MOV.W @Rm,Rn
