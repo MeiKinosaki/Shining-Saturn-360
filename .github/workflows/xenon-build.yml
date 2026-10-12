@@ -238,7 +238,41 @@ jobs:
           elf="$(find input-elf -type f -name '*.elf32' -print -quit)"
           test -n "$elf"
           test -s "$elf"
-          python3 xex-tools/elf2xex.py "$elf" --base 0x1000 -o default.xex
+          python3 - "$elf" <<'PY'
+          import struct, sys
+          from pathlib import Path
+          p = Path(sys.argv[1])
+          b = p.read_bytes()
+          if b[:4] != b"\\x7fELF" or b[4] != 1 or b[5] != 2:
+              raise SystemExit("expected ELF32 big-endian input")
+          machine = struct.unpack_from(">H", b, 18)[0]
+          entry, phoff = struct.unpack_from(">II", b, 24)
+          phentsize, phnum = struct.unpack_from(">HH", b, 42)
+          if machine != 20:
+              raise SystemExit(f"expected PowerPC ELF machine 20, got {machine}")
+          if phentsize < 32 or phoff + phentsize * phnum > len(b):
+              raise SystemExit("invalid ELF program-header table")
+          loads = []
+          for i in range(phnum):
+              off = phoff + i * phentsize
+              typ, file_off, vaddr, paddr, filesz, memsz, flags, align = struct.unpack_from(">IIIIIIII", b, off)
+              if typ != 1:
+                  continue
+              if filesz > memsz or file_off + filesz > len(b) or vaddr + memsz > 0x100000000:
+                  raise SystemExit(f"invalid PT_LOAD segment #{i}")
+              loads.append((vaddr, vaddr + memsz, flags, filesz, memsz))
+          if not loads:
+              raise SystemExit("ELF has no PT_LOAD segments")
+          if not any(lo <= entry < hi and flags & 1 for lo, hi, flags, _, _ in loads):
+              raise SystemExit(f"ELF entry 0x{entry:08X} is not in an executable PT_LOAD segment")
+          print(f"ELF load audit passed: entry=0x{entry:08X}; PT_LOAD segments={len(loads)}")
+          PY
+          python3 xex-tools/elf2xex.py "$elf" --base 0x1000 -o default.xex 2>&1 | tee xex-packaging.log
+          grep -q 'pages:' xex-packaging.log
+          if grep -Eiq 'shares a page|mixed[- ]permission|page.*(CODE|RWDATA).*(overlap|conflict)' xex-packaging.log; then
+            echo "XEX page-permission audit failed" >&2
+            exit 1
+          fi
           test -s default.xex
           python3 - <<'PY'
           from pathlib import Path
@@ -276,6 +310,7 @@ jobs:
             default.xex
             default-xex-sha256.txt
             xex-tools-sha256.txt
+            xex-packaging.log
           if-no-files-found: error
           retention-days: 14
 
