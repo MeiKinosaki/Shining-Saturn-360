@@ -38,9 +38,9 @@ int main() {
     bus.write32(0x200, 0x1234abcd);
     assert(bus.read8(0x200) == 0x12 && bus.read16(0x200) == 0x1234);
     assert(bus.read32(0x200) == 0x1234abcd);
-    bus.put16(0x10a, 0xffff);
+    bus.put16(0x112, 0xffff);
     assert(cpu.step(bus) == StepResult::UnsupportedOpcode);
-    assert(cpu.fault_pc() == 0x10a && cpu.last_opcode() == 0xffff);
+    assert(cpu.fault_pc() == 0x112 && cpu.last_opcode() == 0xffff);
     std::cout << "SH-2 core foundation tests passed\n";
     return 0;
 }
