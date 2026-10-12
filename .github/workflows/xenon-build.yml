@@ -146,9 +146,12 @@ jobs:
           cd "prepared-source/$SOURCE_DIR"
           chmod +x scripts/*.sh
           bash ./scripts/xenon-preflight.sh
-          make clean
-          make xenon-elf32
+          make -C build-xenon clean
+          make -C build-xenon
           test -s build-xenon/shining_saturn_bootstrap.elf32
+          readelf -h build-xenon/shining_saturn_bootstrap.elf32 | tee build-xenon/elf-header.txt
+          grep -q 'ELF32' build-xenon/elf-header.txt
+          grep -q 'PowerPC' build-xenon/elf-header.txt
           sha256sum build-xenon/shining_saturn_bootstrap.elf32 | tee build-xenon/build-sha256.txt
 
       - name: Upload Xenon ELF32 artifact
