@@ -144,6 +144,7 @@ jobs:
           export DEVKITXENON="/usr/local/xenon"
           export PATH="$DEVKITXENON/bin:$DEVKITXENON/usr/bin:$PATH"
           cd "prepared-source/$SOURCE_DIR"
+          chmod +x scripts/*.sh
           bash ./scripts/xenon-preflight.sh
           make clean
           make xenon-elf32
