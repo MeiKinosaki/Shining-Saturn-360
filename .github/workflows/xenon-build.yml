@@ -159,7 +159,7 @@ jobs:
               base_count++
             }
             /^[[:space:]]*\.(data|sdata|bss|sbss)[[:space:]]*:/ {
-              print "  . = ALIGN(0x1000); /* isolate writable section on page boundary */"
+              print "  . = ALIGN(0x10000); /* XEX memory pages are 64 KiB */"
               data_count++
             }
             { print }
@@ -167,7 +167,7 @@ jobs:
           ' "$DEVKITXENON/app.lds" > /tmp/shining-saturn-app.lds
           grep -q "0x80002000" /tmp/shining-saturn-app.lds
           test "$(grep -c 'ALIGN(0x1000)' /tmp/shining-saturn-app.lds)" -eq 4
-          grep -q "ALIGN(0x1000)" /tmp/shining-saturn-app.lds
+          grep -q "ALIGN(0x10000)" /tmp/shining-saturn-app.lds
 
           make -C build-xenon clean
           make -C build-xenon LDSCRIPT=/tmp/shining-saturn-app.lds
