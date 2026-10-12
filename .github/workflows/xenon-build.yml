@@ -136,6 +136,8 @@ jobs:
           sed -n "1,240p" "$DEVKITXENON/app.lds"
           echo "---- linker variables in rules ----"
           grep -nE "app\.lds|LDFLAGS|xenon-ld|ENTRY|image-base|Ttext" "$DEVKITXENON/rules" || true
+          echo "---- build-xenon Makefile ----"
+          sed -n "1,220p" build-xenon/Makefile
           test -f "$DEVKITXENON/rules"
           bash ./scripts/xenon-preflight.sh
 
@@ -150,10 +152,15 @@ jobs:
           cd "prepared-source/$SOURCE_DIR"
           chmod +x scripts/*.sh
           bash ./scripts/xenon-preflight.sh
+          # XEX PE headers occupy the first 4 KiB; leave that RVA unused.
+          sed "s/^\([[:space:]]*\.[[:space:]]*=[[:space:]]*\)0x80000000;/\180001000;/" "$DEVKITXENON/app.lds" > /tmp/shining-saturn-app.lds
+          grep -q "0x80001000" /tmp/shining-saturn-app.lds
           make -C build-xenon clean
-          make -C build-xenon
+          make -C build-xenon LDSCRIPT=/tmp/shining-saturn-app.lds
           test -s build-xenon/shining_saturn_bootstrap.elf32
           readelf -h build-xenon/shining_saturn_bootstrap.elf32 | tee build-xenon/elf-header.txt
+          readelf -l build-xenon/shining_saturn_bootstrap.elf32 | tee build-xenon/elf-program-headers.txt
+          readelf -S build-xenon/shining_saturn_bootstrap.elf32 | tee build-xenon/elf-section-headers.txt
           grep -q 'ELF32' build-xenon/elf-header.txt
           grep -q 'PowerPC' build-xenon/elf-header.txt
           sha256sum build-xenon/shining_saturn_bootstrap.elf32 | tee build-xenon/build-sha256.txt
