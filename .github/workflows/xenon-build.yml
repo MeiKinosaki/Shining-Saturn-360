@@ -90,6 +90,18 @@ jobs:
     if: needs.prepare-source.outputs.has_makefile == 'true'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout SH-2 core tests
+        uses: actions/checkout@v4
+        with:
+          path: project
+
+      - name: Compile and run SH-2 core tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x project/tests/run-sh2-core-tests.sh
+          project/tests/run-sh2-core-tests.sh
+
       - name: Download extracted source
         uses: actions/download-artifact@v4
         with:
