@@ -106,7 +106,7 @@ int main() {
     bus.put16(0x142, 0x672d); // EXTU.W R2,R7
     bus.put16(0x144, 0x672e); // EXTS.B R2,R7
     bus.put16(0x146, 0x672f); // EXTS.W R2,R7
-    assert(cpu.step(bus) == StepResult::Executed && cpu.r[7] == 0x556677cd);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[7] == 0x1234cdab);
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[7] == 0xabcd1234);
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[7] == 0xcd);
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[7] == 0xabcd);
