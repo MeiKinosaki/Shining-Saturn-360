@@ -9,7 +9,7 @@ std::string lower(std::string s){std::transform(s.begin(),s.end(),s.begin(),[](u
 bool contains(const std::string& s,const std::string& q){return q.empty()||lower(s).find(lower(q))!=std::string::npos;}
 }
 bool GameLibrary::add(GameEntry g){if(g.path.empty())return false;auto i=std::find_if(games_.begin(),games_.end(),[&](const GameEntry& x){return x.path==g.path;});if(i!=games_.end()){g.favorite = g.favorite || i->favorite; *i=std::move(g);}else games_.push_back(std::move(g));filter(GameFilter{});return true;}
-bool GameLibrary::set_favorite(const std::string& p,bool f){auto i=std::find_if(games_.begin(),games_.end(),[&](const GameEntry& g){return g.path==p;});if(i==games_.end())return false;i->favorite=f;return true;}
+bool GameLibrary::set_favorite(const std::string& p,bool f){auto i=std::find_if(games_.begin(),games_.end(),[&](const GameEntry& g){return g.path==p;});if(i==games_.end())return false;i->favorite=f;filter(GameFilter{});return true;}
 
 bool GameLibrary::save_favorites(const std::string& file_path) const {
  std::ofstream out(file_path.c_str(), std::ios::out | std::ios::trunc);
