@@ -19,7 +19,7 @@ A documentação da versão atual está em [VERSION_v0.41b.md](VERSION_v0.41b.md
 
 ## Núcleo SH-2 experimental (em desenvolvimento)
 
-Foi adicionada uma base independente de interpretador SH-2 em `src/saturn/sh2_core.hpp` e `src/saturn/sh2_core.cpp`, com um teste compilável em `tests/test_sh2_core.cpp`. A implementação cobre apenas um subconjunto inicial de instruções (movimentação, aritmética/lógica, acessos básicos à memória e alguns desvios); não é uma CPU SH-2 completa.
+Foi adicionada uma base independente de interpretador SH-2 em `src/saturn/sh2_core.hpp` e `src/saturn/sh2_core.cpp`, com um teste compilável em `tests/test_sh2_core.cpp`. A implementação cobre um subconjunto experimental de instruções: movimentação, aritmética e lógica, acessos básicos à memória, operações de deslocamento, testes de condição e alguns desvios com slot de atraso. Os testes exercitam instruções imediatas, registradores, endianness e tratamento explícito de opcode não suportado. Não é uma CPU SH-2 completa.
 
 Os testes são executados no GitHub Actions pelo script `tests/run-sh2-core-tests.sh`. Este núcleo ainda não está integrado ao bootstrap `default.xex` e não implementa os processadores, VDPs, áudio, temporização, CD-ROM ou demais subsistemas necessários para executar jogos de Saturn.
 
@@ -27,7 +27,7 @@ Os testes são executados no GitHub Actions pelo script `tests/run-sh2-core-test
 
 O `default.xex` é um bootstrap técnico. A geração do arquivo e as verificações estruturais não comprovam que ele inicializa num Xbox 360 real, nem que o núcleo de emulação Sega Saturn esteja funcional ou execute jogos. A inicialização no console ainda não foi testada.
 
-A versão `v0.41b` registra o avanço da auditoria de entrada ELF e da validação de páginas XEX; não representa uma versão funcional completa do emulador.
+A versão publicada continua `v0.41b`; as melhorias do núcleo SH-2 são alterações de desenvolvimento posteriores e ainda não estão integradas ao `default.xex`. A versão não representa um emulador funcional completo.
 
 ## Compilação na nuvem
 
