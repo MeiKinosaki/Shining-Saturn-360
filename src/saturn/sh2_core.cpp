@@ -105,6 +105,21 @@ StepResult Sh2Core::step(Bus& bus) {
         r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(static_cast<std::int16_t>(bus.read16(r[m]))));
     } else if ((op & 0xf00f) == 0x6002) { // MOV.L @Rm,Rn
         r[n] = bus.read32(r[m]);
+    } else if ((op & 0xf00f) == 0x6004) { // MOV.B @Rm+,Rn
+        r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(static_cast<std::int8_t>(bus.read8(r[m]))));
+        if (n != m) ++r[m];
+    } else if ((op & 0xf00f) == 0x6005) { // MOV.W @Rm+,Rn
+        r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(static_cast<std::int16_t>(bus.read16(r[m]))));
+        if (n != m) r[m] += 2;
+    } else if ((op & 0xf00f) == 0x6006) { // MOV.L @Rm+,Rn
+        r[n] = bus.read32(r[m]);
+        if (n != m) r[m] += 4;
+    } else if ((op & 0xf00f) == 0x2004) { // MOV.B Rm,@-Rn
+        --r[n]; bus.write8(r[n], static_cast<std::uint8_t>(r[m]));
+    } else if ((op & 0xf00f) == 0x2005) { // MOV.W Rm,@-Rn
+        r[n] -= 2; bus.write16(r[n], static_cast<std::uint16_t>(r[m]));
+    } else if ((op & 0xf00f) == 0x2006) { // MOV.L Rm,@-Rn
+        r[n] -= 4; bus.write32(r[n], r[m]);
     } else if ((op & 0xf00f) == 0x2000) { // MOV.B Rm,@Rn
         bus.write8(r[n], static_cast<std::uint8_t>(r[m]));
     } else if ((op & 0xf00f) == 0x2001) { // MOV.W Rm,@Rn
