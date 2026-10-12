@@ -135,7 +135,7 @@ StepResult Sh2Core::step(Bus& bus) {
         const std::uint64_t bits = static_cast<std::uint64_t>(product);
         mach = static_cast<std::uint32_t>(bits >> 32);
         macl = static_cast<std::uint32_t>(bits);
-    } else if (op == 0x0029) { // MOVT Rn
+    } else if ((op & 0xf0ff) == 0x0029) { // MOVT Rn
         r[n] = sr & kTBit;
     } else if ((op & 0xf0ff) == 0x4000) { // SHLL Rn
         sr = (sr & ~kTBit) | ((r[n] >> 31) & kTBit);
