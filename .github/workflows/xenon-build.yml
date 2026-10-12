@@ -195,6 +195,11 @@ jobs:
     if: needs.build-xenon-elf32.result == 'success'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout versioned repository files
+        uses: actions/checkout@v4
+        with:
+          path: repo-source
+
       - name: Download verified ELF32
         uses: actions/download-artifact@v4
         with:
@@ -300,6 +305,46 @@ jobs:
           print(f"XEX2 structural checks passed: {len(b)} bytes; basefile offset 0x{basefile_off:X}; image size {image_size}; optional headers {entry_count}")
           PY
           sha256sum default.xex | tee default-xex-sha256.txt
+
+      - name: Assemble current version ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          package="ShiningSaturn360_v0.41b"
+          mkdir -p "$package"
+          cp repo-source/README.md "$package/"
+          cp repo-source/VERSION "$package/"
+          cp repo-source/VERSION_v0.41b.md "$package/"
+          cp repo-source/LICENSE "$package/"
+          cp repo-source/ShiningSaturn360_v0.39b_repo_update.zip "$package/"
+          cp repo-source/ShiningSaturn360_v0.39b_source_audit_patch.zip "$package/"
+          cp repo-source/ShiningSaturn360_v0_25b_source.zip "$package/"
+          cp repo-source/ShiningSaturn360_v0_26b_cmp_eq_regression.zip "$package/"
+          cp default.xex default-xex-sha256.txt xex-tools-sha256.txt xex-packaging.log "$package/"
+          cat > "$package/LEIA-ME-ANTES.txt" <<'EOF'
+          Shining Saturn 360 v0.41b — pacote experimental
+          
+          Este pacote inclui o bootstrap default.xex gerado pelo GitHub Actions,
+          metadados da versão e arquivos ZIP de código-fonte legados preservados.
+          
+          A geração e a auditoria estrutural não comprovam inicialização em Xbox 360
+          real nem execução de jogos Sega Saturn. O núcleo completo de emulação
+          e a compatibilidade com jogos não foram demonstrados.
+          EOF
+          sha256sum "$package/default.xex" > "$package/default-xex-sha256.txt"
+          zip -qr "ShiningSaturn360_v0.41b.zip" "$package"
+          sha256sum "ShiningSaturn360_v0.41b.zip" | tee "ShiningSaturn360_v0.41b.zip.sha256"
+
+      - name: Upload complete version ZIP
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShiningSaturn360-v0.41b-ZIP
+          path: |
+            ShiningSaturn360_v0.41b.zip
+            ShiningSaturn360_v0.41b.zip.sha256
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Upload default.xex
         if: success()
