@@ -166,7 +166,7 @@ jobs:
             END { if (base_count != 1 || data_count != 4) exit 1 }
           ' "$DEVKITXENON/app.lds" > /tmp/shining-saturn-app.lds
           grep -q "0x80002000" /tmp/shining-saturn-app.lds
-          test "$(grep -c 'ALIGN(0x1000)' /tmp/shining-saturn-app.lds)" -eq 4
+          test "$(grep -c 'ALIGN(0x10000)' /tmp/shining-saturn-app.lds)" -eq 4
           grep -q "ALIGN(0x10000)" /tmp/shining-saturn-app.lds
 
           make -C build-xenon clean
