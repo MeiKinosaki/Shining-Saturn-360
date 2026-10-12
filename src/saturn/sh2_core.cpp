@@ -46,6 +46,21 @@ StepResult Sh2Core::step(Bus& bus) {
         r[n] = static_cast<std::uint32_t>(imm8);
     } else if ((op & 0xf000) == 0x7000) { // ADD #imm,Rn
         r[n] += static_cast<std::uint32_t>(imm8);
+    } else if ((op & 0xf000) == 0x9000) { // MOV.W @(disp,PC),Rn
+        const std::uint32_t address = (pc & ~std::uint32_t(3)) +
+                                      static_cast<std::uint32_t>(op & 0xff) * 2;
+        r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(
+            static_cast<std::int16_t>(bus.read16(address))));
+    } else if ((op & 0xf000) == 0xd000) { // MOV.L @(disp,PC),Rn
+        const std::uint32_t address = (pc & ~std::uint32_t(3)) +
+                                      static_cast<std::uint32_t>(op & 0xff) * 4;
+        r[n] = bus.read32(address);
+    } else if ((op & 0xf000) == 0x1000) { // MOV.L Rm,@(disp,Rn)
+        const std::uint32_t address = r[n] + static_cast<std::uint32_t>(op & 0x0f) * 4;
+        bus.write32(address, r[m]);
+    } else if ((op & 0xf000) == 0x5000) { // MOV.L @(disp,Rm),Rn
+        const std::uint32_t address = r[m] + static_cast<std::uint32_t>(op & 0x0f) * 4;
+        r[n] = bus.read32(address);
     } else if ((op & 0xf00f) == 0x6003) { // MOV Rm,Rn
         r[n] = r[m];
     } else if ((op & 0xf00f) == 0x300c) { // ADD Rm,Rn
