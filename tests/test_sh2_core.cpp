@@ -35,12 +35,26 @@ int main() {
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[1] == 2 &&
            (cpu.sr & Sh2Core::kTBit) != 0);
 
+    // Immediate logical operations and TST on R0.
+    bus.put16(0x112, 0xc801); // TST #1,R0 -> T=0
+    bus.put16(0x114, 0xc901); // AND #1,R0 -> R0=1
+    bus.put16(0x116, 0xca02); // XOR #2,R0 -> R0=3
+    bus.put16(0x118, 0xcb04); // OR #4,R0 -> R0=7
+    bus.put16(0x11a, 0xc807); // TST #7,R0 -> T=0
+    bus.put16(0x11c, 0xc808); // TST #8,R0 -> T=1
+    assert(cpu.step(bus) == StepResult::Executed && (cpu.sr & Sh2Core::kTBit) == 0);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 1);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 3);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 7);
+    assert(cpu.step(bus) == StepResult::Executed && (cpu.sr & Sh2Core::kTBit) == 0);
+    assert(cpu.step(bus) == StepResult::Executed && (cpu.sr & Sh2Core::kTBit) != 0);
+
     bus.write32(0x200, 0x1234abcd);
     assert(bus.read8(0x200) == 0x12 && bus.read16(0x200) == 0x1234);
     assert(bus.read32(0x200) == 0x1234abcd);
-    bus.put16(0x112, 0xffff);
+    bus.put16(0x11e, 0xffff);
     assert(cpu.step(bus) == StepResult::UnsupportedOpcode);
-    assert(cpu.fault_pc() == 0x112 && cpu.last_opcode() == 0xffff);
+    assert(cpu.fault_pc() == 0x11e && cpu.last_opcode() == 0xffff);
     std::cout << "SH-2 core foundation tests passed\n";
     return 0;
 }
