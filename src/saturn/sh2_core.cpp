@@ -131,6 +131,20 @@ StepResult Sh2Core::step(Bus& bus) {
     } else if ((op & 0xf0ff) == 0x4021) { // SHAR Rn
         sr = (sr & ~kTBit) | (r[n] & kTBit);
         r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(r[n]) >> 1);
+    } else if ((op & 0xf0ff) == 0x4024) { // ROTCL Rn
+        const std::uint32_t old_t = sr & kTBit;
+        sr = (sr & ~kTBit) | ((r[n] >> 31) & kTBit);
+        r[n] = (r[n] << 1) | old_t;
+    } else if ((op & 0xf0ff) == 0x4025) { // ROTCR Rn
+        const std::uint32_t old_t = sr & kTBit;
+        sr = (sr & ~kTBit) | (r[n] & kTBit);
+        r[n] = (r[n] >> 1) | (old_t << 31);
+    } else if ((op & 0xf0ff) == 0x4028) { // ROTL Rn
+        sr = (sr & ~kTBit) | ((r[n] >> 31) & kTBit);
+        r[n] = (r[n] << 1) | (r[n] >> 31);
+    } else if ((op & 0xf0ff) == 0x4029) { // ROTR Rn
+        sr = (sr & ~kTBit) | (r[n] & kTBit);
+        r[n] = (r[n] >> 1) | (r[n] << 31);
     } else if ((op & 0xf0ff) == 0x4010) { // DT Rn
         --r[n];
         sr = (sr & ~kTBit) | (r[n] == 0 ? kTBit : 0u);
