@@ -69,6 +69,43 @@ StepResult Sh2Core::step(Bus& bus) {
         r[n] -= r[m];
     } else if ((op & 0xf00f) == 0x3000) { // CMP/EQ Rm,Rn
         sr = (sr & ~kTBit) | (r[n] == r[m] ? kTBit : 0u);
+    } else if ((op & 0xf00f) == 0x3002) { // CMP/HS Rm,Rn (unsigned)
+        sr = (sr & ~kTBit) | (r[n] >= r[m] ? kTBit : 0u);
+    } else if ((op & 0xf00f) == 0x3006) { // CMP/HI Rm,Rn (unsigned)
+        sr = (sr & ~kTBit) | (r[n] > r[m] ? kTBit : 0u);
+    } else if ((op & 0xf00f) == 0x3003) { // CMP/GE Rm,Rn (signed)
+        sr = (sr & ~kTBit) | (static_cast<std::int32_t>(r[n]) >= static_cast<std::int32_t>(r[m]) ? kTBit : 0u);
+    } else if ((op & 0xf00f) == 0x3007) { // CMP/GT Rm,Rn (signed)
+        sr = (sr & ~kTBit) | (static_cast<std::int32_t>(r[n]) > static_cast<std::int32_t>(r[m]) ? kTBit : 0u);
+    } else if ((op & 0xf00f) == 0x200c) { // CMP/STR Rm,Rn
+        const std::uint32_t x = r[n] ^ r[m];
+        const bool equal_byte = ((x & 0x000000ffu) == 0) || ((x & 0x0000ff00u) == 0) ||
+                                ((x & 0x00ff0000u) == 0) || ((x & 0xff000000u) == 0);
+        sr = (sr & ~kTBit) | (equal_byte ? kTBit : 0u);
+    } else if ((op & 0xf00f) == 0x300e) { // ADDC Rm,Rn
+        const std::uint32_t lhs = r[n], rhs = r[m], carry_in = sr & kTBit;
+        const std::uint32_t partial = lhs + rhs;
+        const bool carry1 = partial < lhs;
+        const std::uint32_t result = partial + carry_in;
+        const bool carry2 = result < partial;
+        r[n] = result;
+        sr = (sr & ~kTBit) | ((carry1 || carry2) ? kTBit : 0u);
+    } else if ((op & 0xf00f) == 0x300a) { // SUBC Rm,Rn
+        const std::uint32_t lhs = r[n], rhs = r[m], borrow_in = sr & kTBit;
+        const std::uint32_t partial = lhs - rhs;
+        const bool borrow1 = lhs < rhs;
+        const std::uint32_t result = partial - borrow_in;
+        const bool borrow2 = partial < borrow_in;
+        r[n] = result;
+        sr = (sr & ~kTBit) | ((borrow1 || borrow2) ? kTBit : 0u);
+    } else if ((op & 0xf00f) == 0x300f) { // ADDV Rm,Rn
+        const std::uint32_t lhs = r[n], rhs = r[m], result = lhs + rhs;
+        r[n] = result;
+        sr = (sr & ~kTBit) | (((~(lhs ^ rhs) & (lhs ^ result)) >> 31) ? kTBit : 0u);
+    } else if ((op & 0xf00f) == 0x300b) { // SUBV Rm,Rn
+        const std::uint32_t lhs = r[n], rhs = r[m], result = lhs - rhs;
+        r[n] = result;
+        sr = (sr & ~kTBit) | ((((lhs ^ rhs) & (lhs ^ result)) >> 31) ? kTBit : 0u);
     } else if ((op & 0xf00f) == 0x2009) { // AND Rm,Rn
         r[n] &= r[m];
     } else if ((op & 0xf00f) == 0x200a) { // XOR Rm,Rn
