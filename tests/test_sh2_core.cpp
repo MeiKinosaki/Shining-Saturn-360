@@ -22,6 +22,19 @@ int main() {
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[2] == 5);
     assert(cpu.step(bus) == StepResult::Executed && (cpu.sr & Sh2Core::kTBit) == 0);
     assert(cpu.step(bus) == StepResult::Executed);
+
+    // CLRT/SETT/MOVT and shift instructions.
+    bus.put16(0x10a, 0x0008); // CLRT
+    bus.put16(0x10c, 0x0018); // SETT
+    bus.put16(0x10e, 0x0029); // MOVT R0
+    bus.put16(0x110, 0x4100); // SHLL R1
+    assert(cpu.step(bus) == StepResult::Executed && (cpu.sr & Sh2Core::kTBit) == 0);
+    assert(cpu.step(bus) == StepResult::Executed && (cpu.sr & Sh2Core::kTBit) != 0);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 1);
+    cpu.r[1] = 0x80000001u;
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[1] == 2 &&
+           (cpu.sr & Sh2Core::kTBit) != 0);
+
     bus.write32(0x200, 0x1234abcd);
     assert(bus.read8(0x200) == 0x12 && bus.read16(0x200) == 0x1234);
     assert(bus.read32(0x200) == 0x1234abcd);
