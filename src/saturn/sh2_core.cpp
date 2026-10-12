@@ -91,13 +91,13 @@ StepResult Sh2Core::step(Bus& bus) {
         r[n] = ~r[m];
     } else if ((op & 0xf00f) == 0x600b) { // NEG Rm,Rn
         r[n] = 0u - r[m];
-    } else if ((op & 0xf0ff) == 0xc800) { // TST #imm,R0
+    } else if ((op & 0xff00) == 0xc800) { // TST #imm,R0
         sr = (sr & ~kTBit) | ((r[0] & (op & 0xff)) == 0 ? kTBit : 0u);
-    } else if ((op & 0xf0ff) == 0xc900) { // AND #imm,R0
+    } else if ((op & 0xff00) == 0xc900) { // AND #imm,R0
         r[0] &= op & 0xff;
-    } else if ((op & 0xf0ff) == 0xca00) { // XOR #imm,R0
+    } else if ((op & 0xff00) == 0xca00) { // XOR #imm,R0
         r[0] ^= op & 0xff;
-    } else if ((op & 0xf0ff) == 0xcb00) { // OR #imm,R0
+    } else if ((op & 0xff00) == 0xcb00) { // OR #imm,R0
         r[0] |= op & 0xff;
     } else if ((op & 0xf00f) == 0x6000) { // MOV.B @Rm,Rn
         r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(static_cast<std::int8_t>(bus.read8(r[m]))));
