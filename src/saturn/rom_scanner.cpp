@@ -29,7 +29,11 @@ ScanReport RomScanner::scan(GameLibrary& lib,const LibraryPaths& paths) const {
  std::vector<std::string> files; r.directory_read=fs_->list_files(paths.roms,files); if(!r.directory_read)return r;
  for(const auto& p:files) {
   if(!is_supported_rom(p)){++r.skipped;continue;}
-  ++r.discovered; GameEntry g; g.path=p; g.title=base_name(p); g.cover_path=cover_for_rom(p,paths,fs_);
+  ++r.discovered;
+  const auto& existing=lib.all();
+  auto found=std::find_if(existing.begin(),existing.end(),[&](const GameEntry& e){return e.path==p;});
+  if(found!=existing.end()){++r.skipped;continue;}
+  GameEntry g; g.path=p; g.title=base_name(p); g.cover_path=cover_for_rom(p,paths,fs_);
   if(!g.cover_path.empty())++r.covers_found;
   if(lib.add(g))++r.added;else ++r.skipped;
  }
