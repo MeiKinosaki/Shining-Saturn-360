@@ -16,85 +16,109 @@ permissions:
   contents: read
 
 jobs:
-  audit-and-build:
+  prepare-source:
     runs-on: ubuntu-latest
-    container:
-      image: free60/libxenon:latest
+    outputs:
+      has_makefile: ${{ steps.inspect.outputs.has_makefile }}
+      selected_archive: ${{ steps.inspect.outputs.selected_archive }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Audit toolchain and source archives
-        id: audit
+      - name: Inspect and extract source archives
+        id: inspect
         shell: bash
         run: |
-          set -u
-          export PATH="/usr/local/xenon/bin:/usr/local/xenon/usr/bin:/opt/xenon/bin:/opt/xenon/usr/bin:$PATH"
-          echo "## Repository inventory" >> "$GITHUB_STEP_SUMMARY"
-          find . -maxdepth 3 -type f -not -path './.git/*' -print | sort | tee /tmp/repo-files.txt
-          cat /tmp/repo-files.txt >> "$GITHUB_STEP_SUMMARY"
-
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "## Xenon tools" >> "$GITHUB_STEP_SUMMARY"
-          for tool in xenon-gcc xenon-g++ xenon-ld elf2xex make python3; do
-            if command -v "$tool" >/dev/null 2>&1; then
-              printf -- '- `%s`: found at `%s`\n' "$tool" "$(command -v "$tool")" | tee -a "$GITHUB_STEP_SUMMARY"
-            else
-              printf -- '- `%s`: not found\n' "$tool" | tee -a "$GITHUB_STEP_SUMMARY"
-            fi
-          done
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "## Toolchain discovery" >> "$GITHUB_STEP_SUMMARY"
-          find /usr/local /opt -type f \( -name 'xenon-gcc' -o -name 'xenon-g++' -o -name 'elf2xex' \) -print 2>/dev/null | tee -a "$GITHUB_STEP_SUMMARY" || true
-
-          if ! command -v python3 >/dev/null 2>&1; then
-            echo "build_ready=false" >> "$GITHUB_OUTPUT"
-            echo "Python 3 is missing; cannot safely inspect source ZIPs." >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-
-          # Inspect ZIPs without relying on unzip, which is absent in some libxenon images.
-          python3 - <<'PY' | tee /tmp/archive-audit.txt
-          import glob, zipfile
-          for path in sorted(glob.glob("*.zip")):
-              print(f"### {path}")
+          set -euo pipefail
+          python3 - <<'PY'
+          import glob, os, zipfile
+          archives = sorted(glob.glob("*.zip"))
+          os.makedirs("prepared-source", exist_ok=True)
+          best = None
+          report = []
+          for path in archives:
               try:
                   with zipfile.ZipFile(path) as z:
                       bad = z.testzip()
                       names = z.namelist()
-                      print("ZIP integrity:", "OK" if bad is None else f"FAILED at {bad}")
-                      print("Entries:", len(names))
-                      print("Makefiles:", [n for n in names if n.rsplit("/",1)[-1].lower() == "makefile"][:10])
-                      print("Source files:", [n for n in names if n.lower().endswith((".c",".cc",".cpp",".cxx",".h",".hpp",".s"))][:30])
+                      makefiles = [n for n in names if n.rstrip("/").split("/")[-1].lower() == "makefile"]
+                      sources = [n for n in names if n.lower().endswith((".c",".cc",".cpp",".cxx",".h",".hpp",".s",".asm"))]
+                      report.append(f"- **{path}**: integrity={'OK' if bad is None else 'FAILED: '+bad}; entries={len(names)}; makefiles={len(makefiles)}; source_files={len(sources)}")
+                      score = (len(makefiles) > 0, len(sources), len(names))
+                      if best is None or score > best[0]:
+                          best = (score, path, makefiles, sources)
               except Exception as exc:
-                  print("ZIP inspection failed:", repr(exc))
+                  report.append(f"- **{path}**: inspection failed: {exc!r}")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("## Source archive audit\n" + ("\n".join(report) if report else "No ZIP archives found.") + "\n")
+          if best is not None:
+              _, path, makefiles, sources = best
+              print(f"Selected archive: {path}; Makefiles: {makefiles[:10]}; source files: {len(sources)}")
+              with zipfile.ZipFile(path) as z:
+                  # Reject paths escaping the extraction directory.
+                  root = os.path.realpath("prepared-source")
+                  for member in z.infolist():
+                      target = os.path.realpath(os.path.join(root, member.filename))
+                      if target != root and not target.startswith(root + os.sep):
+                          raise RuntimeError(f"Unsafe ZIP path: {member.filename}")
+                  z.extractall(root)
+              with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                  f.write(f"selected_archive={path}\n")
+                  f.write(f"has_makefile={'true' if any(os.path.isfile(os.path.join(root, p)) for p in ('Makefile','makefile')) else 'false'}\n")
+              with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+                  f.write(f"\nSelected archive: `{path}`. Root Makefile extracted: {'yes' if any(os.path.isfile(os.path.join(root, p)) for p in ('Makefile','makefile')) else 'no'}.\n")
+          else:
+              with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                  f.write("selected_archive=none\nhas_makefile=false\n")
           PY
-          cat /tmp/archive-audit.txt >> "$GITHUB_STEP_SUMMARY"
 
-          # Build only if a Makefile is already present at repository root.
-          if command -v xenon-gcc >/dev/null 2>&1 && command -v elf2xex >/dev/null 2>&1 && { [ -f Makefile ] || [ -f makefile ]; }; then
-            echo "build_ready=true" >> "$GITHUB_OUTPUT"
-            echo "- Build readiness: root Makefile and compiler/packager found." >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "build_ready=false" >> "$GITHUB_OUTPUT"
-            echo "- Build readiness: not ready. Root Makefile, xenon-gcc and elf2xex must all be available." >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload extracted source
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShiningSaturn360-prepared-source
+          path: prepared-source/
+          if-no-files-found: error
+          retention-days: 7
+
+  build-xenon:
+    needs: prepare-source
+    if: needs.prepare-source.outputs.has_makefile == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: free60/libxenon:latest
+    steps:
+      - name: Download extracted source
+        uses: actions/download-artifact@v4
+        with:
+          name: ShiningSaturn360-prepared-source
+          path: .
+
+      - name: Locate Xenon tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="/usr/local/xenon/bin:/usr/local/xenon/usr/bin:/opt/xenon/bin:/opt/xenon/usr/bin:$PATH"
+          command -v xenon-gcc
+          command -v xenon-g++
+          command -v xenon-ld
+          find /usr/local /opt -type f \( -name elf2xex -o -name 'elf2xex*' \) -print 2>/dev/null || true
+          if ! command -v elf2xex >/dev/null 2>&1; then
+            echo "::error::elf2xex is not present in the libxenon container; cannot package default.xex."
+            exit 1
           fi
 
-      - name: Compile and package Xenon executable
-        if: steps.audit.outputs.build_ready == 'true'
+      - name: Compile and package
         shell: bash
         run: |
           set -euxo pipefail
           export PATH="/usr/local/xenon/bin:/usr/local/xenon/usr/bin:/opt/xenon/bin:/opt/xenon/usr/bin:$PATH"
-          make clean || true
           make
           test -s Xenon.elf
           elf2xex Xenon.elf default.xex
           test -s default.xex
           sha256sum Xenon.elf default.xex | tee build-sha256.txt
 
-      - name: Upload build artifacts
-        if: steps.audit.outputs.build_ready == 'true' && success()
+      - name: Upload executable artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ShiningSaturn360-Xenon-build
@@ -105,12 +129,16 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Report audit-only result
-        if: steps.audit.outputs.build_ready != 'true'
+  report-no-makefile:
+    needs: prepare-source
+    if: needs.prepare-source.outputs.has_makefile != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain next blocker
         shell: bash
         run: |
           {
-            echo ""
-            echo "## Result"
-            echo "Audit completed without producing an executable. The ZIP report above identifies whether source files and Makefiles exist; a real build still requires a valid project Makefile plus the Xenon compiler and elf2xex."
+            echo "## Build not started"
+            echo "The source archives were inspected and extracted, but no Makefile was found at the extracted root. A genuine project build cannot be inferred safely without the source's actual build instructions."
+            echo "The next step is to identify the source entry point and create a project-specific Makefile."
           } >> "$GITHUB_STEP_SUMMARY"
