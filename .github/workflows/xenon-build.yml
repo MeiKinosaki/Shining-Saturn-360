@@ -159,7 +159,7 @@ jobs:
               base_count++
             }
             /^[[:space:]]*\.(data|sdata|bss|sbss)[[:space:]]*:/ {
-              print "  . = ALIGN(0x10000); /* XEX memory pages are 64 KiB */"
+              print "  . = ALIGN(0x10000) + 0x1000; /* XEX pages relative to 0x1000 image base */"
               data_count++
             }
             { print }
