@@ -68,14 +68,29 @@ int main() {
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 0x3fd && bus.read16(0x3fd) == 0x5678);
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 0x3f9 && bus.read32(0x3f9) == 0x12345678);
 
+    // Arithmetic carry, borrow, signed/unsigned compares and byte-string compare.
+    cpu.r[1] = 0xffffffffu; cpu.r[2] = 1; cpu.sr = 0;
+    bus.put16(0x12a, 0x312e); // ADDC R2,R1
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[1] == 0 && (cpu.sr & Sh2Core::kTBit));
+    bus.put16(0x12c, 0x312a); // SUBC R2,R1 (1 - 1 - 1 wraps)
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[1] == 0xffffffffu && (cpu.sr & Sh2Core::kTBit));
+    cpu.r[1] = 0xffffffffu; cpu.r[2] = 1;
+    bus.put16(0x12e, 0x3123); // CMP/GE signed: -1 >= 1 false
+    assert(cpu.step(bus) == StepResult::Executed && !(cpu.sr & Sh2Core::kTBit));
+    bus.put16(0x130, 0x3122); // CMP/HS unsigned: 0xffffffff >= 1 true
+    assert(cpu.step(bus) == StepResult::Executed && (cpu.sr & Sh2Core::kTBit));
+    cpu.r[1] = 0x11223344; cpu.r[2] = 0x99223300;
+    bus.put16(0x132, 0x212c); // CMP/STR -> matching middle bytes
+    assert(cpu.step(bus) == StepResult::Executed && (cpu.sr & Sh2Core::kTBit));
+
     // PC-relative reads and register-plus-displacement longword accesses.
     bus.write16(0x300, 0x8123);
     bus.write32(0x400, 0x89abcdef);
-    bus.put16(0x12a, 0x91ea); // MOV.W @(234,PC),R1 -> 0x300
-    bus.put16(0x12c, 0xd0b5); // MOV.L @(181,PC),R0 -> 0x400
+    bus.put16(0x134, 0x91e5); // MOV.W @(229,PC),R1 -> 0x300
+    bus.put16(0x136, 0xd0b2); // MOV.L @(178,PC),R0 -> 0x400
     cpu.r[4] = 0x500; cpu.r[5] = 0x600;
-    bus.put16(0x12e, 0x1542); // MOV.L R4,@(2,R5)
-    bus.put16(0x130, 0x5643); // MOV.L @(3,R4),R6
+    bus.put16(0x138, 0x1542); // MOV.L R4,@(2,R5)
+    bus.put16(0x13a, 0x5643); // MOV.L @(3,R4),R6
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[1] == 0xffff8123u);
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 0x89abcdefu);
     assert(cpu.step(bus) == StepResult::Executed && bus.read32(0x608) == 0x500);
@@ -85,9 +100,9 @@ int main() {
     bus.write32(0x200, 0x1234abcd);
     assert(bus.read8(0x200) == 0x12 && bus.read16(0x200) == 0x1234);
     assert(bus.read32(0x200) == 0x1234abcd);
-    bus.put16(0x132, 0xffff);
+    bus.put16(0x13c, 0xffff);
     assert(cpu.step(bus) == StepResult::UnsupportedOpcode);
-    assert(cpu.fault_pc() == 0x132 && cpu.last_opcode() == 0xffff);
+    assert(cpu.fault_pc() == 0x13c && cpu.last_opcode() == 0xffff);
     std::cout << "SH-2 core foundation tests passed\n";
     return 0;
 }
