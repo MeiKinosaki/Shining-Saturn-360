@@ -156,12 +156,17 @@ jobs:
           awk '
             /^[[:space:]]*\.[[:space:]]*=[[:space:]]*0x80000000;/ {
               sub(/0x80000000/, "0x80002000")
-              count++
+              base_count++
+            }
+            /^[[:space:]]*\.data[[:space:]]*:/ {
+              print "  . = ALIGN(0x1000); /* keep writable data on its own 4 KiB page */"
+              data_count++
             }
             { print }
-            END { if (count != 1) exit 1 }
+            END { if (base_count != 1 || data_count != 1) exit 1 }
           ' "$DEVKITXENON/app.lds" > /tmp/shining-saturn-app.lds
           grep -q "0x80002000" /tmp/shining-saturn-app.lds
+          grep -q "ALIGN(0x1000)" /tmp/shining-saturn-app.lds
 
           make -C build-xenon clean
           make -C build-xenon LDSCRIPT=/tmp/shining-saturn-app.lds
