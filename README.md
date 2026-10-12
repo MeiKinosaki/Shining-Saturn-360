@@ -23,6 +23,12 @@ Foi adicionada uma base independente de interpretador SH-2 em `src/saturn/sh2_co
 
 Os testes são executados no GitHub Actions pelo script `tests/run-sh2-core-tests.sh`. Este núcleo ainda não está integrado ao bootstrap `default.xex` e não implementa os processadores, VDPs, áudio, temporização, CD-ROM ou demais subsistemas necessários para executar jogos de Saturn.
 
+## Barramento de memória experimental
+
+Foi adicionada uma camada genérica em `src/saturn/memory_bus.hpp` e `src/saturn/memory_bus.cpp` para mapear regiões de RAM e ROM, validar sobreposições, permitir gravação somente em RAM e definir leitura `0xFF` para endereços não mapeados. Os testes correspondentes ficam em `tests/test_memory_bus.cpp` e entram no script de regressão.
+
+**Limite importante:** isto ainda não é o mapa real de memória do Sega Saturn. Não há ainda decodificação dos endereços dos dois SH-2, áreas de trabalho compartilhadas, registradores de VDP1/VDP2, SCSP, SMPC, barramento de CD-ROM ou arbitragem/timing. A camada genérica é uma base para implementar esses dispositivos, não um subsistema Saturn completo.
+
 ## Limitações atuais
 
 O `default.xex` é um bootstrap técnico. A geração do arquivo e as verificações estruturais não comprovam que ele inicializa num Xbox 360 real, nem que o núcleo de emulação Sega Saturn esteja funcional ou execute jogos. A inicialização no console ainda não foi testada.
