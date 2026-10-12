@@ -143,6 +143,21 @@ StepResult Sh2Core::step(Bus& bus) {
         r[n] = ~r[m];
     } else if ((op & 0xf00f) == 0x600b) { // NEG Rm,Rn
         r[n] = 0u - r[m];
+    } else if ((op & 0xf00f) == 0x200d) { // XTRCT Rm,Rn
+        r[n] = (r[n] >> 16) | (r[m] << 16);
+    } else if ((op & 0xf00f) == 0x6008) { // SWAP.B Rm,Rn
+        r[n] = (r[m] & 0xffff0000u) | ((r[m] & 0x000000ffu) << 8) |
+               ((r[m] & 0x0000ff00u) >> 8);
+    } else if ((op & 0xf00f) == 0x6009) { // SWAP.W Rm,Rn
+        r[n] = (r[m] << 16) | (r[m] >> 16);
+    } else if ((op & 0xf00f) == 0x600c) { // EXTU.B Rm,Rn
+        r[n] = r[m] & 0xffu;
+    } else if ((op & 0xf00f) == 0x600d) { // EXTU.W Rm,Rn
+        r[n] = r[m] & 0xffffu;
+    } else if ((op & 0xf00f) == 0x600e) { // EXTS.B Rm,Rn
+        r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(static_cast<std::int8_t>(r[m])));
+    } else if ((op & 0xf00f) == 0x600f) { // EXTS.W Rm,Rn
+        r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(static_cast<std::int16_t>(r[m])));
     } else if ((op & 0xff00) == 0xc800) { // TST #imm,R0
         sr = (sr & ~kTBit) | ((r[0] & (op & 0xff)) == 0 ? kTBit : 0u);
     } else if ((op & 0xff00) == 0xc900) { // AND #imm,R0
