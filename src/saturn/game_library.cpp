@@ -14,10 +14,10 @@ bool GameLibrary::set_favorite(const std::string& p,bool f){auto i=std::find_if(
 bool GameLibrary::save_favorites(const std::string& file_path) const {
  std::ofstream out(file_path.c_str(), std::ios::out | std::ios::trunc);
  if (!out) return false;
- out << "SHINING_SATURN_FAVORITES_V1\\n";
+ out << "SHINING_SATURN_FAVORITES_V1\n";
  for (const auto& g : games_) if (g.favorite) {
   for (unsigned char ch : g.path) out << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned>(ch);
-  out << '\\n';
+  out << '\n';
  }
  out.flush();
  return static_cast<bool>(out);
