@@ -10,6 +10,9 @@ on:
       - 'source/**'
       - 'Makefile'
       - 'makefile'
+      - 'tests/**'
+      - 'README.md'
+      - 'VERSION*'
       - '.github/workflows/xenon-build.yml'
 
 permissions:
