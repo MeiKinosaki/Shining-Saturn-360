@@ -1,0 +1,128 @@
+name: Shining Saturn 360 - Xenon audit and build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.zip'
+      - 'src/**'
+      - 'source/**'
+      - 'Makefile'
+      - 'makefile'
+      - '.github/workflows/xenon-build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit-and-build:
+    runs-on: ubuntu-latest
+    container:
+      image: free60/libxenon:latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Audit repository and Xenon toolchain
+        id: audit
+        shell: bash
+        run: |
+          set +e
+          echo "## Repository inventory" >> "$GITHUB_STEP_SUMMARY"
+          pwd
+          find . -maxdepth 3 -type f -not -path './.git/*' -print | sort | tee /tmp/repo-files.txt
+          cat /tmp/repo-files.txt >> "$GITHUB_STEP_SUMMARY"
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Xenon tools" >> "$GITHUB_STEP_SUMMARY"
+          TOOL_DIRS="/usr/local/xenon/bin /usr/local/xenon/usr/bin /opt/xenon/bin /opt/xenon/usr/bin /usr/bin /bin"
+          for d in $TOOL_DIRS; do
+            if [ -d "$d" ]; then
+              find "$d" -maxdepth 1 -type f \( -name 'xenon-gcc*' -o -name 'xenon-g++*' -o -name 'xenon-ld*' -o -name 'elf2xex*' -o -name 'make' \) -print
+            fi
+          done | sort -u | tee /tmp/xenon-tools.txt
+          for tool in xenon-gcc xenon-g++ xenon-ld elf2xex make unzip; do
+            if command -v "$tool" >/dev/null 2>&1; then
+              printf -- '- `%s`: found at `%s`\n' "$tool" "$(command -v "$tool")" | tee -a "$GITHUB_STEP_SUMMARY"
+            else
+              printf -- '- `%s`: not in PATH\n' "$tool" | tee -a "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "## ZIP source archive audit" >> "$GITHUB_STEP_SUMMARY"
+          shopt -s nullglob
+          zips=( *.zip )
+          if [ ${#zips[@]} -eq 0 ]; then
+            echo "No ZIP archives found in repository root." | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+          for z in "${zips[@]}"; do
+            echo "### $z" | tee -a "$GITHUB_STEP_SUMMARY"
+            if command -v unzip >/dev/null 2>&1; then
+              if unzip -t "$z" >/tmp/zip-test.txt 2>&1; then
+                echo "- ZIP integrity: OK" | tee -a "$GITHUB_STEP_SUMMARY"
+              else
+                echo "- ZIP integrity: FAILED" | tee -a "$GITHUB_STEP_SUMMARY"
+                cat /tmp/zip-test.txt
+              fi
+              unzip -Z1 "$z" 2>/dev/null | tee "/tmp/$(basename "$z").contents.txt" | head -n 150
+              if unzip -Z1 "$z" 2>/dev/null | grep -Eiq '(^|/)(Makefile|makefile)$'; then
+                echo "- Makefile inside archive: yes" | tee -a "$GITHUB_STEP_SUMMARY"
+              else
+                echo "- Makefile inside archive: no" | tee -a "$GITHUB_STEP_SUMMARY"
+              fi
+              if unzip -Z1 "$z" 2>/dev/null | grep -Eiq '\.(c|cc|cpp|cxx|h|hpp|s|S)$'; then
+                echo "- C/C++/assembly source files: detected" | tee -a "$GITHUB_STEP_SUMMARY"
+              else
+                echo "- C/C++/assembly source files: not detected" | tee -a "$GITHUB_STEP_SUMMARY"
+              fi
+            else
+              echo "unzip unavailable; cannot inspect archive." | tee -a "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+
+          if command -v xenon-gcc >/dev/null 2>&1 && command -v elf2xex >/dev/null 2>&1 && { [ -f Makefile ] || [ -f makefile ]; }; then
+            echo "ready" > /tmp/build-readiness.txt
+            echo "build_ready=true" >> "$GITHUB_OUTPUT"
+            echo "- Build readiness: toolchain and root Makefile found." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "not-ready" > /tmp/build-readiness.txt
+            echo "build_ready=false" >> "$GITHUB_OUTPUT"
+            echo "- Build readiness: **not ready**. A root Makefile and both `xenon-gcc` and `elf2xex` are required." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Compile and package Xenon executable
+        if: steps.audit.outputs.build_ready == 'true'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          make clean || true
+          make
+          test -s Xenon.elf
+          elf2xex Xenon.elf default.xex
+          test -s default.xex
+          file Xenon.elf default.xex || true
+          sha256sum Xenon.elf default.xex | tee build-sha256.txt
+
+      - name: Upload build artifacts
+        if: steps.audit.outputs.build_ready == 'true' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShiningSaturn360-Xenon-build
+          path: |
+            Xenon.elf
+            default.xex
+            build-sha256.txt
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Report audit-only result
+        if: steps.audit.outputs.build_ready != 'true'
+        shell: bash
+        run: |
+          {
+            echo ""
+            echo "## Result"
+            echo "Audit completed, but no executable was produced. The repository must contain a root Makefile, and the container must expose xenon-gcc and elf2xex in PATH."
+          } >> "$GITHUB_STEP_SUMMARY"
