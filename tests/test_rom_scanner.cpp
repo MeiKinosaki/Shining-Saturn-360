@@ -1,0 +1,6 @@
+#include "../src/saturn/rom_scanner.hpp"
+#include <cassert>
+#include <iostream>
+using namespace shining_saturn;
+struct FS:LibraryFileSystem {std::vector<std::string> files;std::vector<std::string> covers;bool readable=true;bool list_files(const std::string&,std::vector<std::string>& out)override{if(!readable)return false;out=files;return true;}bool file_exists(const std::string&p)override{for(auto&x:covers)if(x==p)return true;return false;}};
+int main(){assert(RomScanner::is_supported_rom("Panzer.cue"));assert(RomScanner::is_supported_rom("game.CHD"));assert(!RomScanner::is_supported_rom("readme.txt"));FS fs;fs.files={"Hdd1:\\ShiningSaturn360\\Roms\\Panzer.cue","Hdd1:\\ShiningSaturn360\\Roms\\Sonic.iso","notes.txt"};fs.covers={"Hdd1:\\ShiningSaturn360\\Covers\\Panzer.png"};GameLibrary lib;RomScanner scanner(&fs);LibraryPaths p;auto r=scanner.scan(lib,p);assert(r.directory_read&&r.discovered==2&&r.added==2&&r.skipped==1&&r.covers_found==1);assert(lib.all().size()==2);assert(lib.all()[0].cover_path=="Hdd1:\\ShiningSaturn360\\Covers\\Panzer.png"||lib.all()[1].cover_path=="Hdd1:\\ShiningSaturn360\\Covers\\Panzer.png");fs.readable=false;auto fail=scanner.scan(lib,p);assert(!fail.directory_read);std::cout<<"ROM scanner tests passed\n";}
