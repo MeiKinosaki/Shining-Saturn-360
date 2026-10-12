@@ -46,3 +46,8 @@ https://github.com/MeiKinosaki/Shining-Saturn-360/actions
 Foi adicionada uma biblioteca de metadados em `src/saturn/game_library.hpp/.cpp`. Ela oferece uma coleção de jogos, associação de caminho e capa, estado favorito, filtros por texto/gênero/desenvolvedora/região/ano, filtro de jogos com ou sem dados/estados e ordenação por título ou ano. Os diretórios padrão configuráveis são Roms, Favorites, SaveState, SaveData, Covers e Config.
 
 Os testes ficam em `tests/test_game_library.cpp` e são executados pelo script de regressão. **Limites:** ainda não há varredura real do disco do Xbox 360, interface gráfica conectada a esta biblioteca, leitura/validação de CUE/ISO, persistência da lista, criação de capas ou sistema funcional de save state/save data. Os filtros de save usam metadados fornecidos à biblioteca; eles não inspecionam o armazenamento automaticamente.
+
+
+## Música do menu — controlador experimental
+
+O módulo `src/saturn/menu_music.hpp/.cpp` define um controlador independente de plataforma para faixa de menu: caminho padrão `Hdd1:\\ShiningSaturn360\\Music\\MenuTheme.wav`, ativar/desativar, repetição, volume limitado a 0–100%, pausa, retomada e parada. O backend de áudio específico do Xbox 360 ainda precisa ser implementado e ligado ao ciclo de vida da interface; portanto, este módulo sozinho não toca áudio no XEX. Coloque apenas áudio que você tenha direito de usar na pasta Music. Testes unitários com backend simulado ficam em `tests/test_menu_music.cpp`.
