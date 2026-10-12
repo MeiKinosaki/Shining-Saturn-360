@@ -132,6 +132,10 @@ jobs:
           command -v xenon-gcc
           command -v xenon-g++
           command -v xenon-ld
+          echo "---- libXenon app.lds ----"
+          sed -n "1,240p" "$DEVKITXENON/app.lds"
+          echo "---- linker variables in rules ----"
+          grep -nE "app\.lds|LDFLAGS|xenon-ld|ENTRY|image-base|Ttext" "$DEVKITXENON/rules" || true
           test -f "$DEVKITXENON/rules"
           bash ./scripts/xenon-preflight.sh
 
