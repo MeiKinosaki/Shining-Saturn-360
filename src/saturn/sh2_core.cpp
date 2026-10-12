@@ -117,6 +117,24 @@ StepResult Sh2Core::step(Bus& bus) {
         sr |= kTBit;
     } else if (op == 0x0028) { // CLRMAC
         mach = macl = 0;
+    } else if ((op & 0xf00f) == 0x0007) { // MUL.L Rm,Rn
+        macl = r[n] * r[m];
+    } else if ((op & 0xf00f) == 0x200e) { // MULU.W Rm,Rn
+        macl = (r[n] & 0xffffu) * (r[m] & 0xffffu);
+    } else if ((op & 0xf00f) == 0x200f) { // MULS.W Rm,Rn
+        const std::int32_t lhs = static_cast<std::int16_t>(r[n]);
+        const std::int32_t rhs = static_cast<std::int16_t>(r[m]);
+        macl = static_cast<std::uint32_t>(lhs * rhs);
+    } else if ((op & 0xf00f) == 0x3005) { // DMULU.L Rm,Rn
+        const std::uint64_t product = std::uint64_t(r[n]) * std::uint64_t(r[m]);
+        mach = static_cast<std::uint32_t>(product >> 32);
+        macl = static_cast<std::uint32_t>(product);
+    } else if ((op & 0xf00f) == 0x300d) { // DMULS.L Rm,Rn
+        const std::int64_t product = std::int64_t(static_cast<std::int32_t>(r[n])) *
+                                     std::int64_t(static_cast<std::int32_t>(r[m]));
+        const std::uint64_t bits = static_cast<std::uint64_t>(product);
+        mach = static_cast<std::uint32_t>(bits >> 32);
+        macl = static_cast<std::uint32_t>(bits);
     } else if (op == 0x0029) { // MOVT Rn
         r[n] = sr & kTBit;
     } else if ((op & 0xf0ff) == 0x4000) { // SHLL Rn
