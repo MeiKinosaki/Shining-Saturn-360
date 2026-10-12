@@ -51,8 +51,8 @@ int main() {
 
     // Post-increment loads and pre-decrement stores.
     bus.write8(0x300, 0xfe);
-    bus.write16(0x302, 0x8123);
-    bus.write32(0x304, 0x1234abcd);
+    bus.write16(0x301, 0x8123);
+    bus.write32(0x303, 0x1234abcd);
     cpu.r[3] = 0x300;
     bus.put16(0x11e, 0x6234); // MOV.B @R3+,R2
     bus.put16(0x120, 0x6235); // MOV.W @R3+,R2
