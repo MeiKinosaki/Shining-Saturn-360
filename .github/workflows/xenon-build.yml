@@ -165,6 +165,73 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  package-xex:
+    needs: build-xenon-elf32
+    if: needs.build-xenon-elf32.result == 'success'
+    runs-on: ubuntu-latest
+    container:
+      image: free60/libxenon:latest
+    steps:
+      - name: Download verified ELF32
+        uses: actions/download-artifact@v4
+        with:
+          name: ShiningSaturn360-Xenon-ELF32
+          path: input-elf
+
+      - name: Detect XEX converter
+        id: detect
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="/usr/local/xenon/bin:/usr/local/xenon/usr/bin:/opt/xenon/bin:/opt/xenon/usr/bin:$PATH"
+          converter=""
+          for candidate in elf2xex xenon-elf2xex; do
+            if command -v "$candidate" >/dev/null 2>&1; then
+              converter="$(command -v "$candidate")"
+              break
+            fi
+          done
+          if [ -z "$converter" ]; then
+            converter="$(find /usr /opt -type f \\( -name elf2xex -o -name xenon-elf2xex \\) -print -quit 2>/dev/null || true)"
+          fi
+          if [ -n "$converter" ] && [ -x "$converter" ]; then
+            echo "converter=$converter" >> "$GITHUB_OUTPUT"
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "XEX converter found: $converter" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "## XEX packaging not available"
+              echo "ELF32 was built and validated, but this libXenon image does not expose elf2xex or xenon-elf2xex. No default.xex was produced."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Convert ELF32 to default.xex
+        if: steps.detect.outputs.available == 'true'
+        shell: bash
+        env:
+          XEX_CONVERTER: ${{ steps.detect.outputs.converter }}
+        run: |
+          set -euo pipefail
+          elf="$(find input-elf -type f -name '*.elf32' -print -quit)"
+          test -n "$elf"
+          test -s "$elf"
+          "$XEX_CONVERTER" "$elf" default.xex
+          test -s default.xex
+          file default.xex || true
+          sha256sum default.xex | tee default-xex-sha256.txt
+
+      - name: Upload default.xex
+        if: steps.detect.outputs.available == 'true' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShiningSaturn360-default-XEX
+          path: |
+            default.xex
+            default-xex-sha256.txt
+          if-no-files-found: error
+          retention-days: 14
+
   report-no-makefile:
     needs: prepare-source
     if: needs.prepare-source.outputs.has_makefile != 'true'
