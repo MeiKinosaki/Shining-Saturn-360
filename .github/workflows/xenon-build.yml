@@ -204,6 +204,27 @@ jobs:
           curl --fail --location --silent --show-error "$base/elf2xex.py" -o xex-tools/elf2xex.py
           curl --fail --location --silent --show-error "$base/xex_debugsign.py" -o xex-tools/xex_debugsign.py
           curl --fail --location --silent --show-error "$base/_aes_fallback.py" -o xex-tools/_aes_fallback.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("xex-tools/elf2xex.py")
+          source = p.read_text()
+          old = '''    if base_override is not None and base_override != load_base:
+          sys.exit(f"ELF is linked at 0x{load_base:08X}, not 0x{base_override:08X}; "
+                   "link it at the target base instead of overriding here")
+'''
+          new = '''    if base_override is not None:
+          if base_override > load_base:
+              sys.exit(f"requested base 0x{base_override:08X} is above ELF load base "
+                       f"0x{load_base:08X}")
+          if entry < base_override or any(s.vaddr < base_override for s in sections):
+              sys.exit("requested base is above an ELF section or entry point")
+          # A lower explicit base reserves space for the XEX PE headers before .text.
+          load_base = base_override
+'''
+          if old not in source:
+              raise SystemExit("could not locate the pinned packer's load-base check")
+          p.write_text(source.replace(old, new, 1))
+          PY
           python3 -m py_compile xex-tools/elf2xex.py xex-tools/xex_debugsign.py xex-tools/_aes_fallback.py
           sha256sum xex-tools/*.py | tee xex-tools-sha256.txt
 
@@ -214,7 +235,7 @@ jobs:
           elf="$(find input-elf -type f -name '*.elf32' -print -quit)"
           test -n "$elf"
           test -s "$elf"
-          python3 xex-tools/elf2xex.py "$elf" -o default.xex
+          python3 xex-tools/elf2xex.py "$elf" --base 0x80000000 -o default.xex
           test -s default.xex
           python3 - <<'PY'
           from pathlib import Path
