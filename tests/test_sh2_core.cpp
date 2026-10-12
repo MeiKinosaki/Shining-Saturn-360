@@ -72,6 +72,7 @@ int main() {
     cpu.r[1] = 0xffffffffu; cpu.r[2] = 1; cpu.sr = 0;
     bus.put16(0x12a, 0x312e); // ADDC R2,R1
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[1] == 0 && (cpu.sr & Sh2Core::kTBit));
+    cpu.r[1] = 1;
     bus.put16(0x12c, 0x312a); // SUBC R2,R1 (1 - 1 - 1 wraps)
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[1] == 0xffffffffu && (cpu.sr & Sh2Core::kTBit));
     cpu.r[1] = 0xffffffffu; cpu.r[2] = 1;
@@ -86,7 +87,7 @@ int main() {
     // PC-relative reads and register-plus-displacement longword accesses.
     bus.write16(0x300, 0x8123);
     bus.write32(0x400, 0x89abcdef);
-    bus.put16(0x134, 0x91e5); // MOV.W @(229,PC),R1 -> 0x300
+    bus.put16(0x134, 0x91e6); // MOV.W @(230,PC),R1 -> 0x300
     bus.put16(0x136, 0xd0b2); // MOV.L @(178,PC),R0 -> 0x400
     cpu.r[4] = 0x500; cpu.r[5] = 0x600;
     bus.put16(0x138, 0x1542); // MOV.L R4,@(2,R5)
