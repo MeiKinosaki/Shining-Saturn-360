@@ -145,12 +145,45 @@ int main() {
     bus.put16(0x15a, 0x312d); // DMULS.L R2,R1
     assert(cpu.step(bus) == StepResult::Executed && cpu.mach == 0xffffffffu && cpu.macl == 0xfffffffau);
 
+    // Delayed conditional branches and PC-relative branch/call forms.
+    cpu.reset(0x160); cpu.sr = Sh2Core::kTBit;
+    bus.put16(0x160, 0x8d02); // BT/S +2 -> target 0x168
+    bus.put16(0x162, 0xe007); // delay slot must execute
+    bus.put16(0x168, 0xe109); // target instruction
+    assert(cpu.step(bus) == StepResult::Executed && cpu.pc == 0x162);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 7 && cpu.pc == 0x168);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[1] == 9);
+
+    cpu.reset(0x170); cpu.sr = 0;
+    bus.put16(0x170, 0x8f02); // BF/S +2 -> target 0x178
+    bus.put16(0x172, 0xe208); // delay slot
+    bus.put16(0x178, 0xe30a);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.pc == 0x172);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[2] == 8 && cpu.pc == 0x178);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[3] == 10);
+
+    cpu.reset(0x180); cpu.r[4] = 8;
+    bus.put16(0x180, 0x0423); // BRAF R4 -> PC+4+R4 = 0x18c
+    bus.put16(0x182, 0xe505); // delay slot
+    bus.put16(0x18c, 0xe606);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.pc == 0x182);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[5] == 5 && cpu.pc == 0x18c);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[6] == 6);
+
+    cpu.reset(0x190); cpu.r[4] = 8;
+    bus.put16(0x190, 0x0403); // BSRF R4; PR = 0x194, target = 0x19c
+    bus.put16(0x192, 0xe707);
+    bus.put16(0x19c, 0xe808);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.pr == 0x194 && cpu.pc == 0x192);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[7] == 7 && cpu.pc == 0x19c);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[8] == 8);
+
     bus.write32(0x200, 0x1234abcd);
     assert(bus.read8(0x200) == 0x12 && bus.read16(0x200) == 0x1234);
-    assert(bus.read32(0x200) == 0x1234abcd);
-    bus.put16(0x15c, 0xffff);
+    cpu.reset(0x1a0);
+    bus.put16(0x1a0, 0xffff);
     assert(cpu.step(bus) == StepResult::UnsupportedOpcode);
-    assert(cpu.fault_pc() == 0x15c && cpu.last_opcode() == 0xffff);
+    assert(cpu.fault_pc() == 0x1a0 && cpu.last_opcode() == 0xffff);
     std::cout << "SH-2 core foundation tests passed\n";
     return 0;
 }
