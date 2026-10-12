@@ -9,6 +9,8 @@ enum class SortMode { TitleAscending,TitleDescending,YearAscending,YearDescendin
 class GameLibrary {
 public:
  bool add(GameEntry game); bool set_favorite(const std::string& path,bool favorite);
+ bool save_favorites(const std::string& file_path) const;
+ bool load_favorites(const std::string& file_path);
  void filter(const GameFilter& filter,SortMode sort=SortMode::TitleAscending);
  const std::vector<GameEntry>& all()const{return games_;} const std::vector<GameEntry>& visible()const{return visible_;}
  const LibraryPaths& paths()const{return paths_;} void set_paths(const LibraryPaths& p){paths_=p;}
