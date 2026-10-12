@@ -49,12 +49,31 @@ int main() {
     assert(cpu.step(bus) == StepResult::Executed && (cpu.sr & Sh2Core::kTBit) == 0);
     assert(cpu.step(bus) == StepResult::Executed && (cpu.sr & Sh2Core::kTBit) != 0);
 
+    // Post-increment loads and pre-decrement stores.
+    bus.write8(0x300, 0xfe);
+    bus.write16(0x302, 0x8123);
+    bus.write32(0x304, 0x1234abcd);
+    cpu.r[3] = 0x300;
+    bus.put16(0x11e, 0x6234); // MOV.B @R3+,R2
+    bus.put16(0x120, 0x6235); // MOV.W @R3+,R2
+    bus.put16(0x122, 0x6236); // MOV.L @R3+,R2
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[2] == 0xfffffffeu && cpu.r[3] == 0x301);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[2] == 0xffff8123u && cpu.r[3] == 0x303);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[2] == 0x1234abcdu && cpu.r[3] == 0x307);
+    cpu.r[4] = 0x400; cpu.r[5] = 0x12345678;
+    bus.put16(0x124, 0x2454); // MOV.B R5,@-R4
+    bus.put16(0x126, 0x2455); // MOV.W R5,@-R4
+    bus.put16(0x128, 0x2456); // MOV.L R5,@-R4
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 0x3ff && bus.read8(0x3ff) == 0x78);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 0x3fd && bus.read16(0x3fd) == 0x5678);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 0x3f9 && bus.read32(0x3f9) == 0x12345678);
+
     bus.write32(0x200, 0x1234abcd);
     assert(bus.read8(0x200) == 0x12 && bus.read16(0x200) == 0x1234);
     assert(bus.read32(0x200) == 0x1234abcd);
-    bus.put16(0x11e, 0xffff);
+    bus.put16(0x12a, 0xffff);
     assert(cpu.step(bus) == StepResult::UnsupportedOpcode);
-    assert(cpu.fault_pc() == 0x11e && cpu.last_opcode() == 0xffff);
+    assert(cpu.fault_pc() == 0x12a && cpu.last_opcode() == 0xffff);
     std::cout << "SH-2 core foundation tests passed\n";
     return 0;
 }
