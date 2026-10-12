@@ -153,8 +153,20 @@ jobs:
           chmod +x scripts/*.sh
           bash ./scripts/xenon-preflight.sh
           # XEX PE headers occupy the first 4 KiB; leave that RVA unused.
-          sed "s/^\([[:space:]]*\.[[:space:]]*=[[:space:]]*\)0x80000000;/\180001000;/" "$DEVKITXENON/app.lds" > /tmp/shining-saturn-app.lds
-          grep -q "0x80001000" /tmp/shining-saturn-app.lds
+          python3 - "$DEVKITXENON/app.lds" /tmp/shining-saturn-app.lds <<'PY'
+          from pathlib import Path
+          import sys
+          src, dst = map(Path, sys.argv[1:])
+          data = src.read_text()
+          old = ". = 0x80000000;"
+          if data.count(old) != 1:
+              raise SystemExit("expected exactly one libXenon base-address directive")
+          data = data.replace(old, ". = 0x80001000;", 1)
+          dst.write_text(data)
+          if ". = 0x80001000;" not in dst.read_text():
+              raise SystemExit("failed to reserve XEX header space")
+          PY
+
           make -C build-xenon clean
           make -C build-xenon LDSCRIPT=/tmp/shining-saturn-app.lds
           test -s build-xenon/shining_saturn_bootstrap.elf32
