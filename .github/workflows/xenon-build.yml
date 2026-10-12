@@ -133,7 +133,7 @@ jobs:
           command -v xenon-g++
           command -v xenon-ld
           test -f "$DEVKITXENON/rules"
-          ./scripts/xenon-preflight.sh
+          bash ./scripts/xenon-preflight.sh
 
       - name: Compile ELF32
         shell: bash
@@ -144,6 +144,7 @@ jobs:
           export DEVKITXENON="/usr/local/xenon"
           export PATH="$DEVKITXENON/bin:$DEVKITXENON/usr/bin:$PATH"
           cd "prepared-source/$SOURCE_DIR"
+          bash ./scripts/xenon-preflight.sh
           make clean
           make xenon-elf32
           test -s build-xenon/shining_saturn_bootstrap.elf32
