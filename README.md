@@ -17,6 +17,12 @@ A documentação da versão atual está em [VERSION_v0.41b.md](VERSION_v0.41b.md
 - [Obter o artefato `ShiningSaturn360-default-XEX`](https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38210909197/artifacts/11728828108). Inclui `default.xex`, checksums e log de empacotamento; retenção até 26 de outubro de 2026.
 - SHA-256 do `default.xex`: `87e448b99226a43fea5acfea7e2abd407ce308f8c6f839dec692d1cc39204b1c`.
 
+## Núcleo SH-2 experimental (em desenvolvimento)
+
+Foi adicionada uma base independente de interpretador SH-2 em `src/saturn/sh2_core.hpp` e `src/saturn/sh2_core.cpp`, com um teste compilável em `tests/test_sh2_core.cpp`. A implementação cobre apenas um subconjunto inicial de instruções (movimentação, aritmética/lógica, acessos básicos à memória e alguns desvios); não é uma CPU SH-2 completa.
+
+Os testes são executados no GitHub Actions pelo script `tests/run-sh2-core-tests.sh`. Este núcleo ainda não está integrado ao bootstrap `default.xex` e não implementa os processadores, VDPs, áudio, temporização, CD-ROM ou demais subsistemas necessários para executar jogos de Saturn.
+
 ## Limitações atuais
 
 O `default.xex` é um bootstrap técnico. A geração do arquivo e as verificações estruturais não comprovam que ele inicializa num Xbox 360 real, nem que o núcleo de emulação Sega Saturn esteja funcional ou execute jogos. A inicialização no console ainda não foi testada.
