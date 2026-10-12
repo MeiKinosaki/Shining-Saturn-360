@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       has_makefile: ${{ steps.inspect.outputs.has_makefile }}
+      source_dir: ${{ steps.inspect.outputs.source_dir }}
       selected_archive: ${{ steps.inspect.outputs.selected_archive }}
     steps:
       - name: Checkout repository
@@ -44,32 +45,36 @@ jobs:
                       makefiles = [n for n in names if n.rstrip("/").split("/")[-1].lower() == "makefile"]
                       sources = [n for n in names if n.lower().endswith((".c",".cc",".cpp",".cxx",".h",".hpp",".s",".asm"))]
                       report.append(f"- **{path}**: integrity={'OK' if bad is None else 'FAILED: '+bad}; entries={len(names)}; makefiles={len(makefiles)}; source_files={len(sources)}")
-                      score = (len(makefiles) > 0, len(sources), len(names))
+                      # Prefer an archive with source and a Makefile; then the shallowest project Makefile.
+                      candidates = sorted(makefiles, key=lambda n: (n.count("/"), len(n)))
+                      project_makefile = next((n for n in candidates if n.count("/") <= 1), candidates[0] if candidates else None)
+                      score = (project_makefile is not None, len(sources), len(names))
                       if best is None or score > best[0]:
-                          best = (score, path, makefiles, sources)
+                          best = (score, path, project_makefile, makefiles, sources)
               except Exception as exc:
                   report.append(f"- **{path}**: inspection failed: {exc!r}")
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
               f.write("## Source archive audit\n" + ("\n".join(report) if report else "No ZIP archives found.") + "\n")
           if best is not None:
-              _, path, makefiles, sources = best
-              print(f"Selected archive: {path}; Makefiles: {makefiles[:10]}; source files: {len(sources)}")
+              _, path, project_makefile, makefiles, sources = best
+              print(f"Selected archive: {path}; project Makefile: {project_makefile}; source files: {len(sources)}")
               with zipfile.ZipFile(path) as z:
-                  # Reject paths escaping the extraction directory.
                   root = os.path.realpath("prepared-source")
                   for member in z.infolist():
                       target = os.path.realpath(os.path.join(root, member.filename))
                       if target != root and not target.startswith(root + os.sep):
                           raise RuntimeError(f"Unsafe ZIP path: {member.filename}")
                   z.extractall(root)
+              source_dir = os.path.dirname(project_makefile) if project_makefile else ""
               with open(os.environ["GITHUB_OUTPUT"], "a") as f:
                   f.write(f"selected_archive={path}\n")
-                  f.write(f"has_makefile={'true' if any(os.path.isfile(os.path.join(root, p)) for p in ('Makefile','makefile')) else 'false'}\n")
+                  f.write(f"source_dir={source_dir}\n")
+                  f.write(f"has_makefile={'true' if project_makefile else 'false'}\n")
               with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
-                  f.write(f"\nSelected archive: `{path}`. Root Makefile extracted: {'yes' if any(os.path.isfile(os.path.join(root, p)) for p in ('Makefile','makefile')) else 'no'}.\n")
+                  f.write(f"\nSelected archive: `{path}`. Project directory: `{source_dir or '.'}`. Project Makefile: `{project_makefile or 'not found'}`.\n")
           else:
               with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-                  f.write("selected_archive=none\nhas_makefile=false\n")
+                  f.write("selected_archive=none\nsource_dir=\nhas_makefile=false\n")
           PY
 
       - name: Upload extracted source
@@ -80,7 +85,28 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  build-xenon:
+  host-regression-tests:
+    needs: prepare-source
+    if: needs.prepare-source.outputs.has_makefile == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download extracted source
+        uses: actions/download-artifact@v4
+        with:
+          name: ShiningSaturn360-prepared-source
+          path: prepared-source
+
+      - name: Run host regression tests
+        shell: bash
+        env:
+          SOURCE_DIR: ${{ needs.prepare-source.outputs.source_dir }}
+        run: |
+          set -euo pipefail
+          cd "prepared-source/$SOURCE_DIR"
+          chmod +x scripts/run-host-tests.sh
+          ./scripts/run-host-tests.sh
+
+  build-xenon-elf32:
     needs: prepare-source
     if: needs.prepare-source.outputs.has_makefile == 'true'
     runs-on: ubuntu-latest
@@ -91,41 +117,46 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ShiningSaturn360-prepared-source
-          path: .
+          path: prepared-source
 
-      - name: Locate Xenon tools
+      - name: Configure and verify libXenon
         shell: bash
+        env:
+          SOURCE_DIR: ${{ needs.prepare-source.outputs.source_dir }}
         run: |
           set -euo pipefail
-          export PATH="/usr/local/xenon/bin:/usr/local/xenon/usr/bin:/opt/xenon/bin:/opt/xenon/usr/bin:$PATH"
+          export DEVKITXENON="/usr/local/xenon"
+          export PATH="$DEVKITXENON/bin:$DEVKITXENON/usr/bin:$PATH"
+          cd "prepared-source/$SOURCE_DIR"
+          echo "DEVKITXENON=$DEVKITXENON"
           command -v xenon-gcc
           command -v xenon-g++
           command -v xenon-ld
-          find /usr/local /opt -type f \( -name elf2xex -o -name 'elf2xex*' \) -print 2>/dev/null || true
-          if ! command -v elf2xex >/dev/null 2>&1; then
-            echo "::error::elf2xex is not present in the libxenon container; cannot package default.xex."
-            exit 1
-          fi
+          test -f "$DEVKITXENON/rules"
+          ./scripts/xenon-preflight.sh
 
-      - name: Compile and package
+      - name: Compile ELF32
         shell: bash
+        env:
+          SOURCE_DIR: ${{ needs.prepare-source.outputs.source_dir }}
         run: |
           set -euxo pipefail
-          export PATH="/usr/local/xenon/bin:/usr/local/xenon/usr/bin:/opt/xenon/bin:/opt/xenon/usr/bin:$PATH"
-          make
-          test -s Xenon.elf
-          elf2xex Xenon.elf default.xex
-          test -s default.xex
-          sha256sum Xenon.elf default.xex | tee build-sha256.txt
+          export DEVKITXENON="/usr/local/xenon"
+          export PATH="$DEVKITXENON/bin:$DEVKITXENON/usr/bin:$PATH"
+          cd "prepared-source/$SOURCE_DIR"
+          make clean
+          make xenon-elf32
+          test -s build-xenon/shining_saturn_bootstrap.elf32
+          sha256sum build-xenon/shining_saturn_bootstrap.elf32 | tee build-xenon/build-sha256.txt
 
-      - name: Upload executable artifacts
+      - name: Upload Xenon ELF32 artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: ShiningSaturn360-Xenon-build
+          name: ShiningSaturn360-Xenon-ELF32
           path: |
-            Xenon.elf
-            default.xex
-            build-sha256.txt
+            prepared-source/${{ needs.prepare-source.outputs.source_dir }}/build-xenon/shining_saturn_bootstrap.elf32
+            prepared-source/${{ needs.prepare-source.outputs.source_dir }}/build-xenon/build-sha256.txt
           if-no-files-found: error
           retention-days: 14
 
@@ -139,6 +170,5 @@ jobs:
         run: |
           {
             echo "## Build not started"
-            echo "The source archives were inspected and extracted, but no Makefile was found at the extracted root. A genuine project build cannot be inferred safely without the source's actual build instructions."
-            echo "The next step is to identify the source entry point and create a project-specific Makefile."
+            echo "The source archives were inspected and extracted, but no Makefile was found. A genuine build cannot be inferred safely without actual project build instructions."
           } >> "$GITHUB_STEP_SUMMARY"
