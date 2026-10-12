@@ -232,6 +232,15 @@ StepResult Sh2Core::step(Bus& bus) {
         if (sr & kTBit) pc = pc + 2 + static_cast<std::uint32_t>(imm8 * 2);
     } else if ((op & 0xff00) == 0x8b00) { // BF disp8, no delay slot
         if (!(sr & kTBit)) pc = pc + 2 + static_cast<std::uint32_t>(imm8 * 2);
+    } else if ((op & 0xff00) == 0x8d00) { // BT/S disp8, delay slot
+        if (sr & kTBit) schedule_branch(pc + 2 + static_cast<std::uint32_t>(imm8 * 2));
+    } else if ((op & 0xff00) == 0x8f00) { // BF/S disp8, delay slot
+        if (!(sr & kTBit)) schedule_branch(pc + 2 + static_cast<std::uint32_t>(imm8 * 2));
+    } else if ((op & 0xf0ff) == 0x0023) { // BRAF Rn, delay slot
+        schedule_branch(pc + 2 + r[n]);
+    } else if ((op & 0xf0ff) == 0x0003) { // BSRF Rn, delay slot
+        pr = pc + 2;
+        schedule_branch(pc + 2 + r[n]);
     } else if ((op & 0xf0ff) == 0x402b) { // JMP @Rn, delay slot
         schedule_branch(r[n]);
     } else if ((op & 0xf0ff) == 0x400b) { // JSR @Rn, delay slot
