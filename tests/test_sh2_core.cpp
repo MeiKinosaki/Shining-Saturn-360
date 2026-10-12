@@ -73,12 +73,12 @@ int main() {
     bus.write32(0x400, 0x89abcdef);
     bus.put16(0x12a, 0x91ea); // MOV.W @(234,PC),R1 -> 0x300
     bus.put16(0x12c, 0xd0b5); // MOV.L @(181,PC),R0 -> 0x400
-    cpu.r[4] = 0x500; cpu.r[5] = 0x12345678;
+    cpu.r[4] = 0x500; cpu.r[5] = 0x600;
     bus.put16(0x12e, 0x1542); // MOV.L R4,@(2,R5)
     bus.put16(0x130, 0x5643); // MOV.L @(3,R4),R6
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[1] == 0xffff8123u);
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 0x89abcdefu);
-    assert(cpu.step(bus) == StepResult::Executed && bus.read32(0x12345680) == 0x500);
+    assert(cpu.step(bus) == StepResult::Executed && bus.read32(0x608) == 0x500);
     bus.write32(0x50c, 0xcafebabe);
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[6] == 0xcafebabeu);
 
