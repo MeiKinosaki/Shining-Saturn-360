@@ -116,12 +116,41 @@ int main() {
     bus.put16(0x148, 0x272d); // XTRCT R2,R7
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[7] == 0x5678abcd);
 
+    // Rotates and multiply families.
+    cpu.r[3] = 0x80000001u; cpu.sr = 0;
+    bus.put16(0x14a, 0x4328); // ROTL R3
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[3] == 3 && (cpu.sr & Sh2Core::kTBit));
+    bus.put16(0x14c, 0x4329); // ROTR R3
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[3] == 0x80000001u && (cpu.sr & Sh2Core::kTBit));
+    cpu.r[3] = 0x80000000u; cpu.sr = Sh2Core::kTBit;
+    bus.put16(0x14e, 0x4324); // ROTCL R3
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[3] == 1 && (cpu.sr & Sh2Core::kTBit));
+    cpu.r[3] = 2; cpu.sr = Sh2Core::kTBit;
+    bus.put16(0x150, 0x4325); // ROTCR R3
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[3] == 0x80000001u && !(cpu.sr & Sh2Core::kTBit));
+
+    cpu.r[1] = 0xfffffff0u; cpu.r[2] = 3;
+    bus.put16(0x152, 0x0127); // MUL.L R2,R1
+    assert(cpu.step(bus) == StepResult::Executed && cpu.macl == 0xffffffd0u);
+    cpu.r[1] = 0xffffu; cpu.r[2] = 2;
+    bus.put16(0x154, 0x212e); // MULU.W R2,R1
+    assert(cpu.step(bus) == StepResult::Executed && cpu.macl == 0x1fffeu);
+    cpu.r[1] = 0xffffu; cpu.r[2] = 2;
+    bus.put16(0x156, 0x212f); // MULS.W R2,R1
+    assert(cpu.step(bus) == StepResult::Executed && cpu.macl == 0xfffffffeu);
+    cpu.r[1] = 0xffffffffu; cpu.r[2] = 2;
+    bus.put16(0x158, 0x3125); // DMULU.L R2,R1
+    assert(cpu.step(bus) == StepResult::Executed && cpu.mach == 1 && cpu.macl == 0xfffffffeu);
+    cpu.r[1] = 0xfffffffeu; cpu.r[2] = 3;
+    bus.put16(0x15a, 0x312d); // DMULS.L R2,R1
+    assert(cpu.step(bus) == StepResult::Executed && cpu.mach == 0xffffffffu && cpu.macl == 0xfffffffau);
+
     bus.write32(0x200, 0x1234abcd);
     assert(bus.read8(0x200) == 0x12 && bus.read16(0x200) == 0x1234);
     assert(bus.read32(0x200) == 0x1234abcd);
-    bus.put16(0x14a, 0xffff);
+    bus.put16(0x15c, 0xffff);
     assert(cpu.step(bus) == StepResult::UnsupportedOpcode);
-    assert(cpu.fault_pc() == 0x14a && cpu.last_opcode() == 0xffff);
+    assert(cpu.fault_pc() == 0x15c && cpu.last_opcode() == 0xffff);
     std::cout << "SH-2 core foundation tests passed\n";
     return 0;
 }
