@@ -87,7 +87,7 @@ int main() {
     // PC-relative reads and register-plus-displacement longword accesses.
     bus.write16(0x300, 0x8123);
     bus.write32(0x400, 0x89abcdef);
-    bus.put16(0x134, 0x91e6); // MOV.W @(230,PC),R1 -> 0x300
+    bus.put16(0x134, 0x91e4); // MOV.W @(228,PC),R1 -> 0x300
     bus.put16(0x136, 0xd0b2); // MOV.L @(178,PC),R0 -> 0x400
     cpu.r[4] = 0x500; cpu.r[5] = 0x600;
     bus.put16(0x138, 0x1542); // MOV.L R4,@(2,R5)
@@ -98,12 +98,30 @@ int main() {
     bus.write32(0x50c, 0xcafebabe);
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[6] == 0xcafebabeu);
 
+    // Register bit manipulation and sign/zero extension.
+    cpu.r[2] = 0x1234abcd; cpu.r[7] = 0x55667788;
+    bus.put16(0x13c, 0x6728); // SWAP.B R2,R7
+    bus.put16(0x13e, 0x6729); // SWAP.W R2,R7
+    bus.put16(0x140, 0x672c); // EXTU.B R2,R7
+    bus.put16(0x142, 0x672d); // EXTU.W R2,R7
+    bus.put16(0x144, 0x672e); // EXTS.B R2,R7
+    bus.put16(0x146, 0x672f); // EXTS.W R2,R7
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[7] == 0x556677cd);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[7] == 0xabcd1234);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[7] == 0xcd);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[7] == 0xabcd);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[7] == 0xffffffcd);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[7] == 0xffffabcd);
+    cpu.r[2] = 0x12345678; cpu.r[7] = 0xabcdef01;
+    bus.put16(0x148, 0x272d); // XTRCT R2,R7
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[7] == 0x5678abcd);
+
     bus.write32(0x200, 0x1234abcd);
     assert(bus.read8(0x200) == 0x12 && bus.read16(0x200) == 0x1234);
     assert(bus.read32(0x200) == 0x1234abcd);
-    bus.put16(0x13c, 0xffff);
+    bus.put16(0x14a, 0xffff);
     assert(cpu.step(bus) == StepResult::UnsupportedOpcode);
-    assert(cpu.fault_pc() == 0x13c && cpu.last_opcode() == 0xffff);
+    assert(cpu.fault_pc() == 0x14a && cpu.last_opcode() == 0xffff);
     std::cout << "SH-2 core foundation tests passed\n";
     return 0;
 }
