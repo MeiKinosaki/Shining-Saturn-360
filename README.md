@@ -140,3 +140,22 @@ Se o artefato não estiver disponível ou tiver expirado, execute novamente o wo
 | Save Data / Save State / Load State | Não implementados |
 | VDP1 / VDP2 / SCSP / CD-ROM / SMPC | Ainda não implementados como subsistemas funcionais integrados |
 | Compatibilidade com jogos | Não validada |
+
+## Configurações persistentes — módulo experimental
+
+Foi adicionado `src/saturn/settings.hpp/.cpp`, com leitura e gravação versionada por meio de um adaptador de armazenamento. O formato é texto `chave=valor`, pensado para `Hdd1:\ShiningSaturn360\Config\settings.ini` quando o adaptador de HDD estiver ligado. Inclui escala de interface, filtro gráfico (reserva), preset de desempenho (reserva), VSync (reserva), música do menu, volume e ordenação da biblioteca.
+
+Exemplo do formato:
+
+```ini
+version=1
+ui_scale=100
+video_filter=0
+performance_preset=0
+vsync=1
+menu_music=1
+menu_volume=0.65
+sort=0
+```
+
+Os valores são validados e limitados a intervalos seguros. **Limite atual:** a camada é testável com armazenamento simulado; ainda falta implementar o adaptador de arquivo real para o Xbox 360 e conectar essas opções à interface e aos subsistemas de vídeo/desempenho. A presença das opções no arquivo não significa que filtros gráficos ou VSync estejam funcionais.
