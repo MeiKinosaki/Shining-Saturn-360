@@ -17,6 +17,16 @@ A documentação da versão atual está em [VERSION_v0.41b.md](VERSION_v0.41b.md
 - [Obter o artefato `ShiningSaturn360-default-XEX`](https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38210909197/artifacts/11728828108). Inclui `default.xex`, checksums e log de empacotamento; retenção até 26 de outubro de 2026.
 - SHA-256 do `default.xex`: `87e448b99226a43fea5acfea7e2abd407ce308f8c6f839dec692d1cc39204b1c`.
 
+## Teste imediato no Xbox 360 (bootstrap experimental)
+
+1. Baixe o artefato **ShiningSaturn360-default-XEX** da execução [associada ao commit atual](https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38370373297).
+2. Extraia o ZIP no computador e confira o arquivo `default.xex` e o arquivo de checksum incluído.
+3. Em um Xbox 360 compatível com homebrew (por exemplo, RGH/JTAG), copie a pasta para `Hdd1:\\Games\\ShiningSaturn360\\` ou para uma pasta em uma unidade USB.
+4. No dashboard/homebrew file manager, abra a pasta e tente iniciar `default.xex`.
+5. Registre o resultado: se abrir, se ficar em tela preta, se voltar ao dashboard ou se apresentar erro. Isso é necessário para diagnosticar o primeiro teste em hardware real.
+
+**Importante:** esta compilação é um bootstrap técnico e ainda não é um emulador de Saturn jogável. O CI confirma compilação e empacotamento, não o funcionamento no console. O núcleo SH-2 experimental não está ligado ao bootstrap e os subsistemas de vídeo, áudio e CD-ROM ainda não permitem iniciar jogos. Não atualize a NAND/firmware para este teste; basta tentar executar o XEX existente num ambiente homebrew já funcional.
+
 ## Núcleo SH-2 experimental (em desenvolvimento)
 
 Foi adicionada uma base independente de interpretador SH-2 em `src/saturn/sh2_core.hpp` e `src/saturn/sh2_core.cpp`, com um teste compilável em `tests/test_sh2_core.cpp`. A implementação cobre um subconjunto experimental de instruções: movimentação, aritmética e lógica, acessos básicos à memória, operações de deslocamento, testes de condição e desvios condicionais sem atraso e com slot de atraso, chamadas relativas ao PC e saltos indiretos. Foram acrescentados modos de memória com pós-incremento/pré-decremento, acessos relativos ao PC e com deslocamento, comparações signed/unsigned, operações com carry/borrow, rotações, multiplicação de 32/64 bits, SWAP, EXTU/EXTS, XTRCT e novas formas de desvio condicional/relativo. A cobertura é parcial e ainda exige validação e expansão para a arquitetura SH-2 completa. Os testes exercitam instruções imediatas, registradores, endianness e tratamento explícito de opcode não suportado. Não é uma CPU SH-2 completa.
