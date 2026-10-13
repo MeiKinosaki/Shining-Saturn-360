@@ -51,3 +51,92 @@ Os testes ficam em `tests/test_game_library.cpp` e são executados pelo script d
 ## Música do menu — controlador experimental
 
 O módulo `src/saturn/menu_music.hpp/.cpp` define um controlador independente de plataforma para faixa de menu: caminho padrão `Hdd1:\\ShiningSaturn360\\Music\\MenuTheme.wav`, ativar/desativar, repetição, volume limitado a 0–100%, pausa, retomada e parada. O backend de áudio específico do Xbox 360 ainda precisa ser implementado e ligado ao ciclo de vida da interface; portanto, este módulo sozinho não toca áudio no XEX. Coloque apenas áudio que você tenha direito de usar na pasta Music. Testes unitários com backend simulado ficam em `tests/test_menu_music.cpp`.
+
+## Descrição do emulador
+
+O **Shining Saturn 360** é um projeto experimental que pretende emular o Sega Saturn no Xbox 360 com RGH/JTAG. O objetivo é evoluir de um bootstrap técnico para um emulador com núcleo SH-2, vídeo VDP1/VDP2, áudio SCSP, CD-ROM, controles e uma biblioteca visual de jogos. **No estado atual, ele ainda não executa jogos de Saturn de forma comprovada.** O núcleo SH-2, o barramento, a biblioteca e o scanner de ROMs são bases experimentais e não estão todos integrados ao executável.
+
+## Controles
+
+Não existe ainda um mapeamento funcional de controles implementado no emulador. A tabela abaixo é uma **proposta para a futura interface**, não uma função disponível na versão atual:
+
+| Controle Xbox 360 | Ação planejada |
+|---|---|
+| D-pad | Navegar pelos menus |
+| A | Confirmar / abrir jogo |
+| B | Voltar |
+| X | Opções do jogo |
+| Y | Marcar/desmarcar favorito |
+| LB / RB | Mudar categoria ou página |
+| Start | Abrir menu |
+| Back | Informações do jogo |
+
+O mapeamento dos botões do controle para um gamepad Sega Saturn ainda precisa ser implementado e testado.
+
+## Settings (configurações)
+
+Ainda não há uma tela de configurações funcional conectada ao executável. Estas são as opções planejadas:
+
+- **Interface:** tamanho das capas, ordenação e filtros da biblioteca.
+- **Vídeo:** proporção da imagem, escala e filtros gráficos, quando o VDP estiver implementado.
+- **Desempenho:** opções de sincronização e limites de velocidade, após existir temporização funcional.
+- **Áudio:** ativar/desativar música do menu e volume; o controlador experimental existe, mas o backend de áudio Xbox 360 ainda está pendente.
+- **Pastas:** diretórios de ROMs, capas, configurações e saves.
+- **Controles:** configuração dos botões do Xbox 360 para o controle Saturn.
+
+Não considere essas opções disponíveis no executável atual até que sejam integradas à interface.
+
+## ROMs e capas
+
+Estrutura de pastas prevista para instalação no disco rígido:
+
+```text
+Hdd1:\ShiningSaturn360\
+├── Roms\       # Jogos que você possui e tem direito de usar
+├── Covers\     # Capas com o mesmo nome-base do arquivo do jogo
+├── Favorites\  # Reservado para futura persistência de favoritos
+├── SaveData\   # Reservado para dados de jogo
+├── SaveState\  # Reservado para estados instantâneos
+├── Config\     # Reservado para configurações
+└── Music\      # Áudio que você tenha direito de usar
+```
+
+O scanner experimental reconhece as extensões .cue, .iso, .chd, .ccd, .bin, .img e .mds e procura capas .png, .jpg, .jpeg ou .bmp com o mesmo nome-base. Ele ainda depende de um adaptador de sistema de arquivos; a leitura real do HDD do Xbox 360 e a integração à interface não estão concluídas. Nem toda extensão listada garante que o formato seja carregável pelo emulador.
+
+## Save Data e Save State / Load State
+
+**Ainda não implementados como funcionalidades de emulação.**
+
+- **Save Data:** diretório reservado em Hdd1:\ShiningSaturn360\SaveData\ para futuros dados persistentes de jogos.
+- **Save State:** deverá guardar CPU, memória, registradores de dispositivos e estado de temporização num ponto da execução.
+- **Load State:** deverá restaurar esses componentes de forma consistente.
+
+O estado atual não tem os subsistemas completos nem a serialização necessária para criar ou carregar saves reais. Os campos de metadados da biblioteca não equivalem a um sistema de salvamento funcional.
+
+## Como instalar (bootstrap experimental)
+
+> **Aviso:** isto instala apenas o artefato técnico experimental. Não garante que o XEX abra no console nem que execute jogos.
+
+1. Num computador, abra o workflow de compilação: https://github.com/MeiKinosaki/Shining-Saturn-360/actions
+2. Selecione uma execução concluída com sucesso e abra **Artifacts**.
+3. Baixe o artefato ShiningSaturn360-default-XEX (quando disponível) e extraia o ZIP.
+4. Copie default.xex para uma pasta no HDD do Xbox 360 RGH/JTAG, por exemplo Hdd1:\ShiningSaturn360\, usando um método de transferência de arquivos que você já utilize no console.
+5. Inicie default.xex por um gerenciador de arquivos compatível.
+6. Para os testes de desenvolvimento, confira também a seção Compilação na nuvem e os logs do workflow.
+
+Se o artefato não estiver disponível ou tiver expirado, execute novamente o workflow e baixe o artefato da execução bem-sucedida mais recente. Não use a criação do XEX como prova de compatibilidade; a inicialização em hardware real ainda precisa ser testada.
+
+## Estado das funcionalidades (resumo)
+
+| Recurso | Estado |
+|---|---|
+| Build de auditoria Xenon / geração do XEX | Pipeline verificado; inicialização no console não confirmada |
+| Núcleo SH-2 | Parcial e experimental; não integrado ao XEX |
+| Barramento de memória | Genérico; não é o mapa real do Saturn |
+| Biblioteca, filtros e favoritos | Base de código; UI e persistência não integradas |
+| Scanner de ROMs e associação de capas | Base experimental; adaptador do HDD ainda pendente |
+| Controles na interface e em jogos | Planejados, não implementados |
+| Settings de vídeo/desempenho | Planejados, não implementados |
+| Save Data / Save State / Load State | Não implementados |
+| VDP1 / VDP2 / SCSP / CD-ROM / SMPC | Ainda não implementados como subsistemas funcionais integrados |
+| Compatibilidade com jogos | Não validada |
