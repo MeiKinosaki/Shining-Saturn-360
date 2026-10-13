@@ -98,6 +98,17 @@ int main() {
     bus.write32(0x50c, 0xcafebabe);
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[6] == 0xcafebabeu);
 
+    // Displacement stores and R0 displacement loads.
+    cpu.reset(0x13c); cpu.r[1] = 0x700; cpu.r[0] = 0x1234abcd;
+    bus.put16(0x13c, 0x8103); // MOV.B R0,@(3,R1) -> 0x703
+    bus.put16(0x13e, 0x8104); // MOV.W R0,@(4,R1) -> 0x708
+    bus.put16(0x140, 0x8412); // MOV.B @(2,R1),R0
+    bus.put16(0x142, 0x8514); // MOV.W @(4,R1),R0
+    assert(cpu.step(bus) == StepResult::Executed && bus.read8(0x703) == 0xcd);
+    assert(cpu.step(bus) == StepResult::Executed && bus.read16(0x708) == 0xabcd);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 0xffffff00u);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 0xffffabcdu);
+
     // Register bit manipulation and sign/zero extension.
     cpu.r[2] = 0x1234abcd; cpu.r[7] = 0x55667788;
     bus.put16(0x13c, 0x6728); // SWAP.B R2,R7
