@@ -327,8 +327,8 @@ jobs:
           set -euo pipefail
           package="ShiningSaturn360_v0.41b"
           mkdir -p "$package/src/saturn" "$package/tests"
-          cp repo-source/src/saturn/sh2_core.hpp repo-source/src/saturn/sh2_core.cpp repo-source/src/saturn/memory_bus.hpp repo-source/src/saturn/memory_bus.cpp repo-source/src/saturn/game_library.hpp repo-source/src/saturn/game_library.cpp repo-source/src/saturn/menu_music.hpp repo-source/src/saturn/menu_music.cpp repo-source/src/saturn/rom_scanner.hpp repo-source/src/saturn/rom_scanner.cpp "$package/src/saturn/"
-          cp repo-source/tests/test_sh2_core.cpp repo-source/tests/test_memory_bus.cpp repo-source/tests/test_game_library.cpp repo-source/tests/test_menu_music.cpp repo-source/tests/test_rom_scanner.cpp repo-source/tests/run-sh2-core-tests.sh "$package/tests/"
+          cp repo-source/src/saturn/sh2_core.hpp repo-source/src/saturn/sh2_core.cpp repo-source/src/saturn/memory_bus.hpp repo-source/src/saturn/memory_bus.cpp repo-source/src/saturn/game_library.hpp repo-source/src/saturn/game_library.cpp repo-source/src/saturn/menu_music.hpp repo-source/src/saturn/menu_music.cpp repo-source/src/saturn/rom_scanner.hpp repo-source/src/saturn/rom_scanner.cpp repo-source/src/saturn/settings.hpp repo-source/src/saturn/settings.cpp "$package/src/saturn/"
+          cp repo-source/tests/test_sh2_core.cpp repo-source/tests/test_memory_bus.cpp repo-source/tests/test_game_library.cpp repo-source/tests/test_menu_music.cpp repo-source/tests/test_rom_scanner.cpp repo-source/tests/test_settings.cpp repo-source/tests/run-sh2-core-tests.sh "$package/tests/"
           cp repo-source/README.md "$package/"
           cp repo-source/VERSION "$package/"
           cp repo-source/VERSION_v0.41b.md "$package/"
