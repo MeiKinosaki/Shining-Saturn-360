@@ -14,3 +14,4 @@ cxx="${CXX:-g++}"; flags=(-std=c++17 -Wall -Wextra -Werror -pedantic)
 "$cxx" "${flags[@]}" "$root/tests/test_saturn_address_decoder.cpp" -o "$tmpdir/test_saturn_address_decoder"; "$tmpdir/test_saturn_address_decoder"
 "$cxx" "${flags[@]}" "$root/src/saturn/memory_bus.cpp" "$root/src/saturn/saturn_memory_bus.cpp" "$root/tests/test_saturn_memory_bus.cpp" -o "$tmpdir/test_saturn_memory_bus"; "$tmpdir/test_saturn_memory_bus"
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/src/saturn/memory_bus.cpp" "$root/src/saturn/saturn_memory_bus.cpp" "$root/tests/test_sh2_saturn_bus_integration.cpp" -o "$tmpdir/test_sh2_saturn_bus_integration"; "$tmpdir/test_sh2_saturn_bus_integration"
+"$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/src/saturn/sh2_runner.cpp" "$root/src/saturn/memory_bus.cpp" "$root/src/saturn/saturn_memory_bus.cpp" "$root/tests/test_sh2_runner.cpp" -o "$tmpdir/test_sh2_runner"; "$tmpdir/test_sh2_runner"
