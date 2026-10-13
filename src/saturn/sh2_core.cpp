@@ -189,6 +189,8 @@ StepResult Sh2Core::step(Bus& bus) {
         r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(static_cast<std::int8_t>(r[m])));
     } else if ((op & 0xf00f) == 0x600f) { // EXTS.W Rm,Rn
         r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(static_cast<std::int16_t>(r[m])));
+    } else if ((op & 0xff00) == 0xc700) { // MOVA @(disp,PC),R0
+        r[0] = ((pc + 2) & ~std::uint32_t(3)) + static_cast<std::uint32_t>(op & 0xff) * 4;
     } else if ((op & 0xff00) == 0xc800) { // TST #imm,R0
         sr = (sr & ~kTBit) | ((r[0] & (op & 0xff)) == 0 ? kTBit : 0u);
     } else if ((op & 0xff00) == 0xc900) { // AND #imm,R0
