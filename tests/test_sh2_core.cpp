@@ -205,6 +205,17 @@ int main() {
     bus.put16(0x1b0, 0xe409); // MOV #9,R4
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 9 && cpu.pc == 0x1b2);
 
+    // Reset must clear architectural registers and diagnostic fault metadata.
+    cpu.r[0] = 0xdeadbeefu; cpu.pr = 0x11112222u; cpu.gbr = 0x33334444u;
+    cpu.vbr = 0x55556666u; cpu.mach = 0x77778888u; cpu.macl = 0x9999aaaau;
+    cpu.sr = Sh2Core::kTBit; cpu.halted = true;
+    cpu.reset(0x1c0);
+    assert(cpu.pc == 0x1c0 && cpu.r[0] == 0 && cpu.pr == 0 && cpu.gbr == 0 &&
+           cpu.vbr == 0 && cpu.mach == 0 && cpu.macl == 0 && cpu.sr == 0 &&
+           !cpu.halted && cpu.fault_pc() == 0 && cpu.last_opcode() == 0);
+    bus.put16(0x1c0, 0xe10b); // MOV #11,R1 proves execution resumes after reset.
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[1] == 11 && cpu.pc == 0x1c2);
+
     bus.write32(0x200, 0x1234abcd);
     assert(bus.read8(0x200) == 0x12 && bus.read16(0x200) == 0x1234);
     cpu.reset(0x1a0);
