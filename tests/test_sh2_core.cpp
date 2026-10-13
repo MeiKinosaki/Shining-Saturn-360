@@ -111,6 +111,7 @@ int main() {
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 0xffff8123u);
 
     // Register bit manipulation and sign/zero extension.
+    cpu.reset(0x13c);
     cpu.r[2] = 0x1234abcd; cpu.r[7] = 0x55667788;
     bus.put16(0x13c, 0x6728); // SWAP.B R2,R7
     bus.put16(0x13e, 0x6729); // SWAP.W R2,R7
