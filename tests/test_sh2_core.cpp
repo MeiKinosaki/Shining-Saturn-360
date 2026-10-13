@@ -104,7 +104,7 @@ int main() {
     bus.put16(0x13e, 0x8141); // MOV.W R0,@(4,R1) -> 0x708
     bus.write8(0x702, 0x80); bus.write16(0x704, 0x8123);
     bus.put16(0x140, 0x8412); // MOV.B @(2,R1),R0
-    bus.put16(0x142, 0x8514); // MOV.W @(4,R1),R0
+    bus.put16(0x142, 0x8512); // MOV.W @(2,R1),R0 -> address 0x704
     assert(cpu.step(bus) == StepResult::Executed && bus.read8(0x703) == 0xcd);
     assert(cpu.step(bus) == StepResult::Executed && bus.read16(0x708) == 0xabcd);
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 0xffffff80u);
