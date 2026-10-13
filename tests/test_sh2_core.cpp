@@ -222,6 +222,19 @@ int main() {
     bus.put16(0x1a0, 0xffff);
     assert(cpu.step(bus) == StepResult::UnsupportedOpcode);
     assert(cpu.fault_pc() == 0x1a0 && cpu.last_opcode() == 0xffff);
+    // JSR @Rn and RTS must both honor their delay slots and preserve PR.
+    cpu.reset(0x220); cpu.r[1] = 0x230;
+    bus.put16(0x220, 0x410b); // JSR @R1 -> target 0x230, PR = 0x224
+    bus.put16(0x222, 0xe209); // call delay slot
+    bus.put16(0x230, 0x000b); // RTS -> PR
+    bus.put16(0x232, 0xe30a); // return delay slot
+    bus.put16(0x224, 0xe40b); // return address instruction
+    assert(cpu.step(bus) == StepResult::Executed && cpu.pr == 0x224 && cpu.pc == 0x222);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[2] == 9 && cpu.pc == 0x230);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.pc == 0x232);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[3] == 10 && cpu.pc == 0x224);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 11);
+
     std::cout << "SH-2 core foundation tests passed\n";
     return 0;
 }
