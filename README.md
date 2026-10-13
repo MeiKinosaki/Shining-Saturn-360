@@ -2,11 +2,11 @@
 
 Emulador de Sega Saturn para Xbox 360 (RGH/JTAG).
 
-## Estado técnico — v0.42b
+## Estado técnico — v0.43b
 
 ## Versão publicada no repositório
 
-A documentação da versão atual está em [VERSION_v0.42b.md](VERSION_v0.42b.md). Ela registra o estado experimental, a execução de CI e o artefato de bootstrap disponível; não implica suporte comprovado a jogos nem inicialização em hardware real.
+A documentação da versão atual está em [VERSION_v0.43b.md](VERSION_v0.43b.md). Ela registra o estado experimental, a execução de CI e o artefato de bootstrap disponível; não implica suporte comprovado a jogos nem inicialização em hardware real.
 
 - Testes de regressão no Ubuntu: aprovados na execução [mais recente validada](https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38366824872) (compilação Xenon ELF32, testes do núcleo SH-2 e empacotamento XEX). A aprovação do CI não comprova inicialização em hardware real.
 - Toolchain libXenon: verificada.
@@ -43,7 +43,7 @@ Foi adicionada uma camada genérica em `src/saturn/memory_bus.hpp` e `src/saturn
 
 O `default.xex` é um bootstrap técnico. A geração do arquivo e as verificações estruturais não comprovam que ele inicializa num Xbox 360 real, nem que o núcleo de emulação Sega Saturn esteja funcional ou execute jogos. A inicialização no console ainda não foi testada.
 
-A versão de desenvolvimento passa a `v0.42b`, para registrar o mapa físico inicial e sua suíte de regressão. O núcleo SH-2 ainda não está integrado ao `default.xex`. A versão não representa um emulador funcional completo.
+A versão de desenvolvimento passa a `v0.43b`, para registrar o adaptador inicial de memória. O núcleo SH-2 ainda não está integrado ao `default.xex`. A versão não representa um emulador funcional completo.
 
 ## Compilação na nuvem
 
@@ -138,13 +138,13 @@ Se o artefato não estiver disponível ou tiver expirado, execute novamente o wo
 
 ## Estado das funcionalidades (resumo)
 
-O marco de desenvolvimento atual é **v0.42b**; veja [VERSION_v0.42b.md](VERSION_v0.42b.md). O mapa físico recém-adicionado ainda é uma tabela de constantes, não um decodificador ligado ao barramento.
+O marco de desenvolvimento atual é **v0.43b**; veja [VERSION_v0.43b.md](VERSION_v0.43b.md). O adaptador inicial liga regiões de RAM/ROM ao barramento genérico, mas ainda não implementa MMIO nem dispositivos Saturn funcionais.
 
 | Recurso | Estado |
 |---|---|
 | Build de auditoria Xenon / geração do XEX | Pipeline verificado; inicialização no console não confirmada |
 | Núcleo SH-2 | Parcial e experimental; não integrado ao XEX |
-| Barramento de memória | Genérico; não é o mapa real do Saturn |
+| Barramento de memória | Adaptador experimental com RAM/ROM mapeadas; MMIO e integração SH-2 pendentes |
 | Biblioteca, filtros e favoritos | Base de código; UI e persistência não integradas |
 | Scanner de ROMs e associação de capas | Base experimental; adaptador do HDD ainda pendente |
 | Controles na interface e em jogos | Planejados, não implementados |
