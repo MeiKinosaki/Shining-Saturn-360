@@ -196,6 +196,15 @@ int main() {
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[7] == 7 && cpu.pc == 0x19c);
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[8] == 8);
 
+    // Reset must cancel a pending delayed branch and clear halted state.
+    cpu.reset(0x1a0); cpu.sr = Sh2Core::kTBit;
+    bus.put16(0x1a0, 0x8d02); // BT/S schedules a branch to 0x1a8
+    assert(cpu.step(bus) == StepResult::Executed && cpu.pc == 0x1a2);
+    cpu.halted = true;
+    cpu.reset(0x1b0);
+    bus.put16(0x1b0, 0xe409); // MOV #9,R4
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 9 && cpu.pc == 0x1b2);
+
     bus.write32(0x200, 0x1234abcd);
     assert(bus.read8(0x200) == 0x12 && bus.read16(0x200) == 0x1234);
     cpu.reset(0x1a0);
