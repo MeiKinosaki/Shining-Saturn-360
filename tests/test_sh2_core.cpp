@@ -235,6 +235,15 @@ int main() {
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[3] == 10 && cpu.pc == 0x224);
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 11);
 
+    // JMP @Rn must transfer control only after its delay-slot instruction.
+    cpu.reset(0x240); cpu.r[1] = 0x250;
+    bus.put16(0x240, 0x412b); // JMP @R1
+    bus.put16(0x242, 0xe509); // delay slot: MOV #9,R5
+    bus.put16(0x250, 0xe60c); // target: MOV #12,R6
+    assert(cpu.step(bus) == StepResult::Executed && cpu.pc == 0x242);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[5] == 9 && cpu.pc == 0x250);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[6] == 12);
+
     std::cout << "SH-2 core foundation tests passed\n";
     return 0;
 }
