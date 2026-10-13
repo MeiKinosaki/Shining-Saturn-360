@@ -10,3 +10,4 @@ cxx="${CXX:-g++}"; flags=(-std=c++17 -Wall -Wextra -Werror -pedantic)
 
 "$cxx" "${flags[@]}" "$root/src/saturn/game_library.cpp" "$root/src/saturn/rom_scanner.cpp" "$root/tests/test_rom_scanner.cpp" -o "$tmpdir/test_rom_scanner"; "$tmpdir/test_rom_scanner"
 "$cxx" "${flags[@]}" "$root/src/saturn/settings.cpp" "$root/tests/test_settings.cpp" -o "$tmpdir/test_settings"; "$tmpdir/test_settings"
+"$cxx" "${flags[@]}" "$root/tests/test_saturn_memory_map.cpp" -o "$tmpdir/test_saturn_memory_map"; "$tmpdir/test_saturn_memory_map"
