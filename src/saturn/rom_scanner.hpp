@@ -12,7 +12,7 @@ public:
  virtual bool list_files(const std::string& directory, std::vector<std::string>& files) = 0;
  virtual bool file_exists(const std::string& path) = 0;
 };
-struct ScanReport { unsigned discovered=0, added=0, skipped=0, covers_found=0; bool directory_read=false; };
+struct ScanReport { unsigned discovered=0, added=0, updated=0, skipped=0, covers_found=0; bool directory_read=false; };
 class RomScanner {
 public:
  explicit RomScanner(LibraryFileSystem* fs):fs_(fs){}
