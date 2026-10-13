@@ -100,8 +100,8 @@ int main() {
 
     // Displacement stores and R0 displacement loads.
     cpu.reset(0x13c); cpu.r[1] = 0x700; cpu.r[0] = 0x1234abcd;
-    bus.put16(0x13c, 0x8103); // MOV.B R0,@(3,R1) -> 0x703
-    bus.put16(0x13e, 0x8104); // MOV.W R0,@(4,R1) -> 0x708
+    bus.put16(0x13c, 0x8130); // MOV.B R0,@(3,R1) -> 0x703
+    bus.put16(0x13e, 0x8141); // MOV.W R0,@(4,R1) -> 0x708
     bus.write8(0x702, 0x80); bus.write16(0x704, 0x8123);
     bus.put16(0x140, 0x8412); // MOV.B @(2,R1),R0
     bus.put16(0x142, 0x8514); // MOV.W @(4,R1),R0
