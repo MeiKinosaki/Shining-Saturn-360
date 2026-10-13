@@ -2,11 +2,11 @@
 
 Emulador de Sega Saturn para Xbox 360 (RGH/JTAG).
 
-## Estado técnico — v0.41b
+## Estado técnico — v0.42b
 
 ## Versão publicada no repositório
 
-A documentação da versão atual está em [VERSION_v0.41b.md](VERSION_v0.41b.md). Ela registra o estado experimental, a execução de CI e o artefato de bootstrap disponível; não implica suporte comprovado a jogos nem inicialização em hardware real.
+A documentação da versão atual está em [VERSION_v0.42b.md](VERSION_v0.42b.md). Ela registra o estado experimental, a execução de CI e o artefato de bootstrap disponível; não implica suporte comprovado a jogos nem inicialização em hardware real.
 
 - Testes de regressão no Ubuntu: aprovados na execução [mais recente validada](https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38366824872) (compilação Xenon ELF32, testes do núcleo SH-2 e empacotamento XEX). A aprovação do CI não comprova inicialização em hardware real.
 - Toolchain libXenon: verificada.
@@ -43,7 +43,7 @@ Foi adicionada uma camada genérica em `src/saturn/memory_bus.hpp` e `src/saturn
 
 O `default.xex` é um bootstrap técnico. A geração do arquivo e as verificações estruturais não comprovam que ele inicializa num Xbox 360 real, nem que o núcleo de emulação Sega Saturn esteja funcional ou execute jogos. A inicialização no console ainda não foi testada.
 
-A versão publicada continua `v0.41b`; as melhorias do núcleo SH-2 são alterações de desenvolvimento posteriores e ainda não estão integradas ao `default.xex`. A versão não representa um emulador funcional completo.
+A versão de desenvolvimento passa a `v0.42b`, para registrar o mapa físico inicial e sua suíte de regressão. O núcleo SH-2 ainda não está integrado ao `default.xex`. A versão não representa um emulador funcional completo.
 
 ## Compilação na nuvem
 
@@ -137,6 +137,8 @@ O estado atual não tem os subsistemas completos nem a serialização necessári
 Se o artefato não estiver disponível ou tiver expirado, execute novamente o workflow e baixe o artefato da execução bem-sucedida mais recente. Não use a criação do XEX como prova de compatibilidade; a inicialização em hardware real ainda precisa ser testada.
 
 ## Estado das funcionalidades (resumo)
+
+O marco de desenvolvimento atual é **v0.42b**; veja [VERSION_v0.42b.md](VERSION_v0.42b.md). O mapa físico recém-adicionado ainda é uma tabela de constantes, não um decodificador ligado ao barramento.
 
 | Recurso | Estado |
 |---|---|
