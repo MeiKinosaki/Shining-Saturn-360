@@ -145,6 +145,11 @@ int main() {
     bus.put16(0x15a, 0x312d); // DMULS.L R2,R1
     assert(cpu.step(bus) == StepResult::Executed && cpu.mach == 0xffffffffu && cpu.macl == 0xfffffffau);
 
+    // MOVA computes an aligned PC-relative address into R0.
+    cpu.reset(0x15c);
+    bus.put16(0x15c, 0xc703); // MOVA @(3,PC),R0 -> aligned (0x160) + 12 = 0x16c
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 0x16c);
+
     // Delayed conditional branches and PC-relative branch/call forms.
     cpu.reset(0x160); cpu.sr = Sh2Core::kTBit;
     bus.put16(0x160, 0x8d02); // BT/S +2 -> target 0x168
