@@ -128,3 +128,12 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 - Commit corretivo: `1618b09d83dfae0057f1b3eda99463582e50267c`.
 - A compilação Xenon ELF32 e o empacotamento `default.xex` do run anterior passaram, mas os testes de regressão host falharam no compositor. A correção precisa de novo CI antes de declarar o compositor validado.
 - Run que revelou a falha: https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38541134347.
+
+
+## Atualização de desenvolvimento — 2026-10-14 (testes de borda da CPU SH-2)
+- Adicionado `tests/test_sh2_arithmetic_edges.cpp` para verificar casos de overflow assinado em ADDV/SUBV, preservação de bits não-T de SR, DT e comparações CMP/PZ e CMP/PL.
+- Registrado o novo executável de teste em `tests/run-sh2-core-tests.sh`.
+- Commits: teste `c9deb99c5bcb87ea955c35b5c68fb282a2b25f31`; runner `e6f1e8aa2f90a81d82bf77ea7b7e501e06be71e0`.
+- CI dos commits de teste está pendente no momento desta atualização: runs https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38600318423 e https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38600340674.
+- A execução bem-sucedida do CI anterior não valida esses testes novos; aguardar os runs atuais.
+- Limitação: foram adicionados testes, não novas instruções ao interpretador. A versão oficial continua v0.44b; v0.45b segue como marco de desenvolvimento.
