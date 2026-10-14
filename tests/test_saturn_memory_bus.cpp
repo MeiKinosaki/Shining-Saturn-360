@@ -23,7 +23,11 @@ int main() {
 
     assert(bus.device_at(0x00200000u) == saturn_map::Device::WorkRamLow);
     assert(bus.device_at(0x05d00000u) == saturn_map::Device::Vdp1Registers);
-    assert(!bus.mapped_ram_or_rom(0x05d00000u)); // MMIO not implemented yet
+    assert(!bus.mapped_ram_or_rom(0x05d00000u)); // MMIO is separate from RAM/ROM storage
+    bus.write8(0x05d00000u, 0x42);
+    assert(bus.read8(0x05d00000u) == 0x42); // generic register backing is connected
+    bus.write8(0x00100000u, 0x19);
+    assert(bus.read8(0x00100000u) == 0x19);
     assert(!bus.mapped_ram_or_rom(0x00400000u));
     assert(bus.read8(0x00400000u) == 0xff);
     std::cout << "Saturn memory adapter tests passed\n";
