@@ -162,3 +162,11 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 - Commit: `99d74d03a45eaf985e3dc9b486715809ce1fb680`.
 - O teste já faz parte do runner `tests/run-sh2-core-tests.sh`; a validação do novo commit depende de CI posterior.
 - Escopo: o banco MMIO continua sendo armazenamento genérico. Estes testes verificam a camada de acesso, não os efeitos reais dos registradores Saturn.
+
+
+## Continuação — correção de endereço PC-relative do SH-2 (2026-10-14)
+- Auditoria do interpretador encontrou o cálculo-base de `MOV.L @(disp,PC),Rn` alinhado a partir do PC pós-fetch, mas sem o avanço de 2 bytes exigido pela fórmula PC+4 alinhada.
+- Corrigido o endereço efetivo em `src/saturn/sh2_core.cpp`, preservando o deslocamento multiplicado por quatro.
+- Adicionado caso de regressão no limite de alinhamento em `tests/test_sh2_core.cpp`.
+- Commits: correção `576e9290959c6d1e604d9cb56b1e8800bb268064`; teste `dbcb6ebe44065c8db07bc4bac6b03acf34cda456`.
+- O novo código e teste ainda precisam de CI posterior; não declarar aprovação antes do resultado.
