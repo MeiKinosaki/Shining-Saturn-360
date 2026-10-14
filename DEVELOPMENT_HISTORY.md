@@ -111,3 +111,12 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 - Commit: `3f7cd46c254e17c8845c80339825014f66a5e501`.
 - CI que identificou a segunda ocorrência: https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38539823772.
 - A nova validação após esta correção ainda está pendente.
+
+
+## Atualização de desenvolvimento — 2026-10-14 (compositor VDP2 experimental)
+- CI verde após corrigir quebras de linha no renderer VDP1: run https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38540416556.
+- Criado protótipo de compositor de software com duas camadas RGB555, cor de fundo, prioridade inteira, ativação/desativação e composição 320×224.
+- Arquivos: `src/saturn/vdp2_compositor.hpp/.cpp`, `tests/test_vdp2_compositor.cpp`; teste registrado em `tests/run-sh2-core-tests.sh`.
+- Commits: header `7c88c70b384dd15a57f4c7105d97db2bd88e3589`, implementação `f517634183b68b4d39c89f114fcf1b8fe48ce4dc`, testes `f24cffade3702e6cf6cde77875c29de5a1c3e176`, runner `c7dffb3b789c67fef891a5d0a7b4cdedd9d5c5b7`.
+- CI do novo compositor pendente; não marcar como aprovado antes do resultado.
+- Limitação: compositor simplificado com buffers fornecidos pelo software; não implementa registradores, planos, tilemaps, scroll, rotação, sprites, color math nem temporização reais do VDP2. Sem saída de vídeo integrada ao console.
