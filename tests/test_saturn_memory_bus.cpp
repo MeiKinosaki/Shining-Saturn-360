@@ -26,6 +26,19 @@ int main() {
     assert(!bus.mapped_ram_or_rom(0x05d00000u)); // MMIO is separate from RAM/ROM storage
     bus.write8(0x05d00000u, 0x42);
     assert(bus.read8(0x05d00000u) == 0x42); // generic register backing is connected
+
+    // Bus helpers must preserve Saturn's big-endian byte order across MMIO.
+    bus.write16(0x05d00010u, 0x1234);
+    assert(bus.read8(0x05d00010u) == 0x12);
+    assert(bus.read8(0x05d00011u) == 0x34);
+    assert(bus.read16(0x05d00010u) == 0x1234);
+
+    bus.write32(0x05d00020u, 0x89abcdefu);
+    assert(bus.read8(0x05d00020u) == 0x89);
+    assert(bus.read8(0x05d00021u) == 0xab);
+    assert(bus.read8(0x05d00022u) == 0xcd);
+    assert(bus.read8(0x05d00023u) == 0xef);
+    assert(bus.read32(0x05d00020u) == 0x89abcdefu);
     bus.write8(0x00100000u, 0x19);
     assert(bus.read8(0x00100000u) == 0x19);
     assert(!bus.mapped_ram_or_rom(0x00400000u));
