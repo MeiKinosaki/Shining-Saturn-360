@@ -13,7 +13,7 @@ public:
 
     Vdp1Renderer();
     void clear(std::uint16_t rgb555 = 0);
-    void fill_rect(int x, int y, int width, int height, std::uint16_t rgb555);
+    void fill_rect(int x, int y, int width, int height, std::uint16_t rgb555);\n    void draw_line(int x0, int y0, int x1, int y1, std::uint16_t rgb555);\n    void fill_triangle(int x0, int y0, int x1, int y1, int x2, int y2, std::uint16_t rgb555);
     std::uint16_t pixel(std::uint16_t x, std::uint16_t y) const;
     const std::vector<std::uint16_t>& pixels() const { return pixels_; }
     std::size_t nonzero_pixels() const;
