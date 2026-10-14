@@ -2,7 +2,7 @@
 
 Emulador de Sega Saturn para Xbox 360 (RGH/JTAG).
 
-## Estado técnico — v0.43b
+## Estado técnico — v0.44b
 
 ## Versão publicada no repositório
 
@@ -26,6 +26,10 @@ A documentação da versão atual está em [VERSION_v0.43b.md](VERSION_v0.43b.md
 5. Registre o resultado: se abrir, se ficar em tela preta, se voltar ao dashboard ou se apresentar erro. Isso é necessário para diagnosticar o primeiro teste em hardware real.
 
 **Importante:** esta compilação é um bootstrap técnico e ainda não é um emulador de Saturn jogável. O CI confirma compilação e empacotamento, não o funcionamento no console. O núcleo SH-2 experimental não está ligado ao bootstrap e os subsistemas de vídeo, áudio e CD-ROM ainda não permitem iniciar jogos. Não atualize a NAND/firmware para este teste; basta tentar executar o XEX existente num ambiente homebrew já funcional.
+
+## Marco v0.44b — ciclo principal experimental
+
+O `src/saturn/saturn_main_loop.hpp/.cpp` conecta o SH-2 Runner ao barramento Saturn e executa orçamentos limitados por quadro. Os testes de integração e MMIO passaram no GitHub Actions: [ciclo principal](https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38503506652) e [MMIO](https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38503177536). Isso valida somente os testes automatizados; não comprova boot no console nem execução de jogos. A CPU segue parcial, os registradores MMIO ainda não possuem handlers reais dos dispositivos, e VDPs, CD-ROM e áudio continuam pendentes.
 
 ## Núcleo SH-2 experimental (em desenvolvimento)
 
