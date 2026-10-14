@@ -18,3 +18,5 @@ cxx="${CXX:-g++}"; flags=(-std=c++17 -Wall -Wextra -Werror -pedantic)
 "$cxx" "${flags[@]}" "$root/src/saturn/saturn_mmio.cpp" "$root/tests/test_saturn_mmio.cpp" -o "$tmpdir/test_saturn_mmio"; "$tmpdir/test_saturn_mmio"
 
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/src/saturn/sh2_runner.cpp" "$root/src/saturn/memory_bus.cpp" "$root/src/saturn/saturn_mmio.cpp" "$root/src/saturn/saturn_memory_bus.cpp" "$root/src/saturn/saturn_main_loop.cpp" "$root/tests/test_saturn_main_loop.cpp" -o "$tmpdir/test_saturn_main_loop"; "$tmpdir/test_saturn_main_loop"
+
+"$cxx" "${flags[@]}" "$root/src/saturn/vdp1_renderer.cpp" "$root/tests/test_vdp1_renderer.cpp" -o "$tmpdir/test_vdp1_renderer"; "$tmpdir/test_vdp1_renderer"
