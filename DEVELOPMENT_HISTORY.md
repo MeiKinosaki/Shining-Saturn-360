@@ -155,3 +155,10 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
   - Inclusão no runner: `c16d248dcc842f4693bd7cdb8b7f252ec2bfa671`
 - A nova CI precisa ser consultada antes de declarar os testes aprovados.
 - A versão oficial continua v0.44b; v0.45b segue em desenvolvimento. Não houve alteração do interpretador nesta etapa.
+
+
+## Continuação — testes de largura de acesso MMIO (2026-10-14)
+- Reforcei `tests/test_saturn_memory_bus.cpp` com verificações de acessos de 16 e 32 bits ao intervalo MMIO, confirmando ordem de bytes big-endian e leitura de volta.
+- Commit: `99d74d03a45eaf985e3dc9b486715809ce1fb680`.
+- O teste já faz parte do runner `tests/run-sh2-core-tests.sh`; a validação do novo commit depende de CI posterior.
+- Escopo: o banco MMIO continua sendo armazenamento genérico. Estes testes verificam a camada de acesso, não os efeitos reais dos registradores Saturn.
