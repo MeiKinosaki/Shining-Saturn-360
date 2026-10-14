@@ -22,7 +22,7 @@ int main() {
     result = executor.execute(bounded, commands, 1);
     assert(!result.ended && result.executed == 1);
     assert(bounded.pixel(0, 0) == 0x001F);
-    assert(bounded.pixel(4, 5) == 0);
+    assert(bounded.pixel(4, 5) == 0x001F); // untouched pixels retain the clear color
 
     const std::vector<Vdp1CommandList::Command> invalid = {
         {static_cast<Vdp1CommandList::Opcode>(255), 0, 0, 1, 1, 0x7FFF}
