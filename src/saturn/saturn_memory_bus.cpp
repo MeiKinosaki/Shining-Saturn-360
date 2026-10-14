@@ -1,8 +1,24 @@
 #include "saturn_memory_bus.hpp"
 
 namespace shining_saturn {
+namespace {
+std::vector<MmioRegisterBank::Register> make_device_registers() {
+    using namespace saturn_map;
+    // Initial storage-backed MMIO ranges. These are not yet hardware-accurate
+    // registers and do not implement device-specific side effects.
+    return {
+        {Smpc.base, static_cast<std::uint32_t>(Smpc.size), 0x00, true},
+        {ScspRegisters.base, static_cast<std::uint32_t>(ScspRegisters.size), 0x00, true},
+        {Vdp1Registers.base, static_cast<std::uint32_t>(Vdp1Registers.size), 0x00, true},
+        {Vdp2Registers.base, static_cast<std::uint32_t>(Vdp2Registers.size), 0x00, true},
+        {ScuRegisters.base, static_cast<std::uint32_t>(ScuRegisters.size), 0x00, true},
+        {CdBlock.base, static_cast<std::uint32_t>(CdBlock.size), 0x00, true}
+    };
+}
+} // namespace
 
-SaturnMemoryBus::SaturnMemoryBus(const std::vector<std::uint8_t>& boot_rom) {
+SaturnMemoryBus::SaturnMemoryBus(const std::vector<std::uint8_t>& boot_rom)
+    : mmio_(make_device_registers()) {
     using namespace saturn_map;
     if (!boot_rom.empty() && boot_rom.size() <= BootRom.size)
         storage_.map_rom(BootRom.base, boot_rom);
@@ -18,10 +34,15 @@ SaturnMemoryBus::SaturnMemoryBus(const std::vector<std::uint8_t>& boot_rom) {
 }
 
 std::uint8_t SaturnMemoryBus::read8(std::uint32_t address) {
+    if (mmio_.handles(address)) return mmio_.read8(address);
     return storage_.read8(address);
 }
 
 void SaturnMemoryBus::write8(std::uint32_t address, std::uint8_t value) {
+    if (mmio_.handles(address)) {
+        mmio_.write8(address, value);
+        return;
+    }
     storage_.write8(address, value);
 }
 
