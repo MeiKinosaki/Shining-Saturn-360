@@ -137,3 +137,11 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 - CI dos commits de teste está pendente no momento desta atualização: runs https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38600318423 e https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38600340674.
 - A execução bem-sucedida do CI anterior não valida esses testes novos; aguardar os runs atuais.
 - Limitação: foram adicionados testes, não novas instruções ao interpretador. A versão oficial continua v0.44b; v0.45b segue como marco de desenvolvimento.
+
+
+## Continuação — testes de delay slots SH-2 (2026-10-14)
+- A execução do workflow `38600340674` concluiu com sucesso: regressões host, compilação Xenon ELF32 e empacotamento `default.xex`. Isso valida o pipeline e os testes existentes naquele commit, não execução em console real nem compatibilidade de jogos.
+- Adicionado `tests/test_sh2_delay_slots.cpp` com casos de BRA e BSR, incluindo execução da instrução no delay slot e verificação de PR/alvo.
+- Commit do novo teste: `716a75af2126fbecfd73cbf8c3a35db49ccdf64e`.
+- O runner `tests/run-sh2-core-tests.sh` agora compila/executa esse teste: `ed4a40f351f689b6d5916273efd5619a44896bcf`. A CI deste commit ainda deve ser consultada antes de declarar os novos casos aprovados.
+- A versão oficial continua v0.44b; v0.45b permanece em desenvolvimento. Nenhuma instrução nova foi adicionada ao interpretador nesta etapa.
