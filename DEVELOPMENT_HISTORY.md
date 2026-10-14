@@ -103,3 +103,11 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 - Commits corretivos: header `ca6746c71a86ff1f365c6f43cfc0f74b1e3c2997`; teste `8964fd4b815c5ceea753a948ce0bd5ddfad32c8f`.
 - CI original que identificou a falha: https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38539234454 (host regression tests falhou na compilação; os jobs de ELF32 e empacotamento XEX passaram).
 - CI da correção ainda precisa ser confirmado; não marcar primitivas como validadas até o novo resultado.
+
+
+## Correção adicional de compilação VDP1 — 2026-10-14
+- O CI após a primeira correção mostrou uma segunda ocorrência de `\\n` literal em `src/saturn/vdp1_renderer.cpp`, na diretiva de inclusão.
+- Corrigido para diretivas `#include` em linhas separadas.
+- Commit: `3f7cd46c254e17c8845c80339825014f66a5e501`.
+- CI que identificou a segunda ocorrência: https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38539823772.
+- A nova validação após esta correção ainda está pendente.
