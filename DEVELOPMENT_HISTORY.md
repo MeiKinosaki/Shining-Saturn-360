@@ -120,3 +120,11 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 - Commits: header `7c88c70b384dd15a57f4c7105d97db2bd88e3589`, implementação `f517634183b68b4d39c89f114fcf1b8fe48ce4dc`, testes `f24cffade3702e6cf6cde77875c29de5a1c3e176`, runner `c7dffb3b789c67fef891a5d0a7b4cdedd9d5c5b7`.
 - CI do novo compositor pendente; não marcar como aprovado antes do resultado.
 - Limitação: compositor simplificado com buffers fornecidos pelo software; não implementa registradores, planos, tilemaps, scroll, rotação, sprites, color math nem temporização reais do VDP2. Sem saída de vídeo integrada ao console.
+
+
+## Correção VDP2 — 2026-10-14
+- O CI do commit `c7dffb3b789c67fef891a5d0a7b4cdedd9d5c5b7` falhou no teste `test_vdp2_compositor`: a camada com prioridade maior era desenhada primeiro e depois coberta pela camada de prioridade menor.
+- Corrigida a ordem de composição em `src/saturn/vdp2_compositor.cpp` para desenhar primeiro a prioridade inferior e deixar a prioridade superior por cima.
+- Commit corretivo: `1618b09d83dfae0057f1b3eda99463582e50267c`.
+- A compilação Xenon ELF32 e o empacotamento `default.xex` do run anterior passaram, mas os testes de regressão host falharam no compositor. A correção precisa de novo CI antes de declarar o compositor validado.
+- Run que revelou a falha: https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38541134347.
