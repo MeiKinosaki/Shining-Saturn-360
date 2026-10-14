@@ -95,3 +95,11 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
   - Testes: `74601f9e3af16f72903d70e9f589c0d3b61795f1`
 - CI desta alteração: pendente no momento do registro, run https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38539234454.
 - Limitação: são primitivas de software para o protótipo, não a interpretação do protocolo real do VDP1; não implica renderização de jogos nem teste em console físico.
+
+
+## Correção de CI — 2026-10-14
+- O CI do marco de primitivas VDP1 falhou na compilação porque as sequências `\\n` foram gravadas literalmente em `vdp1_renderer.hpp` e `tests/test_vdp1_renderer.cpp`, em vez de quebras de linha.
+- Corrigidos os dois arquivos para converter as sequências literais em linhas reais.
+- Commits corretivos: header `ca6746c71a86ff1f365c6f43cfc0f74b1e3c2997`; teste `8964fd4b815c5ceea753a948ce0bd5ddfad32c8f`.
+- CI original que identificou a falha: https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38539234454 (host regression tests falhou na compilação; os jobs de ELF32 e empacotamento XEX passaram).
+- CI da correção ainda precisa ser confirmado; não marcar primitivas como validadas até o novo resultado.
