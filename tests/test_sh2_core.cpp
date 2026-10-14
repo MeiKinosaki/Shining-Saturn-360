@@ -158,6 +158,12 @@ int main() {
     bus.put16(0x15a, 0x312d); // DMULS.L R2,R1
     assert(cpu.step(bus) == StepResult::Executed && cpu.mach == 0xffffffffu && cpu.macl == 0xfffffffau);
 
+    // MOV.L PC-relative base must be aligned from instruction PC + 4.
+    cpu.reset(0x1d0);
+    bus.write32(0x1d4, 0x76543210u);
+    bus.put16(0x1d0, 0xd000); // MOV.L @(0,PC),R0 -> aligned (0x1d4)
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 0x76543210u);
+
     // MOVA computes an aligned PC-relative address into R0.
     cpu.reset(0x15c);
     bus.put16(0x15c, 0xc703); // MOVA @(3,PC),R0 -> aligned (0x160) + 12 = 0x16c
