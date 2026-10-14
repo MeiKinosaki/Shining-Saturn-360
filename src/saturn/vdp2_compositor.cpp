@@ -27,7 +27,8 @@ void Vdp2Compositor::disable_layer(std::size_t index) {
 void Vdp2Compositor::compose() {
     std::fill(output_.begin(), output_.end(), backdrop_);
     int first = 0, second = 1;
-    if (layers_[1].priority > layers_[0].priority) { first = 1; second = 0; }
+    // Draw lower priority first so the higher-priority opaque pixel wins.
+    if (layers_[1].priority < layers_[0].priority) { first = 1; second = 0; }
     const int order[2] = {first, second};
     for (int n = 0; n < 2; ++n) {
         const auto& layer = layers_[order[n]];
