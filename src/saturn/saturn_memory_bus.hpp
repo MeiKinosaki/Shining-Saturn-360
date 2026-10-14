@@ -2,6 +2,7 @@
 
 #include "memory_bus.hpp"
 #include "saturn_address_decoder.hpp"
+#include "saturn_mmio.hpp"
 #include <cstdint>
 #include <vector>
 
@@ -20,6 +21,7 @@ public:
 
 private:
     MemoryBus storage_;
+    MmioRegisterBank mmio_;
 };
 
 } // namespace shining_saturn
