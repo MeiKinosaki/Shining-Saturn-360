@@ -145,3 +145,13 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 - Commit do novo teste: `716a75af2126fbecfd73cbf8c3a35db49ccdf64e`.
 - O runner `tests/run-sh2-core-tests.sh` agora compila/executa esse teste: `ed4a40f351f689b6d5916273efd5619a44896bcf`. A CI deste commit ainda deve ser consultada antes de declarar os novos casos aprovados.
 - A versão oficial continua v0.44b; v0.45b permanece em desenvolvimento. Nenhuma instrução nova foi adicionada ao interpretador nesta etapa.
+
+
+## Continuação — regressões de fluxo de controle SH-2 (2026-10-14)
+- O workflow `38600644504` concluiu com sucesso: regressões host, compilação Xenon ELF32 e empacotamento `default.xex`. Isso valida o pipeline e os testes executados naquele commit, não o funcionamento em console físico.
+- Adicionado `tests/test_sh2_control_flow.cpp` cobrindo BT/S tomado e não tomado, JMP @Rn e JSR @Rn, incluindo delay slots e PR.
+- Commits:
+  - Testes de fluxo de controle: `171ccd64e231d085648dfa96be2702f64cb95ccc`
+  - Inclusão no runner: `c16d248dcc842f4693bd7cdb8b7f252ec2bfa671`
+- A nova CI precisa ser consultada antes de declarar os testes aprovados.
+- A versão oficial continua v0.44b; v0.45b segue em desenvolvimento. Não houve alteração do interpretador nesta etapa.
