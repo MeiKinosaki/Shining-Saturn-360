@@ -1,5 +1,7 @@
 #include "vdp1_renderer.hpp"
-#include <algorithm>\n#include <cstdlib>\n#include <cstdint>
+#include <algorithm>
+#include <cstdlib>
+#include <cstdint>
 
 namespace shining_saturn {
 
