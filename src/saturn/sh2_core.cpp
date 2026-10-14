@@ -51,7 +51,7 @@ StepResult Sh2Core::step(Bus& bus) {
         r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(
             static_cast<std::int16_t>(bus.read16(address))));
     } else if ((op & 0xf000) == 0xd000) { // MOV.L @(disp,PC),Rn
-        const std::uint32_t address = (pc & ~std::uint32_t(3)) +
+        const std::uint32_t address = ((pc + 2) & ~std::uint32_t(3)) +
                                       static_cast<std::uint32_t>(op & 0xff) * 4;
         r[n] = bus.read32(address);
     } else if ((op & 0xf000) == 0x1000) { // MOV.L Rm,@(disp,Rn)
