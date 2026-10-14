@@ -83,3 +83,15 @@ Este documento preserva um resumo cumulativo do histórico técnico e das decis�
 
 ## Como atualizar
 A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos commits, links do CI e conclusão (success/failure/pending). Não marcar CI como aprovado sem consultar o resultado. Não apagar entradas anteriores; corrigir erros por nota datada.
+
+
+## Atualização de desenvolvimento — 2026-10-14 (primitivas VDP1)
+- Adicionadas APIs `draw_line` e `fill_triangle` ao framebuffer experimental.
+- Implementação usa recorte de linhas e rasterização de triângulos preenchidos; RGB555 é limitado a 15 bits.
+- Testes adicionados para pixels de uma linha diagonal e preenchimento de triângulo.
+- Commits:
+  - Header: `a93d027b9c95d79dc41dae7fd060379a72b416e6`
+  - Implementação: `2f5ca8d8484fdbd667a57ba972a0c10584196b45`
+  - Testes: `74601f9e3af16f72903d70e9f589c0d3b61795f1`
+- CI desta alteração: pendente no momento do registro, run https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38539234454.
+- Limitação: são primitivas de software para o protótipo, não a interpretação do protocolo real do VDP1; não implica renderização de jogos nem teste em console físico.
