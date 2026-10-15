@@ -226,6 +226,13 @@ int main() {
     assert(bus.read8(0x200) == 0x12 && bus.read16(0x200) == 0x1234);
     assert(bus.read16(UINT32_MAX) == 0xFFFFu);
     assert(bus.read32(UINT32_MAX - 2u) == 0xFFFFFFFFu);
+    // Invalid wide writes at the top of the address space must be rejected
+    // before issuing any byte write (and therefore must not wrap to address 0).
+    bus.bytes[0] = 0x5a;
+    bus.write16(UINT32_MAX, 0x1234);
+    bus.write32(UINT32_MAX - 2u, 0x89abcdefu);
+    assert(bus.bytes[0] == 0x5a);
+
     cpu.reset(0x1a0);
     bus.put16(0x1a0, 0xffff);
     assert(cpu.step(bus) == StepResult::UnsupportedOpcode);
