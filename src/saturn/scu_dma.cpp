@@ -27,27 +27,28 @@ bool ScuDma::start(std::size_t index) {
 }
 
 std::size_t ScuDma::step(Bus& bus, std::size_t byte_budget) {
-    if (byte_budget == 0) return 0;
     std::size_t moved = 0;
-    std::size_t visited = 0;
-    while (moved < byte_budget && visited < ChannelCount) {
-        const std::size_t index = (next_channel_ + visited) % ChannelCount;
+    std::size_t idle_visits = 0;
+    while (moved < byte_budget && idle_visits < ChannelCount) {
+        const std::size_t index = next_channel_;
+        next_channel_ = (next_channel_ + 1u) % ChannelCount;
         Channel& ch = channels_[index];
-        if (ch.active && ch.remaining != 0) {
-            const std::uint8_t value = bus.read8(ch.source);
-            bus.write8(ch.destination, value);
-            ++ch.source;
-            ++ch.destination;
-            --ch.remaining;
-            ++moved;
-            if (ch.remaining == 0) {
-                ch.active = false;
-                ch.completed = true;
-            }
+        if (!ch.active || ch.remaining == 0) {
+            ++idle_visits;
+            continue;
         }
-        ++visited;
+        idle_visits = 0;
+        const std::uint8_t value = bus.read8(ch.source);
+        bus.write8(ch.destination, value);
+        ++ch.source;
+        ++ch.destination;
+        --ch.remaining;
+        ++moved;
+        if (ch.remaining == 0) {
+            ch.active = false;
+            ch.completed = true;
+        }
     }
-    if (moved != 0) next_channel_ = (next_channel_ + 1u) % ChannelCount;
     return moved;
 }
 
