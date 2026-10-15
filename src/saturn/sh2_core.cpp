@@ -3,18 +3,22 @@
 namespace shining_saturn {
 
 std::uint16_t Bus::read16(std::uint32_t a) {
-    return (std::uint16_t(read8(a)) << 8) | read8(a + 1);
+    if (a > UINT32_MAX - 1u) return 0xFFFFu;
+    return (std::uint16_t(read8(a)) << 8) | read8(a + 1u);
 }
 std::uint32_t Bus::read32(std::uint32_t a) {
-    return (std::uint32_t(read8(a)) << 24) | (std::uint32_t(read8(a + 1)) << 16) |
-           (std::uint32_t(read8(a + 2)) << 8) | std::uint32_t(read8(a + 3));
+    if (a > UINT32_MAX - 3u) return 0xFFFFFFFFu;
+    return (std::uint32_t(read8(a)) << 24) | (std::uint32_t(read8(a + 1u)) << 16) |
+           (std::uint32_t(read8(a + 2u)) << 8) | std::uint32_t(read8(a + 3u));
 }
 void Bus::write16(std::uint32_t a, std::uint16_t v) {
-    write8(a, std::uint8_t(v >> 8)); write8(a + 1, std::uint8_t(v));
+    if (a > UINT32_MAX - 1u) return;
+    write8(a, std::uint8_t(v >> 8)); write8(a + 1u, std::uint8_t(v));
 }
 void Bus::write32(std::uint32_t a, std::uint32_t v) {
-    write8(a, std::uint8_t(v >> 24)); write8(a + 1, std::uint8_t(v >> 16));
-    write8(a + 2, std::uint8_t(v >> 8)); write8(a + 3, std::uint8_t(v));
+    if (a > UINT32_MAX - 3u) return;
+    write8(a, std::uint8_t(v >> 24)); write8(a + 1u, std::uint8_t(v >> 16));
+    write8(a + 2u, std::uint8_t(v >> 8)); write8(a + 3u, std::uint8_t(v));
 }
 void Sh2Core::reset(std::uint32_t start_pc) {
     r.fill(0); pc = start_pc; pr = gbr = vbr = mach = macl = sr = 0;
