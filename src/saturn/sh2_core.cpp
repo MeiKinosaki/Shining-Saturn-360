@@ -57,6 +57,14 @@ StepResult Sh2Core::step(Bus& bus) {
     } else if ((op & 0xf000) == 0x1000) { // MOV.L Rm,@(disp,Rn)
         const std::uint32_t address = r[n] + static_cast<std::uint32_t>(op & 0x0f) * 4;
         bus.write32(address, r[m]);
+    } else if ((op & 0xff00) == 0x8900) { // BT disp8, no delay slot
+        if (sr & kTBit) pc = pc + 2 + static_cast<std::uint32_t>(imm8 * 2);
+    } else if ((op & 0xff00) == 0x8b00) { // BF disp8, no delay slot
+        if (!(sr & kTBit)) pc = pc + 2 + static_cast<std::uint32_t>(imm8 * 2);
+    } else if ((op & 0xff00) == 0x8d00) { // BT/S disp8, delay slot
+        if (sr & kTBit) schedule_branch(pc + 2 + static_cast<std::uint32_t>(imm8 * 2));
+    } else if ((op & 0xff00) == 0x8f00) { // BF/S disp8, delay slot
+        if (!(sr & kTBit)) schedule_branch(pc + 2 + static_cast<std::uint32_t>(imm8 * 2));
     } else if ((op & 0xf000) == 0x8000 && (op & 0x000f) <= 1) { // MOV.B/W R0,@(disp,Rn)
         const std::uint32_t address = r[n] + static_cast<std::uint32_t>((op >> 4) & 0x0f) *
                                       ((op & 0x000f) == 0 ? 1u : 2u);
@@ -241,14 +249,7 @@ StepResult Sh2Core::step(Bus& bus) {
         schedule_branch(pc + 2 + static_cast<std::uint32_t>(disp12 * 2));
     } else if ((op & 0xf000) == 0xb000) { // BSR disp12, delay slot
         pr = pc + 2; schedule_branch(pc + 2 + static_cast<std::uint32_t>(disp12 * 2));
-    } else if ((op & 0xff00) == 0x8900) { // BT disp8, no delay slot
-        if (sr & kTBit) pc = pc + 2 + static_cast<std::uint32_t>(imm8 * 2);
-    } else if ((op & 0xff00) == 0x8b00) { // BF disp8, no delay slot
-        if (!(sr & kTBit)) pc = pc + 2 + static_cast<std::uint32_t>(imm8 * 2);
-    } else if ((op & 0xff00) == 0x8d00) { // BT/S disp8, delay slot
-        if (sr & kTBit) schedule_branch(pc + 2 + static_cast<std::uint32_t>(imm8 * 2));
-    } else if ((op & 0xff00) == 0x8f00) { // BF/S disp8, delay slot
-        if (!(sr & kTBit)) schedule_branch(pc + 2 + static_cast<std::uint32_t>(imm8 * 2));
+
     } else if ((op & 0xf0ff) == 0x0023) { // BRAF Rn, delay slot
         schedule_branch(pc + 2 + r[n]);
     } else if ((op & 0xf0ff) == 0x0003) { // BSRF Rn, delay slot
