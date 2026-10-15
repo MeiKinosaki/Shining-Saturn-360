@@ -35,6 +35,12 @@ int main() {
     vdp.draw_line(INT_MIN, 0, INT_MAX, 223, 0x3456);
     assert(vdp.nonzero_pixels() > 0);
     vdp.clear(0);
+    vdp.draw_line(INT_MIN, INT_MIN, INT_MAX, INT_MAX, 0x3567);
+    assert(vdp.nonzero_pixels() > 0);
+    vdp.clear(0);
+    vdp.draw_line(INT_MIN, 100, INT_MAX, 100, 0x3678);
+    assert(vdp.nonzero_pixels() == 320);
+    vdp.clear(0);
     vdp.fill_triangle(INT_MIN, INT_MIN, INT_MAX, 100, 100, INT_MAX, 0x4567);
     assert(vdp.nonzero_pixels() > 0);
     vdp.clear(0xFFFF);
