@@ -95,13 +95,13 @@ int main() {
         {0u, 0u}, {0x80000000u, 0u},
         {0u, 0x80000000u}, {0x80000000u, 0x80000000u}
     };
-    const std::uint32_t expected_flags[] = {0u, 0x00000100u,
+    const std::uint32_t expected_flags[] = {0u, 0x00000101u,
                                              0x00000201u, 0x00000300u};
     for (unsigned i = 0; i < 4; ++i) {
         cpu.r[1] = signs[i][0]; // Rn supplies Q
         cpu.r[2] = signs[i][1]; // Rm supplies M
         cpu.sr = 0x00000301u | 0x00000004u;
-        bus.put16(0x116 + i * 2, 0x2217); // DIV0S R2,R1
+        bus.put16(0x116 + i * 2, 0x2127); // DIV0S R2,R1
         assert(cpu.step(bus) == StepResult::Executed);
         assert((cpu.sr & 0x00000301u) == expected_flags[i]);
         assert((cpu.sr & 0x00000004u) != 0);
