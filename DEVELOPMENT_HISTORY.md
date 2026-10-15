@@ -197,3 +197,11 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 - Commit: `2005a0cf9a5e36cad178ee8ae4546236875bd4bb`.
 - No run `38691675136`, compilação Xenon ELF32 e empacotamento `default.xex` concluíram com sucesso, mas a suíte de regressão falhou no caso MMIO acima. A nova correção ainda aguarda CI.
 - Versão oficial permanece v0.44b; v0.45b não está promovida.
+
+
+## Promoção para v0.45b — 2026-10-15
+- O GitHub Actions run `38691857824` terminou com sucesso em todos os jobs relevantes: `host-regression-tests`, `build-xenon-elf32` e `package-xex`.
+- A suíte de regressão passou depois da correção do teste MMIO, e o pipeline gerou `default.xex` e o ZIP de versão.
+- Promovida a versão do repositório de v0.44b para v0.45b; atualizados `VERSION`, `README.md` e criado `VERSION_v0.45b.md`.
+- A aprovação confirma apenas CI/compilação/empacotamento. Boot em hardware físico e compatibilidade com jogos continuam não comprovados.
+- Próximo marco: v0.46b, com expansão da cobertura SH-2 e começo de handlers MMIO específicos por dispositivo.
