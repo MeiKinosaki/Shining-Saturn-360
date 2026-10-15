@@ -188,3 +188,12 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 - A compilação Xenon ELF32 e o empacotamento XEX dos runs recentes terminaram com sucesso; a suíte completa de regressão ainda precisa ser reexecutada após a correção do runner.
 - A cobertura BT/BF foi ampliada com casos explícitos em `tests/test_sh2_control_flow.cpp`, commit `7e5edbbdc0e855eb6ddaeee78c6434940668ad8a`.
 - Versão oficial permanece v0.44b; v0.45b não está promovida.
+
+
+## Regressão MMIO: limite do banco VDP1 — 2026-10-15
+- A execução do CI confirmou que os testes SH-2, aritmética, delay slots, fluxo de controle, MemoryBus, GameLibrary, música do menu, scanner de ROM, configurações e mapa físico passaram.
+- A suíte parou em `test_saturn_memory_bus`: o caso de escrita de 32 bits usava o endereço `0x05D00020`, fora da região mapeada de registradores VDP1 (`0x18` bytes). O teste estava usando um endereço inválido para o tamanho do dispositivo.
+- Corrigido o caso para usar `0x05F80020`, dentro da região de registradores VDP2, mantendo a verificação big-endian de 32 bits.
+- Commit: `2005a0cf9a5e36cad178ee8ae4546236875bd4bb`.
+- No run `38691675136`, compilação Xenon ELF32 e empacotamento `default.xex` concluíram com sucesso, mas a suíte de regressão falhou no caso MMIO acima. A nova correção ainda aguarda CI.
+- Versão oficial permanece v0.44b; v0.45b não está promovida.
