@@ -33,6 +33,15 @@ std::uint8_t MmioRegisterBank::read8(std::uint32_t address) const {
     return 0xFF;
 }
 
+std::uint16_t MmioRegisterBank::read16(std::uint32_t address) const {
+    return static_cast<std::uint16_t>((std::uint16_t(read8(address)) << 8) | read8(address + 1u));
+}
+
+std::uint32_t MmioRegisterBank::read32(std::uint32_t address) const {
+    return (std::uint32_t(read8(address)) << 24) | (std::uint32_t(read8(address + 1u)) << 16) |
+           (std::uint32_t(read8(address + 2u)) << 8) | std::uint32_t(read8(address + 3u));
+}
+
 bool MmioRegisterBank::write8(std::uint32_t address, std::uint8_t value) {
     for (Entry& entry : entries_) {
         if (address >= entry.spec.base &&
@@ -43,6 +52,38 @@ bool MmioRegisterBank::write8(std::uint32_t address, std::uint8_t value) {
         }
     }
     return false;
+}
+
+bool MmioRegisterBank::write16(std::uint32_t address, std::uint16_t value) {
+    if (address > UINT32_MAX - 1u || !handles(address) || !handles(address + 1u)) return false;
+    auto writable_at = [this](std::uint32_t a) {
+        for (const Entry& entry : entries_)
+            if (a >= entry.spec.base && static_cast<std::uint64_t>(a) <
+                static_cast<std::uint64_t>(entry.spec.base) + entry.spec.size) return entry.spec.writable;
+        return false;
+    };
+    if (!writable_at(address) || !writable_at(address + 1u)) return false;
+    write8(address, static_cast<std::uint8_t>(value >> 8));
+    write8(address + 1u, static_cast<std::uint8_t>(value));
+    return true;
+}
+
+bool MmioRegisterBank::write32(std::uint32_t address, std::uint32_t value) {
+    if (address > UINT32_MAX - 3u) return false;
+    for (std::uint32_t i = 0; i < 4; ++i) {
+        const std::uint32_t a = address + i;
+        if (!handles(a)) return false;
+        bool writable = false;
+        for (const Entry& entry : entries_)
+            if (a >= entry.spec.base && static_cast<std::uint64_t>(a) <
+                static_cast<std::uint64_t>(entry.spec.base) + entry.spec.size) {
+                writable = entry.spec.writable; break;
+            }
+        if (!writable) return false;
+    }
+    for (std::uint32_t i = 0; i < 4; ++i)
+        write8(address + i, static_cast<std::uint8_t>(value >> (24u - i * 8u)));
+    return true;
 }
 
 void MmioRegisterBank::reset() {
