@@ -113,7 +113,6 @@ int main() {
     assert(cpu.step(bus) == StepResult::Executed);
     assert((cpu.sr & Sh2Core::kTBit) == 0);
     assert((cpu.sr & 0x00000204u) == 0x00000204u);
-    bus.put16(0x120, 0x0028); // CLRMAC is not SETT; test SETT separately below.
     bus.put16(0x120, 0x0018); // SETT
     assert(cpu.step(bus) == StepResult::Executed);
     assert((cpu.sr & Sh2Core::kTBit) != 0);
