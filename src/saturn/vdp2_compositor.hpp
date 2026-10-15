@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -27,7 +28,7 @@ private:
         bool enabled = false;
     };
     std::uint16_t backdrop_ = 0;
-    LayerState layers_[2];
+    std::array<LayerState, 5> layers_{};
     Layer output_;
 };
 
