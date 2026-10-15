@@ -78,6 +78,13 @@ void Vdp1Renderer::draw_line(int x0, int y0, int x1, int y1, std::uint16_t rgb55
 }
 
 void Vdp1Renderer::fill_triangle(int x0, int y0, int x1, int y1, int x2, int y2, std::uint16_t rgb555) {
+    // Bound off-screen vertices before edge arithmetic to avoid overflow on extreme input.
+    const auto clamp_x = [](int x) { return std::max(-static_cast<int>(Width) * 2,
+                                                     std::min(static_cast<int>(Width) * 2, x)); };
+    const auto clamp_y = [](int y) { return std::max(-static_cast<int>(Height) * 2,
+                                                     std::min(static_cast<int>(Height) * 2, y)); };
+    x0 = clamp_x(x0); x1 = clamp_x(x1); x2 = clamp_x(x2);
+    y0 = clamp_y(y0); y1 = clamp_y(y1); y2 = clamp_y(y2);
     const int min_x = std::max(0, std::min({x0, x1, x2}));
     const int max_x = std::min(static_cast<int>(Width) - 1, std::max({x0, x1, x2}));
     const int min_y = std::max(0, std::min({y0, y1, y2}));
