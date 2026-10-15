@@ -40,6 +40,27 @@ int main() {
     assert(cpu.step(bus) == StepResult::Executed);
     assert(cpu.r[3] == 7 && cpu.pc == 0x324);
 
+    // BT taken: branch target is computed relative to the instruction after the delay-free branch.
+    cpu.reset(0x330);
+    cpu.sr |= Sh2Core::kTBit;
+    bus.put16(0x330, 0x8901); // BT +1 -> 0x336
+    bus.put16(0x332, 0xe307); // skipped MOV #7,R3
+    bus.put16(0x336, 0xe308); // MOV #8,R3
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.pc == 0x336);
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[3] == 8);
+
+    // BF taken when T is clear.
+    cpu.reset(0x338);
+    bus.put16(0x338, 0x8b01); // BF +1 -> 0x33e
+    bus.put16(0x33a, 0xe407); // skipped MOV #7,R4
+    bus.put16(0x33e, 0xe408); // MOV #8,R4
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.pc == 0x33e);
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[4] == 8);
+
     // JMP @R1 honors its delay slot and then transfers to the register target.
     cpu.reset(0x340);
     cpu.r[1] = 0x360;
