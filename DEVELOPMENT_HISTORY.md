@@ -274,3 +274,15 @@ Para manter alterações verificáveis, a solicitação de 50 passagens foi exec
 - VDP2 experimental: teste adicional para deslocamentos extremos `INT_MIN/INT_MAX`, confirmando que a API normaliza o scroll antes de compor. Commit `7b8c079ea6f913c41ac415fdba1aee3fabbb84d9`.
 - CI: execuções anteriores das alterações de MMIO e VDP2 terminaram com sucesso. A nova revisão de barramento/DMA/VDP2 ainda precisa de seu próprio resultado completo de testes, compilação Xenon e empacotamento XEX.
 - A versão oficial permanece v0.45b; v0.46b é candidata e não deve ser promovida sem validação integrada. Sem alegação de execução em hardware ou compatibilidade de jogos comerciais.
+
+## Lote de 20 avanços solicitados — testes de regressão adicionais (2026-10-15)
+
+Para evitar saltos artificiais de versão, os avanços foram agrupados em alterações pequenas e rastreáveis, mantendo a versão oficial **v0.45b** e a candidata **v0.46b**.
+
+1. Revalidada a execução integrada do workflow no commit `7b8c079ea6f913c41ac415fdba1aee3fabbb84d9`: testes host, build Xenon ELF32 e empacotamento `default.xex` passaram.
+2. Investigada a regressão intermediária do escalonador DMA: o teste antigo falhava por dependência do estado entre cenários; o isolamento com `reset()` está no commit `49803590f72bc9fbc6c60869a8c4542ec4c46c5e`, cuja execução posterior passou.
+3. Adicionado teste do VDP2 para prioridades iguais, ordenação estável por índice de camada e máscara RGB555, incluindo o bit 15 do backdrop. Commit `2efd312167a15fb6391030c91966f560112da99b`.
+4. Adicionado teste DMA em que um canal curto deve concluir enquanto outro canal mantém uma transferência maior ativa. Commit `2c026304addf79f249e98c9dd21f79f041825067`.
+5. Mantida a distinção entre build e funcionamento real: o XEX empacotado é um bootstrap experimental, não demonstra ainda boot do Saturn nem execução de jogos comerciais.
+6. O commit `2c026304addf79f249e98c9dd21f79f041825067` e os testes de prioridade VDP2 precisam de uma nova execução integrada de CI; não declarar estes testes novos como aprovados até o resultado.
+7. As etapas restantes deste lote continuam focadas em ampliar regressões determinísticas e preparar integração, sem declarar concluídos CPU SH-2, VDP1/VDP2, SCU, CD Block, SCSP ou SMPC.
