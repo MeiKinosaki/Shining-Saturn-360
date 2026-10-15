@@ -34,10 +34,12 @@ std::uint8_t MmioRegisterBank::read8(std::uint32_t address) const {
 }
 
 std::uint16_t MmioRegisterBank::read16(std::uint32_t address) const {
+    if (address > UINT32_MAX - 1u) return 0xFFFFu;
     return static_cast<std::uint16_t>((std::uint16_t(read8(address)) << 8) | read8(address + 1u));
 }
 
 std::uint32_t MmioRegisterBank::read32(std::uint32_t address) const {
+    if (address > UINT32_MAX - 3u) return 0xFFFFFFFFu;
     return (std::uint32_t(read8(address)) << 24) | (std::uint32_t(read8(address + 1u)) << 16) |
            (std::uint32_t(read8(address + 2u)) << 8) | std::uint32_t(read8(address + 3u));
 }
