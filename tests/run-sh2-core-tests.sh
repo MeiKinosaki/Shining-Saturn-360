@@ -28,3 +28,4 @@ cxx="${CXX:-g++}"; flags=(-std=c++17 -Wall -Wextra -Werror -pedantic)
 "$cxx" "${flags[@]}" "$root/src/saturn/vdp1_renderer.cpp" "$root/src/saturn/vdp1_command_list.cpp" "$root/tests/test_vdp1_command_list.cpp" -o "$tmpdir/test_vdp1_command_list"; "$tmpdir/test_vdp1_command_list"
 
 "$cxx" "${flags[@]}" "$root/src/saturn/vdp2_compositor.cpp" "$root/tests/test_vdp2_compositor.cpp" -o "$tmpdir/test_vdp2_compositor"; "$tmpdir/test_vdp2_compositor"
+"$cxx" "${flags[@]}" "$root/src/saturn/scu_dma.cpp" "$root/tests/test_scu_dma.cpp" -o "$tmpdir/test_scu_dma"; "$tmpdir/test_scu_dma"
