@@ -370,3 +370,13 @@ Este lote registra uma alteração real no repositório e 50 itens de trabalho/v
 50. Gate de lançamento: obter sucesso integrado de testes host + ELF32 Xenon + empacotamento `default.xex`; boot em Xbox 360 físico e compatibilidade de jogos continuam sem comprovação.
 
 **Estado honesto:** a implementação de DIV0U/DIV0S e seus testes foi gravada no GitHub. A validação automática posterior ainda é necessária. Nenhuma alegação de boot físico ou compatibilidade comercial é feita.
+
+
+## Continuação — cobertura de flags DIV0 (15/10/2026)
+
+- Acrescentados casos de teste para DIV0U verificar limpeza de Q/M/T e preservação de bits não relacionados de SR.
+- Ampliada a matriz DIV0S para as quatro combinações de sinais de Rn/Rm, incluindo a relação Q/M/T.
+- Corrigido o opcode de teste para representar explicitamente DIV0S R2,R1.
+- Commits: `bb190c30847f02a8276edf1667a7df6a3eb48df3` e correção `fa15b7282140d35b735d15372022660ec7379b1d`.
+- Próxima verificação obrigatória: resultado do GitHub Actions para o commit mais recente; não declarar testes aprovados antes da conclusão.
+- A versão oficial permanece v0.45b; v0.46b continua candidata até passar o gate integrado.
