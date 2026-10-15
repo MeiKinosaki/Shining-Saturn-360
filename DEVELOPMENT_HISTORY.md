@@ -224,3 +224,14 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 - Commits: `076c3fe02b486ab1fa9d8f1b77d74cebc65cce73`, `05ff662a3d4d714e4278f3d3a308a2df4a17c392`, `8368086570f367c4c36e4058d78388ef4678c413`, `1a961c7572242fad2f7229384a66c8933fcccf0b`.
 - CI dos novos casos VDP1 ainda está em andamento; não declarar v0.46b validada antes dos jobs terminarem com sucesso.
 - VDP1 continua sendo rasterizador experimental de framebuffer, não uma implementação fiel completa do hardware Saturn.
+
+
+## Desenvolvimento adicional: VDP1 e SCU/DMA — 2026-10-15
+- CI revelou uma falha em `test_vdp1_renderer` com linha de coordenadas extremas: o cálculo de diferenças de coordenadas ainda podia transbordar antes da promoção para 64 bits.
+- Corrigida a aritmética de interseção de triângulos e substituído o recorte de linhas por clipping paramétrico antes da rasterização inteira, limitando os cálculos de Bresenham ao framebuffer.
+- Acrescentados testes para linha diagonal e horizontal com coordenadas `INT_MIN`/`INT_MAX`. Os novos runs ainda estavam em andamento na última consulta.
+- Criado o protótipo de três canais `ScuDma`, com configuração de origem/destino/quantidade, transferências limitadas por orçamento de bytes, estado busy/completed e reset.
+- Criada a suíte `tests/test_scu_dma.cpp` e integrada ao runner de regressões.
+- Commits DMA: `cb66e51bb920bb318415cbc01b8c8a7b4eb5b5c4`, `dac391c371f90df8fab1209a7850a0016e89f336`, `b3e50e3ee72462841c6b89bd206fa66422d8bebd`, `5e244a2b33a3594727fb5d1e687820e9a6010a4b`.
+- Limitação: `ScuDma` é um modelo genérico experimental de cópia de bytes, não um controlador SCU Saturn fiel com registradores, modos de transferência, arbitragem ou IRQ reais.
+- Versão oficial permanece v0.45b; a v0.46b não deve ser promovida até os testes host, compilação Xenon ELF32 e empacotamento XEX passarem na mesma revisão.
