@@ -27,6 +27,7 @@ int main() {
     assert(!bank.write16(0x1003, 0x9999));
     assert(!bank.write32(0x1002, 0xAABBCCDDu));
     assert(bank.read16(0x1002) == 0x5678);
+    assert(bank.read16(0xFFFFFFFFu) == 0xFFFFu);
     assert(bank.read32(0xFFFFFFFFu) == 0xFFFFFFFFu);
     bank.reset();
     assert(bank.read8(0x1002) == 0x12);
