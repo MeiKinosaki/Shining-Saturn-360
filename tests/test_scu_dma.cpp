@@ -54,5 +54,17 @@ int main() {
     dma.reset();
     assert(!dma.busy());
     assert(dma.channel(0)->remaining == 0);
+    // A short channel must complete while a longer transfer remains active.
+    dma.reset();
+    assert(dma.configure(0, 16, 140, 4));
+    assert(dma.configure(1, 32, 150, 1));
+    assert(dma.start(0) && dma.start(1));
+    assert(dma.step(bus, 2) == 2);
+    assert(dma.channel(1)->completed);
+    assert(dma.channel(0)->remaining == 3);
+    assert(dma.busy());
+    assert(dma.step(bus, 8) == 3);
+    assert(!dma.busy());
+
     std::cout << "SCU DMA prototype tests passed\n";
 }
