@@ -40,6 +40,7 @@ int main() {
     assert(!dma.busy());
 
     // One-byte budgets rotate among active channels instead of starving channel 1.
+    dma.reset();
     assert(dma.configure(0, 16, 120, 2));
     assert(dma.configure(1, 32, 130, 2));
     assert(dma.start(0) && dma.start(1));
