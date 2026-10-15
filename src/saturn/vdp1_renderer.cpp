@@ -52,14 +52,16 @@ void Vdp1Renderer::draw_line(int x0, int y0, int x1, int y1, std::uint16_t rgb55
                 (static_cast<long long>(y1) - y0);
         } else if (out & 4u) {
             if (y1 == y0) return;
-            y = 0; x = x0 + static_cast<long long>(x1 - x0) * (y - y0) / (y1 - y0);
+            y = 0; x = static_cast<long long>(x0) + (static_cast<long long>(x1) - x0) * (y - y0) /
+                (static_cast<long long>(y1) - y0);
         } else if (out & 2u) {
             if (x1 == x0) return;
             x = Width - 1; y = static_cast<long long>(y0) + (static_cast<long long>(y1) - y0) * (x - x0) /
                 (static_cast<long long>(x1) - x0);
         } else {
             if (x1 == x0) return;
-            x = 0; y = y0 + static_cast<long long>(y1 - y0) * (x - x0) / (x1 - x0);
+            x = 0; y = static_cast<long long>(y0) + (static_cast<long long>(y1) - y0) * (x - x0) /
+                (static_cast<long long>(x1) - x0);
         }
         if (out == c0) { x0 = static_cast<int>(x); y0 = static_cast<int>(y); c0 = outcode(x0, y0); }
         else { x1 = static_cast<int>(x); y1 = static_cast<int>(y); c1 = outcode(x1, y1); }
@@ -91,8 +93,8 @@ void Vdp1Renderer::fill_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
     const int max_y = std::min(static_cast<int>(Height) - 1, std::max({y0, y1, y2}));
     if (min_x > max_x || min_y > max_y) return;
     const auto edge = [](int ax, int ay, int bx, int by, int px, int py) -> std::int64_t {
-        return static_cast<std::int64_t>(px - ax) * (by - ay) -
-               static_cast<std::int64_t>(py - ay) * (bx - ax);
+        return (static_cast<std::int64_t>(px) - ax) * (static_cast<std::int64_t>(by) - ay) -
+               (static_cast<std::int64_t>(py) - ay) * (static_cast<std::int64_t>(bx) - ax);
     };
     const std::int64_t area = edge(x0, y0, x1, y1, x2, y2);
     if (area == 0) return;
