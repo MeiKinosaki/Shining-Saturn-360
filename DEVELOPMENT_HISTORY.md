@@ -313,3 +313,60 @@ A versão oficial permanece **v0.45b**; **v0.46b** continua candidata até a val
 20. As alterações mais recentes de DMA e barramento ainda precisam de CI integrado próprio antes de serem consideradas aprovadas.
 
 **Critério de aceitação:** testes host, build Xenon ELF32 e empacotamento `default.xex` devem passar na mesma execução integrada. Isso ainda não prova boot em hardware nem compatibilidade de jogos.
+
+## Lote de 50 etapas — continuação SH-2 / integração (2026-10-15)
+
+Este lote registra uma alteração real no repositório e 50 itens de trabalho/verificação. Itens descritos como “pendente” são tarefas de acompanhamento, não código já concluído. A versão oficial permanece **v0.45b**; **v0.46b** segue candidata até a CI integrada passar.
+
+1. Reconsultado o estado de GitHub Actions para a base anterior.
+2. Confirmado sucesso do workflow para o teste MMIO no commit `0855b57`.
+3. Confirmado sucesso do workflow de justiça DMA para três canais no commit `395a5be`.
+4. Confirmado sucesso do workflow de overflow de escrita do barramento no commit `f3fc3e6`.
+5. Confirmado sucesso do workflow de conclusão de canal DMA curto no commit `70e0958`.
+6. Mantido o critério de não promover versão apenas com base em testes isolados.
+7. Reexaminado o decodificador SH-2 antes de ampliar a cobertura de instruções.
+8. Identificada a ausência de handlers explícitos para DIV0U e DIV0S.
+9. Implementado handler de DIV0U para limpar Q, M e T no SR.
+10. Implementado handler de DIV0S para inicializar Q/M a partir dos sinais dos operandos e T = Q XOR M.
+11. Preservados os bits não relacionados do SR nas duas operações.
+12. Adicionados testes de DIV0U para limpeza de flags.
+13. Adicionado teste de DIV0S com operandos de sinais diferentes.
+14. Adicionado teste de DIV0S com ambos os operandos negativos.
+15. Commit do núcleo: `03ce8f79c2789b3affbb3f481625992707456ca8`.
+16. Commit dos testes: `a5b3b2a799698c912ea454325d676bb300d9e819`.
+17. A CI dos dois commits novos ainda precisa ser consultada; os testes não são declarados aprovados até o resultado.
+18. Verificar na CI a compilação do conjunto de testes SH-2 com `-Wall -Wextra -Werror -pedantic`.
+19. Verificar a suíte de acessos à memória SH-2.
+20. Verificar a suíte de aritmética e flags.
+21. Verificar a suíte de delay slots.
+22. Verificar a suíte de fluxo de controle.
+23. Verificar a integração SH-2 com o barramento Saturn.
+24. Verificar o runner e o loop principal.
+25. Verificar os testes do mapa físico de memória.
+26. Verificar os testes MMIO e os acessos big-endian.
+27. Verificar os testes do rasterizador VDP1.
+28. Verificar os testes da lista de comandos VDP1.
+29. Verificar os testes do compositor VDP2.
+30. Verificar os testes de DMA/SCU.
+31. Manter a verificação de endereços que transbordam o espaço de 32 bits.
+32. Manter a verificação de escritas MMIO largas atômicas em faixas inválidas.
+33. Manter a verificação de rotação justa entre canais DMA.
+34. Manter a verificação de que canal curto termina enquanto outro continua ativo.
+35. Manter o teste de orçamento DMA zero.
+36. Manter a cobertura de prioridade estável do VDP2.
+37. Manter a cobertura de scroll positivo, negativo e extremo.
+38. Próximo passo SH-2: implementar DIV1 com tabela de casos e testes de referência.
+39. Próximo passo SH-2: auditar MAC.L/MAC.W e as condições de saturação.
+40. Próximo passo SH-2: confirmar TAS.B e operações de bits na memória.
+41. Próximo passo SH-2: revisar STC/LDC/STS/LDS e seus efeitos em SR.
+42. Próximo passo SH-2: desenhar o modelo de exceção para TRAPA/RTE antes de integrar handlers.
+43. Próximo passo: ligar os canais DMA ao barramento de memória real e mapear efeitos colaterais dos dispositivos.
+44. Próximo passo: substituir armazenamento MMIO genérico por registradores específicos de cada dispositivo.
+45. Próximo passo: conectar VDP1/VDP2 ao loop de quadro e à saída de vídeo.
+46. Próximo passo: integrar temporização e interrupções com o scheduler.
+47. Próximo passo: avançar o CD Block além do protótipo de registradores.
+48. Próximo passo: avançar o SCSP além do protótipo de registradores.
+49. Próximo passo: validar SMPC e leitura real de controles.
+50. Gate de lançamento: obter sucesso integrado de testes host + ELF32 Xenon + empacotamento `default.xex`; boot em Xbox 360 físico e compatibilidade de jogos continuam sem comprovação.
+
+**Estado honesto:** a implementação de DIV0U/DIV0S e seus testes foi gravada no GitHub. A validação automática posterior ainda é necessária. Nenhuma alegação de boot físico ou compatibilidade comercial é feita.
