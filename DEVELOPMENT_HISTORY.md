@@ -175,6 +175,16 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 ## Correção de decodificação SH-2 — 2026-10-15
 - A regressão `test_sh2_control_flow` falhava porque o padrão amplo de `MOV.B/W R0,@(disp,Rn)` para opcode `0x8xxx` interceptava `BT/S` (`0x8dxx`) antes da decodificação de desvio.
 - Movidas as quatro condições `BT`, `BF`, `BT/S` e `BF/S` para antes do padrão genérico de MOV, preservando o restante da execução do core.
-- Commit: `4b90cddfac0f4b53268cc7ee9df0f6c4f0a7862b`.
+- Commit anterior anotado incorretamente; a correção efetiva foi registrada em `593c4fa77d92bd76f871ad2310c78a5bb403301a`.
 - A correção está registrada, mas ainda não há resultado de CI associado confirmado; não declarar os testes aprovados até a nova execução.
 - Versão oficial permanece v0.44b; v0.45b continua em desenvolvimento.
+
+
+## Continuação SH-2 e correção do runner — 2026-10-15
+- Os testes de fluxo de controle passaram no job de host, incluindo a sequência BT/S com delay slot; o runner então avançou até a suíte do barramento Saturn.
+- A execução falhou na ligação de `test_saturn_memory_bus.cpp`: o comando compilava o teste sem `src/saturn/sh2_core.cpp`, que fornece as implementações de `Bus::read16/read32/write16/write32`.
+- Corrigido `tests/run-sh2-core-tests.sh` para linkar `sh2_core.cpp` no teste do barramento Saturn.
+- Commit da correção do runner: `0f79d590c761a015a7ba0025cca4c8470eecd086`.
+- A compilação Xenon ELF32 e o empacotamento XEX dos runs recentes terminaram com sucesso; a suíte completa de regressão ainda precisa ser reexecutada após a correção do runner.
+- A cobertura BT/BF foi ampliada com casos explícitos em `tests/test_sh2_control_flow.cpp`, commit `7e5edbbdc0e855eb6ddaeee78c6434940668ad8a`.
+- Versão oficial permanece v0.44b; v0.45b não está promovida.
