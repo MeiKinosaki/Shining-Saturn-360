@@ -66,5 +66,23 @@ int main() {
     assert(dma.step(bus, 8) == 3);
     assert(!dma.busy());
 
+    // Three active channels each receive one byte in a three-byte budget.
+    dma.reset();
+    assert(dma.configure(0, 16, 160, 3));
+    assert(dma.configure(1, 32, 170, 3));
+    assert(dma.configure(2, 48, 180, 3));
+    assert(dma.start(0) && dma.start(1) && dma.start(2));
+    assert(dma.step(bus, 3) == 3);
+    assert(dma.channel(0)->remaining == 2);
+    assert(dma.channel(1)->remaining == 2);
+    assert(dma.channel(2)->remaining == 2);
+    assert(dma.step(bus, 6) == 6);
+    assert(!dma.busy());
+    for (std::uint32_t i = 0; i < 3; ++i) {
+        assert(bus.bytes[160 + i] == bus.bytes[16 + i]);
+        assert(bus.bytes[170 + i] == bus.bytes[32 + i]);
+        assert(bus.bytes[180 + i] == bus.bytes[48 + i]);
+    }
+
     std::cout << "SCU DMA prototype tests passed\n";
 }
