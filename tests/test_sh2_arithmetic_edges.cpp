@@ -95,8 +95,8 @@ int main() {
         {0u, 0u}, {0x80000000u, 0u},
         {0u, 0x80000000u}, {0x80000000u, 0x80000000u}
     };
-    const std::uint32_t expected_flags[] = {0u, 0x00000101u,
-                                             0x00000201u, 0x00000300u};
+    const std::uint32_t expected_flags[] = {0u, 0x00000201u,
+                                             0x00000101u, 0x00000300u};
     for (unsigned i = 0; i < 4; ++i) {
         cpu.r[1] = signs[i][0]; // Rn supplies Q
         cpu.r[2] = signs[i][1]; // Rm supplies M
