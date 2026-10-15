@@ -380,3 +380,11 @@ Este lote registra uma alteração real no repositório e 50 itens de trabalho/v
 - Commits: `bb190c30847f02a8276edf1667a7df6a3eb48df3` e correção `fa15b7282140d35b735d15372022660ec7379b1d`.
 - Próxima verificação obrigatória: resultado do GitHub Actions para o commit mais recente; não declarar testes aprovados antes da conclusão.
 - A versão oficial permanece v0.45b; v0.46b continua candidata até passar o gate integrado.
+
+
+## Continuação — regressão DIV0S e CI (15/10/2026)
+
+- A execução do commit `bb190c30` revelou falha em uma expectativa de flags do teste para operandos de sinais mistos; os jobs de ELF32 Xenon passaram, mas o job de regressão host falhou.
+- Corrigida a ordem esperada dos bits Q/M/T conforme a semântica implementada (commit `491d4af3ef5453c3b7c28c3d5a0a6f869d655834`).
+- A execução seguinte precisa confirmar a correção antes de considerar esta matriz de testes estável.
+- O sucesso da compilação ELF32 não comprova boot físico, nem confirma por si só a geração funcional do `default.xex`.
