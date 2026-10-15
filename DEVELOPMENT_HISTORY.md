@@ -170,3 +170,11 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 - Adicionado caso de regressão no limite de alinhamento em `tests/test_sh2_core.cpp`.
 - Commits: correção `576e9290959c6d1e604d9cb56b1e8800bb268064`; teste `dbcb6ebe44065c8db07bc4bac6b03acf34cda456`.
 - O novo código e teste ainda precisam de CI posterior; não declarar aprovação antes do resultado.
+
+
+## Correção de decodificação SH-2 — 2026-10-15
+- A regressão `test_sh2_control_flow` falhava porque o padrão amplo de `MOV.B/W R0,@(disp,Rn)` para opcode `0x8xxx` interceptava `BT/S` (`0x8dxx`) antes da decodificação de desvio.
+- Movidas as quatro condições `BT`, `BF`, `BT/S` e `BF/S` para antes do padrão genérico de MOV, preservando o restante da execução do core.
+- Commit: `4b90cddfac0f4b53268cc7ee9df0f6c4f0a7862b`.
+- A correção está registrada, mas ainda não há resultado de CI associado confirmado; não declarar os testes aprovados até a nova execução.
+- Versão oficial permanece v0.44b; v0.45b continua em desenvolvimento.
