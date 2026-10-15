@@ -13,10 +13,17 @@ void Vdp1Renderer::clear(std::uint16_t rgb555) {
 
 void Vdp1Renderer::fill_rect(int x, int y, int width, int height, std::uint16_t rgb555) {
     if (width <= 0 || height <= 0) return;
-    const int left = std::max(0, x);
-    const int top = std::max(0, y);
-    const int right = std::min(static_cast<int>(Width), x + std::min(width, static_cast<int>(Width) * 2));
-    const int bottom = std::min(static_cast<int>(Height), y + std::min(height, static_cast<int>(Height) * 2));
+    // Promote before addition so hostile/extreme coordinates cannot overflow int.
+    const auto clamp_x = [](long long value) {
+        return static_cast<int>(std::max(0LL, std::min(static_cast<long long>(Width), value)));
+    };
+    const auto clamp_y = [](long long value) {
+        return static_cast<int>(std::max(0LL, std::min(static_cast<long long>(Height), value)));
+    };
+    const int left = clamp_x(x);
+    const int top = clamp_y(y);
+    const int right = clamp_x(static_cast<long long>(x) + width);
+    const int bottom = clamp_y(static_cast<long long>(y) + height);
     if (left >= right || top >= bottom) return;
     const auto color = static_cast<std::uint16_t>(rgb555 & 0x7FFFu);
     for (int row = top; row < bottom; ++row) {
@@ -41,13 +48,15 @@ void Vdp1Renderer::draw_line(int x0, int y0, int x1, int y1, std::uint16_t rgb55
         long long x = 0, y = 0;
         if (out & 8u) {
             if (y1 == y0) return;
-            y = Height - 1; x = x0 + static_cast<long long>(x1 - x0) * (y - y0) / (y1 - y0);
+            y = Height - 1; x = static_cast<long long>(x0) + (static_cast<long long>(x1) - x0) * (y - y0) /
+                (static_cast<long long>(y1) - y0);
         } else if (out & 4u) {
             if (y1 == y0) return;
             y = 0; x = x0 + static_cast<long long>(x1 - x0) * (y - y0) / (y1 - y0);
         } else if (out & 2u) {
             if (x1 == x0) return;
-            x = Width - 1; y = y0 + static_cast<long long>(y1 - y0) * (x - x0) / (x1 - x0);
+            x = Width - 1; y = static_cast<long long>(y0) + (static_cast<long long>(y1) - y0) * (x - x0) /
+                (static_cast<long long>(x1) - x0);
         } else {
             if (x1 == x0) return;
             x = 0; y = y0 + static_cast<long long>(y1 - y0) * (x - x0) / (x1 - x0);
