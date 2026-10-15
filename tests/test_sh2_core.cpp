@@ -224,6 +224,8 @@ int main() {
 
     bus.write32(0x200, 0x1234abcd);
     assert(bus.read8(0x200) == 0x12 && bus.read16(0x200) == 0x1234);
+    assert(bus.read16(UINT32_MAX) == 0xFFFFu);
+    assert(bus.read32(UINT32_MAX - 2u) == 0xFFFFFFFFu);
     cpu.reset(0x1a0);
     bus.put16(0x1a0, 0xffff);
     assert(cpu.step(bus) == StepResult::UnsupportedOpcode);
