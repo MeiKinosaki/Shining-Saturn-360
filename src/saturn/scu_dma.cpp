@@ -9,6 +9,9 @@ void ScuDma::reset() {
 bool ScuDma::configure(std::size_t index, std::uint32_t source,
                        std::uint32_t destination, std::uint32_t byte_count) {
     if (index >= channels_.size() || channels_[index].active) return false;
+    if (byte_count != 0 &&
+        (source > UINT32_MAX - (byte_count - 1u) ||
+         destination > UINT32_MAX - (byte_count - 1u))) return false;
     channels_[index] = Channel{source, destination, byte_count, false, false};
     return true;
 }
