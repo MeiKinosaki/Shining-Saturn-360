@@ -214,3 +214,13 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 - Commits: `5988b35eda5599cda4ce4bee3a769134d0939679`, `48aaf6e90f3c02e2bded0db1adc4423dfd4ef46e`, `dc361b3bd40a52530eb29b102b27febd56fc68c8`, `149ae85be56133db4ac035de2d712e303f41efd0`, `1440fb7d6e0c6b67ed54488e8b872dc938cd75d4`.
 - CI run `38718489736` está executando compilação Xenon ELF32 e testes host. Não promover v0.46b antes de todos os jobs relevantes terminarem com sucesso.
 - VDP2 continua sendo compositor de framebuffer experimental, não um renderer Saturn fiel; o core SH-2 segue parcial.
+
+
+## Avanços adicionais em VDP1 e validação da v0.46b — 2026-10-15
+- A execução `38718489736` terminou com sucesso em todos os jobs relevantes: testes host, compilação Xenon ELF32 e empacotamento XEX. O pipeline gerou o artefato `default.xex`.
+- VDP1: endurecido o recorte de retângulos para somar coordenadas em `long long`, evitando overflow de inteiros com entradas extremas.
+- VDP1: cálculos de interseção de linhas passaram a promover os operandos antes da subtração; vértices de triângulos são limitados a uma área de guarda antes da aritmética de arestas.
+- Adicionados testes com coordenadas `INT_MIN`/`INT_MAX` para retângulos, linhas e triângulos.
+- Commits: `076c3fe02b486ab1fa9d8f1b77d74cebc65cce73`, `05ff662a3d4d714e4278f3d3a308a2df4a17c392`, `8368086570f367c4c36e4058d78388ef4678c413`, `1a961c7572242fad2f7229384a66c8933fcccf0b`.
+- CI dos novos casos VDP1 ainda está em andamento; não declarar v0.46b validada antes dos jobs terminarem com sucesso.
+- VDP1 continua sendo rasterizador experimental de framebuffer, não uma implementação fiel completa do hardware Saturn.
