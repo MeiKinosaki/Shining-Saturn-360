@@ -264,3 +264,13 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 - Todos os trabalhos acima são parte da candidata v0.46b, não uma nova versão oficial. Não promover a versão antes de confirmar regressões host, build Xenon ELF32 e empacotamento XEX na revisão integrada.
 - Os dispositivos continuam protótipos: o banco MMIO não possui handlers específicos completos; DMA não implementa o protocolo real do SCU; VDP2 não reproduz integralmente planos, registradores e efeitos do hardware.
 - Não há comprovação de execução em Xbox 360 físico nem compatibilidade com jogos comerciais.
+
+
+## Lote de desenvolvimento integrado — sequência de 50 passagens solicitada — 2026-10-15
+Para manter alterações verificáveis, a solicitação de 50 passagens foi executada como um lote de mudanças pequenas e revisáveis, em vez de 50 incrementos de versão artificiais.
+- Barramento SH-2: acessos auxiliares de 16/32 bits agora recusam leituras/escritas que transbordem o endereço de 32 bits, evitando wrap para zero. Commits `907894004f748fe30c22cf5e3609b7bcf074a6d3`, `c68879cab1b28a4d642f3b242b967402dc79a746`.
+- SCU/DMA experimental: serviço round-robin entre canais sob orçamento de bytes, mantendo a quantidade total transferida limitada ao orçamento. Commits `0f1191b68828ea52dde9fe76a1989f465e573657`, `a92d9274479b6b1eca96b32275b99462bd97a3f2`, `93b8fe7d4a96cecb9bf91d03d84c38b7b866d7a8`.
+- DMA: adicionados testes de equidade entre dois canais ativos e orçamento zero; o teste foi isolado com reset para não depender do estado anterior. Commits `060bb5f0316fe13fdd430102e9c07995348f9821`, `49803590f72bc9fbc6c60869a8c4542ec4c46c5e`.
+- VDP2 experimental: teste adicional para deslocamentos extremos `INT_MIN/INT_MAX`, confirmando que a API normaliza o scroll antes de compor. Commit `7b8c079ea6f913c41ac415fdba1aee3fabbb84d9`.
+- CI: execuções anteriores das alterações de MMIO e VDP2 terminaram com sucesso. A nova revisão de barramento/DMA/VDP2 ainda precisa de seu próprio resultado completo de testes, compilação Xenon e empacotamento XEX.
+- A versão oficial permanece v0.45b; v0.46b é candidata e não deve ser promovida sem validação integrada. Sem alegação de execução em hardware ou compatibilidade de jogos comerciais.
