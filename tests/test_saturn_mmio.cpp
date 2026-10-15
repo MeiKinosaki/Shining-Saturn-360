@@ -20,6 +20,14 @@ int main() {
     assert(bank.read8(0x1005) == 0xA5);
     assert(!bank.handles(0x1006));
     assert(bank.read8(0x2000) == 0xFF);
+    assert(bank.write16(0x1000, 0xABCD));
+    assert(bank.read16(0x1000) == 0xABCD);
+    assert(bank.write32(0x1000, 0x12345678u));
+    assert(bank.read32(0x1000) == 0x12345678u);
+    assert(!bank.write16(0x1003, 0x9999));
+    assert(!bank.write32(0x1002, 0xAABBCCDDu));
+    assert(bank.read16(0x1002) == 0x5678);
+    assert(bank.read32(0xFFFFFFFFu) == 0xFFFFFFFFu);
     bank.reset();
     assert(bank.read8(0x1002) == 0x12);
 }
