@@ -134,6 +134,13 @@ StepResult Sh2Core::step(Bus& bus) {
         r[n] ^= r[m];
     } else if ((op & 0xf00f) == 0x200b) { // OR Rm,Rn
         r[n] |= r[m];
+    } else if (op == 0x0019) { // DIV0U: clear Q, M and T
+        sr &= ~0x00000301u;
+    } else if ((op & 0xf00f) == 0x2007) { // DIV0S Rm,Rn
+        const std::uint32_t q = (r[n] >> 31) & 1u;
+        const std::uint32_t m_bit = (r[m] >> 31) & 1u;
+        sr = (sr & ~0x00000301u) | (q << 8) | (m_bit << 9) |
+             ((q ^ m_bit) ? kTBit : 0u);
     } else if (op == 0x0008) { // CLRT
         sr &= ~kTBit;
     } else if (op == 0x0018) { // SETT
