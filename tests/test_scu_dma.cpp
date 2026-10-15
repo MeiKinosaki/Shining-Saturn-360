@@ -31,6 +31,8 @@ int main() {
     for (std::uint32_t i = 0; i < 8; ++i) assert(bus.bytes[80 + i] == i + 0x40);
 
     assert(!dma.configure(ScuDma::ChannelCount, 0, 0, 1));
+    assert(!dma.configure(2, UINT32_MAX - 1u, 0x40, 4));
+    assert(!dma.configure(2, 0x20, UINT32_MAX - 1u, 4));
     assert(dma.channel(ScuDma::ChannelCount) == nullptr);
     assert(dma.configure(1, 32, 96, 0));
     assert(dma.start(1));
