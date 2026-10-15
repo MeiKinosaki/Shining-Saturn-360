@@ -4,6 +4,7 @@ namespace shining_saturn {
 
 void ScuDma::reset() {
     channels_ = {};
+    next_channel_ = 0;
 }
 
 bool ScuDma::configure(std::size_t index, std::uint32_t source,
@@ -26,22 +27,27 @@ bool ScuDma::start(std::size_t index) {
 }
 
 std::size_t ScuDma::step(Bus& bus, std::size_t byte_budget) {
+    if (byte_budget == 0) return 0;
     std::size_t moved = 0;
-    for (Channel& ch : channels_) {
-        while (ch.active && ch.remaining != 0 && moved < byte_budget) {
+    std::size_t visited = 0;
+    while (moved < byte_budget && visited < ChannelCount) {
+        const std::size_t index = (next_channel_ + visited) % ChannelCount;
+        Channel& ch = channels_[index];
+        if (ch.active && ch.remaining != 0) {
             const std::uint8_t value = bus.read8(ch.source);
             bus.write8(ch.destination, value);
             ++ch.source;
             ++ch.destination;
             --ch.remaining;
             ++moved;
+            if (ch.remaining == 0) {
+                ch.active = false;
+                ch.completed = true;
+            }
         }
-        if (ch.active && ch.remaining == 0) {
-            ch.active = false;
-            ch.completed = true;
-        }
-        if (moved == byte_budget) break;
+        ++visited;
     }
+    if (moved != 0) next_channel_ = (next_channel_ + 1u) % ChannelCount;
     return moved;
 }
 
