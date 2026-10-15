@@ -2,11 +2,11 @@
 
 Emulador de Sega Saturn para Xbox 360 (RGH/JTAG).
 
-## Estado técnico — v0.44b
+## Estado técnico — v0.45b
 
 ## Versão publicada no repositório
 
-A documentação da versão atual está em [VERSION_v0.43b.md](VERSION_v0.43b.md). Ela registra o estado experimental, a execução de CI e o artefato de bootstrap disponível; não implica suporte comprovado a jogos nem inicialização em hardware real.
+A documentação da versão atual está em [VERSION_v0.45b.md](VERSION_v0.45b.md). A execução de CI 38691857824 passou nos testes de regressão, compilação Xenon ELF32 e empacotamento XEX. Isso não comprova inicialização em hardware real nem compatibilidade com jogos comerciais.
 
 - Testes de regressão no Ubuntu: aprovados na execução [mais recente validada](https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38366824872) (compilação Xenon ELF32, testes do núcleo SH-2 e empacotamento XEX). A aprovação do CI não comprova inicialização em hardware real.
 - Toolchain libXenon: verificada.
@@ -27,7 +27,7 @@ A documentação da versão atual está em [VERSION_v0.43b.md](VERSION_v0.43b.md
 
 **Importante:** esta compilação é um bootstrap técnico e ainda não é um emulador de Saturn jogável. O CI confirma compilação e empacotamento, não o funcionamento no console. O núcleo SH-2 experimental não está ligado ao bootstrap e os subsistemas de vídeo, áudio e CD-ROM ainda não permitem iniciar jogos. Não atualize a NAND/firmware para este teste; basta tentar executar o XEX existente num ambiente homebrew já funcional.
 
-## Marco v0.44b — ciclo principal experimental
+## Marco v0.44b — ciclo principal experimental (histórico)
 
 O `src/saturn/saturn_main_loop.hpp/.cpp` conecta o SH-2 Runner ao barramento Saturn e executa orçamentos limitados por quadro. Os testes de integração e MMIO passaram no GitHub Actions: [ciclo principal](https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38503506652) e [MMIO](https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38503177536). Isso valida somente os testes automatizados; não comprova boot no console nem execução de jogos. A CPU segue parcial, os registradores MMIO ainda não possuem handlers reais dos dispositivos, e VDPs, CD-ROM e áudio continuam pendentes.
 
