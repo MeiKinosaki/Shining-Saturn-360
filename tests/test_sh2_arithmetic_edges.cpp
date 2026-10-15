@@ -107,6 +107,18 @@ int main() {
         assert((cpu.sr & 0x00000004u) != 0);
     }
 
+    // CLRT/SETT affect only T and preserve all unrelated SR bits.
+    cpu.sr = 0x00000204u | Sh2Core::kTBit;
+    bus.put16(0x11e, 0x0008); // CLRT
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert((cpu.sr & Sh2Core::kTBit) == 0);
+    assert((cpu.sr & 0x00000204u) == 0x00000204u);
+    bus.put16(0x120, 0x0028); // CLRMAC is not SETT; test SETT separately below.
+    bus.put16(0x120, 0x0018); // SETT
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert((cpu.sr & Sh2Core::kTBit) != 0);
+    assert((cpu.sr & 0x00000204u) == 0x00000204u);
+
     std::cout << "SH-2 arithmetic edge-case tests passed\n";
     return 0;
 }
