@@ -31,6 +31,7 @@ public:
 
 private:
     std::array<Channel, ChannelCount> channels_{};
+    std::size_t next_channel_ = 0;
 };
 
 } // namespace shining_saturn
