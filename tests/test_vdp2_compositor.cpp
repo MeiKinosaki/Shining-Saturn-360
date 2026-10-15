@@ -29,4 +29,16 @@ int main() {
     assert(!compositor.set_layer(5, low, 0));
     assert(!compositor.set_layer(0, Vdp2Compositor::Layer(1, 0), 0));
     assert(compositor.pixel(320, 0) == 0);
+    Vdp2Compositor scroll_test;
+    Vdp2Compositor::Layer dot(Vdp2Compositor::Width * Vdp2Compositor::Height, 0);
+    dot[0] = 0x55AA;
+    assert(scroll_test.set_layer(0, dot, 1));
+    assert(scroll_test.set_scroll(0, 1, 1));
+    scroll_test.compose();
+    assert(scroll_test.pixel(1, 1) == 0x55AA);
+    assert(scroll_test.pixel(0, 0) == 0);
+    assert(scroll_test.set_scroll(0, -1, -1));
+    scroll_test.compose();
+    assert(scroll_test.pixel(319, 223) == 0x55AA);
+    assert(!scroll_test.set_scroll(5, 0, 0));
 }
