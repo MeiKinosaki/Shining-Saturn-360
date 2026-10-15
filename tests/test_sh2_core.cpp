@@ -259,6 +259,23 @@ int main() {
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[5] == 9 && cpu.pc == 0x250);
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[6] == 12);
 
+    // DIV0U clears Q, M and T while preserving unrelated SR bits.
+    cpu.reset(0x260); cpu.sr = 0x00000c01u;
+    bus.put16(0x260, 0x0019); // DIV0U
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert((cpu.sr & 0x00000301u) == 0 && (cpu.sr & 0x00000c00u) == 0x00000c00u);
+
+    // DIV0S initializes Q/M from operand signs and T = Q xor M.
+    cpu.reset(0x262); cpu.r[1] = 0x80000000u; cpu.r[2] = 0x7fffffffu;
+    cpu.sr = 0x00000001u;
+    bus.put16(0x262, 0x2127); // DIV0S R2,R1
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert((cpu.sr & 0x00000301u) == 0x00000101u);
+    cpu.reset(0x264); cpu.r[1] = 0x80000000u; cpu.r[2] = 0xffffffffu;
+    bus.put16(0x264, 0x2127); // both operands negative
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert((cpu.sr & 0x00000301u) == 0x00000300u);
+
     std::cout << "SH-2 core foundation tests passed\n";
     return 0;
 }
