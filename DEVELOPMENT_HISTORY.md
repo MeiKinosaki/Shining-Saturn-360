@@ -235,3 +235,32 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 - Commits DMA: `cb66e51bb920bb318415cbc01b8c8a7b4eb5b5c4`, `dac391c371f90df8fab1209a7850a0016e89f336`, `b3e50e3ee72462841c6b89bd206fa66422d8bebd`, `5e244a2b33a3594727fb5d1e687820e9a6010a4b`.
 - Limitação: `ScuDma` é um modelo genérico experimental de cópia de bytes, não um controlador SCU Saturn fiel com registradores, modos de transferência, arbitragem ou IRQ reais.
 - Versão oficial permanece v0.45b; a v0.46b não deve ser promovida até os testes host, compilação Xenon ELF32 e empacotamento XEX passarem na mesma revisão.
+
+
+## Seis rodadas consecutivas de avanço — 2026-10-15 (candidata v0.46b)
+
+### Rodada 1 — MMIO com larguras reais de acesso
+- Adicionados `read16/read32` e `write16/write32` big-endian ao banco de registradores.
+- Escritas largas verificam todos os bytes antes de modificar o banco, para rejeitar acessos que cruzam registradores read-only ou áreas não mapeadas.
+- Commits: `072ed0e08df827cc1a9d7d8a5a678c26c00f2331`, `dc21f4f7140cb9dcb64a9237ca4e37ceb8ff393f`, `37560c51a2dcb21d9cef09a710716ce8419f72bc`.
+
+### Rodada 2 — limites de endereço MMIO
+- Leituras de 16/32 bits que atravessam o limite de 32 bits retornam valores abertos (`0xFFFF`/`0xFFFFFFFF`) sem envolver o endereço para zero.
+- Commits: `6d0e599581d0f1c3e06246f6b6ba9e5ce898b364`, `5be69081603934730eb0bb75c0e7b466dbaca30d`.
+
+### Rodada 3 — DMA seguro contra overflow
+- A configuração do protótipo SCU/DMA rejeita faixas de origem ou destino que ultrapassem o espaço de endereços de 32 bits.
+- Commits: `957f8cd5f4f6bbbd7c629568055df0a5379a8a1f`, `50a6bac97a0b0fd2cf9ffd270cc6b0eaaede66a3`.
+
+### Rodada 4 — rolagem por camada no VDP2 experimental
+- Adicionada configuração de rolagem horizontal/vertical independente por camada, com coordenadas negativas e wrap de framebuffer.
+- Commits: `0b13ab61d9844698f29a0b8725afddd08aaa3ab3`, `9458bc96ac20fd6b96786700baad7a2ce9a13c23`, `12d503f8bd38a7e1837621691adc9ca5f563d84b`.
+
+### Rodada 5 — testes de integração
+- Ampliados os testes MMIO para endianness, rejeição atômica e limite de endereços; testes DMA para faixas que transbordam; testes VDP2 para rolagem positiva, negativa e wrap.
+- Os testes estão ligados ao runner `tests/run-sh2-core-tests.sh`; a execução dos commits mais recentes ainda está pendente no CI.
+
+### Rodada 6 — consolidação e validação
+- Todos os trabalhos acima são parte da candidata v0.46b, não uma nova versão oficial. Não promover a versão antes de confirmar regressões host, build Xenon ELF32 e empacotamento XEX na revisão integrada.
+- Os dispositivos continuam protótipos: o banco MMIO não possui handlers específicos completos; DMA não implementa o protocolo real do SCU; VDP2 não reproduz integralmente planos, registradores e efeitos do hardware.
+- Não há comprovação de execução em Xbox 360 físico nem compatibilidade com jogos comerciais.
