@@ -286,3 +286,30 @@ Para evitar saltos artificiais de versão, os avanços foram agrupados em altera
 5. Mantida a distinção entre build e funcionamento real: o XEX empacotado é um bootstrap experimental, não demonstra ainda boot do Saturn nem execução de jogos comerciais.
 6. O commit `2c026304addf79f249e98c9dd21f79f041825067` e os testes de prioridade VDP2 precisam de uma nova execução integrada de CI; não declarar estes testes novos como aprovados até o resultado.
 7. As etapas restantes deste lote continuam focadas em ampliar regressões determinísticas e preparar integração, sem declarar concluídos CPU SH-2, VDP1/VDP2, SCU, CD Block, SCSP ou SMPC.
+
+## Lote de 20 frentes — continuação de 2026-10-15
+
+A versão oficial permanece **v0.45b**; **v0.46b** continua candidata até a validação integrada.
+
+1. Conferido o estado recente do GitHub Actions.
+2. Confirmado que o teste de VDP2 para prioridades iguais e máscara RGB555 passou no run associado ao commit `2efd312167a15fb6391030c91966f560112da99b`.
+3. Investigada a falha intermediária de DMA usando o log do host; a expectativa anterior dependia indevidamente do estado/ordem de canais.
+4. Adicionado teste para conclusão de canal DMA curto durante uma transferência longa — commit `70e0958a786c74fcbbda872f746748ac8caa0a84`.
+5. Adicionado teste de justiça entre três canais DMA — commit `395a5be1b7304b5bf838bedf6941d5c8b0884aca`.
+6. Preservado o orçamento máximo de bytes por chamada do escalonador.
+7. Preservados os testes de faixas de origem/destino que transbordam 32 bits.
+8. Preservado o teste de transferência de tamanho zero.
+9. Preservado o teste de reset e isolamento entre transferências.
+10. Adicionada regressão para escrita de 16 bits no fim do espaço de endereços.
+11. Adicionada regressão para escrita de 32 bits no fim do espaço de endereços.
+12. Verificado que escritas largas inválidas não devem envolver o endereço para zero — commit `f3fc3e62c5ac065dd99b0997dca5a079a14bd7f4`.
+13. Ampliados os testes MMIO para rejeição de escrita de 16 bits em faixa inválida.
+14. Ampliados os testes MMIO para rejeição de escrita de 32 bits com overflow — commit `0855b57c68a9bfad47cf926b65d4da6e0267ebf1`.
+15. Mantida a validação de todos os bytes e permissões antes de escritas MMIO largas.
+16. Mantida a ordem big-endian para acessos de 16 e 32 bits.
+17. Preservados os testes de prioridade estável no compositor VDP2.
+18. Preservados os testes de scroll positivo, negativo e extremo no VDP2.
+19. Não declarados completos CPU SH-2, VDP1/VDP2, SCU, CD Block, SCSP ou SMPC; continuam protótipos parciais.
+20. As alterações mais recentes de DMA e barramento ainda precisam de CI integrado próprio antes de serem consideradas aprovadas.
+
+**Critério de aceitação:** testes host, build Xenon ELF32 e empacotamento `default.xex` devem passar na mesma execução integrada. Isso ainda não prova boot em hardware nem compatibilidade de jogos.
