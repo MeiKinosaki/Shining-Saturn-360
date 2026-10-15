@@ -17,6 +17,7 @@ public:
     void clear_backdrop(std::uint16_t rgb555);
     bool set_layer(std::size_t index, const Layer& pixels, int priority, bool enabled = true);
     void disable_layer(std::size_t index);
+    bool set_scroll(std::size_t index, int x, int y);
     void compose();
     std::uint16_t pixel(std::size_t x, std::size_t y) const;
     const Layer& output() const { return output_; }
@@ -26,6 +27,8 @@ private:
         Layer pixels;
         int priority = 0;
         bool enabled = false;
+        int scroll_x = 0;
+        int scroll_y = 0;
     };
     std::uint16_t backdrop_ = 0;
     std::array<LayerState, 5> layers_{};
