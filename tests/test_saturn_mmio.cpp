@@ -29,6 +29,11 @@ int main() {
     assert(bank.read16(0x1002) == 0x5678);
     assert(bank.read16(0xFFFFFFFFu) == 0xFFFFu);
     assert(bank.read32(0xFFFFFFFFu) == 0xFFFFFFFFu);
+    assert(!bank.write16(0xFFFFFFFFu, 0x1234));
+    assert(!bank.write32(UINT32_MAX - 2u, 0x12345678u));
+    // Failed boundary writes must not alter the first mapped register.
+    assert(bank.read8(0x1000) == 0x12);
+
     bank.reset();
     assert(bank.read8(0x1002) == 0x12);
 }
