@@ -1,5 +1,6 @@
 #include "../src/saturn/vdp2_compositor.hpp"
 #include <cassert>
+#include <climits>
 
 int main() {
     using namespace shining_saturn;
@@ -41,4 +42,7 @@ int main() {
     scroll_test.compose();
     assert(scroll_test.pixel(319, 223) == 0x55AA);
     assert(!scroll_test.set_scroll(5, 0, 0));
+    assert(scroll_test.set_scroll(0, INT_MIN, INT_MAX));
+    scroll_test.compose();
+    assert(scroll_test.output().size() == Vdp2Compositor::Width * Vdp2Compositor::Height);
 }
