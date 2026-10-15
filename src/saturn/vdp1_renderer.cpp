@@ -33,49 +33,35 @@ void Vdp1Renderer::fill_rect(int x, int y, int width, int height, std::uint16_t 
 }
 
 void Vdp1Renderer::draw_line(int x0, int y0, int x1, int y1, std::uint16_t rgb555) {
-    // Cohen-Sutherland-style clipping keeps Bresenham iterations bounded.
-    const auto outcode = [](int x, int y) {
-        unsigned code = 0;
-        if (x < 0) code |= 1u; else if (x >= Width) code |= 2u;
-        if (y < 0) code |= 4u; else if (y >= Height) code |= 8u;
-        return code;
+    // Clip in floating-point before integer rasterization. This avoids overflow
+    // in differences/products for extreme caller-supplied coordinates.
+    double ax = x0, ay = y0, bx = x1, by = y1;
+    const double dx = bx - ax, dy = by - ay;
+    double t0 = 0.0, t1 = 1.0;
+    const auto clip = [&t0, &t1](double p, double q) {
+        if (p == 0.0) return q >= 0.0;
+        const double r = q / p;
+        if (p < 0.0) { if (r > t1) return false; if (r > t0) t0 = r; }
+        else { if (r < t0) return false; if (r < t1) t1 = r; }
+        return true;
     };
-    unsigned c0 = outcode(x0, y0), c1 = outcode(x1, y1);
-    while (true) {
-        if (!(c0 | c1)) break;
-        if (c0 & c1) return;
-        const unsigned out = c0 ? c0 : c1;
-        long long x = 0, y = 0;
-        if (out & 8u) {
-            if (y1 == y0) return;
-            y = Height - 1; x = static_cast<long long>(x0) + (static_cast<long long>(x1) - x0) * (y - y0) /
-                (static_cast<long long>(y1) - y0);
-        } else if (out & 4u) {
-            if (y1 == y0) return;
-            y = 0; x = static_cast<long long>(x0) + (static_cast<long long>(x1) - x0) * (y - y0) /
-                (static_cast<long long>(y1) - y0);
-        } else if (out & 2u) {
-            if (x1 == x0) return;
-            x = Width - 1; y = static_cast<long long>(y0) + (static_cast<long long>(y1) - y0) * (x - x0) /
-                (static_cast<long long>(x1) - x0);
-        } else {
-            if (x1 == x0) return;
-            x = 0; y = static_cast<long long>(y0) + (static_cast<long long>(y1) - y0) * (x - x0) /
-                (static_cast<long long>(x1) - x0);
-        }
-        if (out == c0) { x0 = static_cast<int>(x); y0 = static_cast<int>(y); c0 = outcode(x0, y0); }
-        else { x1 = static_cast<int>(x); y1 = static_cast<int>(y); c1 = outcode(x1, y1); }
-    }
-    int dx = std::abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-    int dy = -std::abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-    int error = dx + dy;
+    if (!clip(-dx, ax) || !clip(dx, (Width - 1) - ax) ||
+        !clip(-dy, ay) || !clip(dy, (Height - 1) - ay)) return;
+    const int sx0 = static_cast<int>(ax + t0 * dx + 0.5);
+    const int sy0 = static_cast<int>(ay + t0 * dy + 0.5);
+    const int sx1 = static_cast<int>(ax + t1 * dx + 0.5);
+    const int sy1 = static_cast<int>(ay + t1 * dy + 0.5);
+    int x = sx0, y = sy0;
+    const int delta_x = std::abs(sx1 - sx0), step_x = sx0 < sx1 ? 1 : -1;
+    const int delta_y = -std::abs(sy1 - sy0), step_y = sy0 < sy1 ? 1 : -1;
+    int error = delta_x + delta_y;
     const auto color = static_cast<std::uint16_t>(rgb555 & 0x7FFFu);
     while (true) {
-        pixels_[static_cast<std::size_t>(y0) * Width + x0] = color;
-        if (x0 == x1 && y0 == y1) break;
+        pixels_[static_cast<std::size_t>(y) * Width + x] = color;
+        if (x == sx1 && y == sy1) break;
         const int twice = 2 * error;
-        if (twice >= dy) { error += dy; x0 += sx; }
-        if (twice <= dx) { error += dx; y0 += sy; }
+        if (twice >= delta_y) { error += delta_y; x += step_x; }
+        if (twice <= delta_x) { error += delta_x; y += step_y; }
     }
 }
 
