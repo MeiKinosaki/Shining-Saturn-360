@@ -83,6 +83,30 @@ int main() {
     assert(cpu.step(bus) == StepResult::Executed);
     assert((cpu.sr & Sh2Core::kTBit) != 0);
 
+    // DIV0U clears Q/M/T but preserves unrelated SR bits.
+    cpu.sr = 0x00000301u | 0x00000004u;
+    bus.put16(0x114, 0x0019);
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert((cpu.sr & 0x00000301u) == 0);
+    assert((cpu.sr & 0x00000004u) != 0);
+
+    // DIV0S: exercise all sign combinations and preserve unrelated SR bits.
+    const std::uint32_t signs[][2] = {
+        {0u, 0u}, {0x80000000u, 0u},
+        {0u, 0x80000000u}, {0x80000000u, 0x80000000u}
+    };
+    const std::uint32_t expected_flags[] = {0u, 0x00000100u,
+                                             0x00000201u, 0x00000300u};
+    for (unsigned i = 0; i < 4; ++i) {
+        cpu.r[1] = signs[i][0]; // Rn supplies Q
+        cpu.r[2] = signs[i][1]; // Rm supplies M
+        cpu.sr = 0x00000301u | 0x00000004u;
+        bus.put16(0x116 + i * 2, 0x2217); // DIV0S R2,R1
+        assert(cpu.step(bus) == StepResult::Executed);
+        assert((cpu.sr & 0x00000301u) == expected_flags[i]);
+        assert((cpu.sr & 0x00000004u) != 0);
+    }
+
     std::cout << "SH-2 arithmetic edge-case tests passed\n";
     return 0;
 }
