@@ -19,7 +19,14 @@ int main() {
     compositor.disable_layer(1);
     compositor.compose();
     assert(compositor.pixel(1, 0) == 0x03E0);
-    assert(!compositor.set_layer(2, low, 0));
+    Vdp2Compositor::Layer middle(Vdp2Compositor::Width * Vdp2Compositor::Height, 0);
+    middle[0] = 0x1234;
+    assert(compositor.set_layer(2, middle, 3));
+    assert(compositor.set_layer(3, high, 4));
+    assert(compositor.set_layer(4, low, 5));
+    compositor.compose();
+    assert(compositor.pixel(0, 0) == 0x001F); // highest-priority opaque plane wins
+    assert(!compositor.set_layer(5, low, 0));
     assert(!compositor.set_layer(0, Vdp2Compositor::Layer(1, 0), 0));
     assert(compositor.pixel(320, 0) == 0);
 }
