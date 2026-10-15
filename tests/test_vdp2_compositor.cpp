@@ -45,4 +45,21 @@ int main() {
     assert(scroll_test.set_scroll(0, INT_MIN, INT_MAX));
     scroll_test.compose();
     assert(scroll_test.output().size() == Vdp2Compositor::Width * Vdp2Compositor::Height);
+
+    // Equal priorities keep deterministic plane-index order: the later plane wins.
+    Vdp2Compositor tie_test;
+    Vdp2Compositor::Layer tie_a(Vdp2Compositor::Width * Vdp2Compositor::Height, 0);
+    Vdp2Compositor::Layer tie_b(Vdp2Compositor::Width * Vdp2Compositor::Height, 0);
+    tie_a[7] = 0xFFFF; // RGB555 output must discard bit 15.
+    tie_b[7] = 0x2222;
+    tie_test.clear_backdrop(0xFFFF);
+    assert(tie_test.set_layer(0, tie_a, 4));
+    assert(tie_test.set_layer(1, tie_b, 4));
+    tie_test.compose();
+    assert(tie_test.pixel(7, 0) == 0x2222);
+    assert(tie_test.pixel(8, 0) == 0x7FFF); // backdrop is masked to RGB555.
+    assert(tie_test.set_layer(1, tie_b, 4, false));
+    tie_test.compose();
+    assert(tie_test.pixel(7, 0) == 0x7FFF);
 }
+
