@@ -205,3 +205,12 @@ A cada marco, acrescentar data, versão, resumo, arquivos alterados, hashes dos 
 - Promovida a versão do repositório de v0.44b para v0.45b; atualizados `VERSION`, `README.md` e criado `VERSION_v0.45b.md`.
 - A aprovação confirma apenas CI/compilação/empacotamento. Boot em hardware físico e compatibilidade com jogos continuam não comprovados.
 - Próximo marco: v0.46b, com expansão da cobertura SH-2 e começo de handlers MMIO específicos por dispositivo.
+
+
+## Trabalho em andamento para v0.46b — 2026-10-15
+- Aumentado o compositor VDP2 experimental de 2 para 5 planos de fundo de framebuffer, com ordenação estável por prioridade e teste de sobreposição para cinco planos.
+- Criada a suíte `tests/test_sh2_memory_ops.cpp` cobrindo extensão de sinal em cargas byte/word, cargas com pós-incremento, stores com pré-decremento e escrita big-endian de byte/word/longword.
+- Incluída a suíte de operações de memória no runner `tests/run-sh2-core-tests.sh`.
+- Commits: `5988b35eda5599cda4ce4bee3a769134d0939679`, `48aaf6e90f3c02e2bded0db1adc4423dfd4ef46e`, `dc361b3bd40a52530eb29b102b27febd56fc68c8`, `149ae85be56133db4ac035de2d712e303f41efd0`, `1440fb7d6e0c6b67ed54488e8b872dc938cd75d4`.
+- CI run `38718489736` está executando compilação Xenon ELF32 e testes host. Não promover v0.46b antes de todos os jobs relevantes terminarem com sucesso.
+- VDP2 continua sendo compositor de framebuffer experimental, não um renderer Saturn fiel; o core SH-2 segue parcial.
