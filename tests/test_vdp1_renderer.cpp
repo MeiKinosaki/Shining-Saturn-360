@@ -1,5 +1,6 @@
 #include "../src/saturn/vdp1_renderer.hpp"
 #include <cassert>
+#include <climits>
 
 int main() {
     shining_saturn::Vdp1Renderer vdp;
@@ -25,6 +26,14 @@ int main() {
     assert(vdp.pixel(10, 10) == 0x03E0);
     assert(vdp.pixel(11, 11) == 0x03E0);
     assert(vdp.pixel(14, 14) == 0);
+    // Extreme rectangle coordinates are clipped without signed integer overflow.
+    vdp.clear(0);
+    vdp.fill_rect(INT_MAX, INT_MAX, INT_MAX, INT_MAX, 0x1234);
+    assert(vdp.nonzero_pixels() == 0);
+    vdp.fill_rect(INT_MIN, 10, INT_MAX, 2, 0x2345);
+    assert(vdp.pixel(0, 10) == 0);
+    vdp.draw_line(INT_MIN, 0, INT_MAX, 223, 0x3456);
+    assert(vdp.nonzero_pixels() > 0);
     vdp.clear(0xFFFF);
     assert(vdp.pixel(0, 0) == 0x7FFF);
     assert(vdp.nonzero_pixels() == 320u * 224u);
