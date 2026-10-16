@@ -157,6 +157,32 @@ int main() {
     assert((cpu.sr & Sh2Core::kTBit) == 0);
     assert((cpu.sr & 0x00000204u) == 0x00000204u);
 
+    // CLRMAC clears both halves of the multiply-accumulate register.
+    cpu.mach = 0x12345678u;
+    cpu.macl = 0x9abcdef0u;
+    cpu.sr = 0x00000204u | Sh2Core::kTBit;
+    bus.put16(0x12a, 0x0028);
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.mach == 0u && cpu.macl == 0u);
+    assert((cpu.sr & (0x00000204u | Sh2Core::kTBit)) ==
+           (0x00000204u | Sh2Core::kTBit));
+
+    // DMULU.L writes the full unsigned 64-bit product to MACH:MACL.
+    cpu.r[1] = 0xffffffffu;
+    cpu.r[2] = 2u;
+    bus.put16(0x12c, 0x3125); // DMULU.L R2,R1
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.mach == 1u);
+    assert(cpu.macl == 0xfffffffeu);
+
+    // DMULS.L checks the signed high half for a negative product.
+    cpu.r[1] = 0xffffffffu; // -1
+    cpu.r[2] = 2u;
+    bus.put16(0x12e, 0x312d); // DMULS.L R2,R1
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.mach == 0xffffffffu);
+    assert(cpu.macl == 0xfffffffeu);
+
     std::cout << "SH-2 arithmetic edge-case tests passed\n";
     return 0;
 }
