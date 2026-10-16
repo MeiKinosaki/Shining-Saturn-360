@@ -118,6 +118,45 @@ int main() {
     assert((cpu.sr & Sh2Core::kTBit) != 0);
     assert((cpu.sr & 0x00000204u) == 0x00000204u);
 
+    // ADDC: carry-in participates in the result and carry-out updates T.
+    cpu.r[1] = 0xffffffffu;
+    cpu.r[2] = 0u;
+    cpu.sr = 0x00000204u | Sh2Core::kTBit;
+    bus.put16(0x122, 0x312e); // ADDC R2,R1
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[1] == 0u);
+    assert((cpu.sr & Sh2Core::kTBit) != 0);
+    assert((cpu.sr & 0x00000204u) == 0x00000204u);
+
+    // ADDC without carry-out clears T.
+    cpu.r[1] = 1u;
+    cpu.r[2] = 2u;
+    cpu.sr = 0x00000204u;
+    bus.put16(0x124, 0x312e);
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[1] == 3u);
+    assert((cpu.sr & Sh2Core::kTBit) == 0);
+
+    // SUBC: borrow-in participates in subtraction and can create a borrow.
+    cpu.r[1] = 0u;
+    cpu.r[2] = 0u;
+    cpu.sr = 0x00000204u | Sh2Core::kTBit;
+    bus.put16(0x126, 0x312a); // SUBC R2,R1
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[1] == 0xffffffffu);
+    assert((cpu.sr & Sh2Core::kTBit) != 0);
+    assert((cpu.sr & 0x00000204u) == 0x00000204u);
+
+    // SUBC without borrow clears T.
+    cpu.r[1] = 5u;
+    cpu.r[2] = 2u;
+    cpu.sr = 0x00000204u | Sh2Core::kTBit;
+    bus.put16(0x128, 0x312a);
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[1] == 2u);
+    assert((cpu.sr & Sh2Core::kTBit) == 0);
+    assert((cpu.sr & 0x00000204u) == 0x00000204u);
+
     std::cout << "SH-2 arithmetic edge-case tests passed\n";
     return 0;
 }
