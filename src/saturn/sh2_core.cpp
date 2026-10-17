@@ -141,6 +141,41 @@ StepResult Sh2Core::step(Bus& bus) {
         const std::uint32_t m_bit = (r[m] >> 31) & 1u;
         sr = (sr & ~0x00000301u) | (q << 8) | (m_bit << 9) |
              ((q ^ m_bit) ? kTBit : 0u);
+    } else if ((op & 0xf00f) == 0x3004) { // DIV1 Rm,Rn: one step of SH-2 division
+        const bool old_q = (sr & 0x00000100u) != 0;
+        const bool m_flag = (sr & 0x00000200u) != 0;
+        bool q_flag = (r[n] & 0x80000000u) != 0;
+        const std::uint32_t divisor = r[m];
+        r[n] = (r[n] << 1) | (sr & kTBit);
+        if (!old_q) {
+            if (!m_flag) {
+                const std::uint32_t before = r[n];
+                r[n] -= divisor;
+                const bool carry_or_borrow = r[n] > before;
+                q_flag = q_flag ? !carry_or_borrow : carry_or_borrow;
+            } else {
+                const std::uint32_t before = r[n];
+                r[n] += divisor;
+                const bool carry_or_borrow = r[n] < before;
+                q_flag = q_flag ? carry_or_borrow : !carry_or_borrow;
+            }
+        } else {
+            if (!m_flag) {
+                const std::uint32_t before = r[n];
+                r[n] += divisor;
+                const bool carry_or_borrow = r[n] < before;
+                q_flag = q_flag ? !carry_or_borrow : carry_or_borrow;
+            } else {
+                const std::uint32_t before = r[n];
+                r[n] -= divisor;
+                const bool carry_or_borrow = r[n] > before;
+                q_flag = q_flag ? carry_or_borrow : !carry_or_borrow;
+            }
+        }
+        const std::uint32_t q_bit = q_flag ? 0x00000100u : 0u;
+        const std::uint32_t m_bit = m_flag ? 0x00000200u : 0u;
+        const std::uint32_t t_bit = (q_flag == m_flag) ? kTBit : 0u;
+        sr = (sr & ~0x00000301u) | q_bit | m_bit | t_bit;
     } else if (op == 0x0008) { // CLRT
         sr &= ~kTBit;
     } else if (op == 0x0018) { // SETT
