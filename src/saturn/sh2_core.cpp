@@ -208,6 +208,36 @@ StepResult Sh2Core::step(Bus& bus) {
         macl = r[n];
     } else if ((op & 0xf0ff) == 0x402a) { // LDS Rm,PR
         pr = r[n];
+    } else if ((op & 0xf0ff) == 0x4003) { // STC.L SR,@-Rn
+        r[n] -= 4u; bus.write32(r[n], sr);
+    } else if ((op & 0xf0ff) == 0x4013) { // STC.L GBR,@-Rn
+        r[n] -= 4u; bus.write32(r[n], gbr);
+    } else if ((op & 0xf0ff) == 0x4023) { // STC.L VBR,@-Rn
+        r[n] -= 4u; bus.write32(r[n], vbr);
+    } else if ((op & 0xf0ff) == 0x4007) { // LDC.L @Rm+,SR
+        const std::uint32_t address = r[n]; const std::uint32_t value = bus.read32(address);
+        r[n] += 4u; sr = value;
+    } else if ((op & 0xf0ff) == 0x4017) { // LDC.L @Rm+,GBR
+        const std::uint32_t address = r[n]; const std::uint32_t value = bus.read32(address);
+        r[n] += 4u; gbr = value;
+    } else if ((op & 0xf0ff) == 0x4027) { // LDC.L @Rm+,VBR
+        const std::uint32_t address = r[n]; const std::uint32_t value = bus.read32(address);
+        r[n] += 4u; vbr = value;
+    } else if ((op & 0xf0ff) == 0x4002) { // STS.L MACH,@-Rn
+        r[n] -= 4u; bus.write32(r[n], mach);
+    } else if ((op & 0xf0ff) == 0x4012) { // STS.L MACL,@-Rn
+        r[n] -= 4u; bus.write32(r[n], macl);
+    } else if ((op & 0xf0ff) == 0x4022) { // STS.L PR,@-Rn
+        r[n] -= 4u; bus.write32(r[n], pr);
+    } else if ((op & 0xf0ff) == 0x4006) { // LDS.L @Rm+,MACH
+        const std::uint32_t address = r[n]; const std::uint32_t value = bus.read32(address);
+        r[n] += 4u; mach = value;
+    } else if ((op & 0xf0ff) == 0x4016) { // LDS.L @Rm+,MACL
+        const std::uint32_t address = r[n]; const std::uint32_t value = bus.read32(address);
+        r[n] += 4u; macl = value;
+    } else if ((op & 0xf0ff) == 0x4026) { // LDS.L @Rm+,PR
+        const std::uint32_t address = r[n]; const std::uint32_t value = bus.read32(address);
+        r[n] += 4u; pr = value;
     } else if (op == 0x0028) { // CLRMAC
         mach = macl = 0;
     } else if ((op & 0xf00f) == 0x0007) { // MUL.L Rm,Rn
