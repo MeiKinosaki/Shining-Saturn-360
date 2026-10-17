@@ -57,5 +57,18 @@ int main() {
     assert(bus.read8(0x06000023u) == 0x40);
     assert(bus.read32(0x06000020u) == 0x10203040u);
 
+    // Unmapped addresses stay open-bus and do not alias valid RAM.
+    bus.write8(0x00400000u, 0x66);
+    assert(bus.read8(0x00400000u) == 0xff);
+    assert(bus.read8(0x00200000u) == 0xab);
+    assert(bus.read8(0x06000010u) == 0xcd);
+
+    // Adjacent RAM bytes do not bleed across a 16-bit write.
+    bus.write8(0x00200030u, 0x5a);
+    bus.write8(0x00200031u, 0xc3);
+    bus.write16(0x00200032u, 0x1234u);
+    assert(bus.read16(0x00200030u) == 0x5ac3u);
+    assert(bus.read16(0x00200032u) == 0x1234u);
+
     std::cout << "Saturn memory adapter tests passed\n";
 }
