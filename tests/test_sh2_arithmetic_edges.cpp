@@ -312,6 +312,42 @@ int main() {
     assert((cpu.sr & Sh2Core::kTBit) == 0);
     assert((cpu.sr & 0x00000204u) == 0x00000204u);
 
+    // GBR-relative byte logical instructions operate on exactly one memory byte.
+    cpu.reset(0x150);
+    cpu.gbr = 0x300;
+    cpu.r[0] = 0x20;
+    bus.write8(0x320, 0xa5);
+    cpu.sr = 0x00000204u | Sh2Core::kTBit;
+    bus.put16(0x150, 0xcc0f); // TST.B #0x0f,@(R0,GBR)
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert((cpu.sr & Sh2Core::kTBit) == 0); // 0xa5 & 0x0f != 0
+    assert((cpu.sr & 0x00000204u) == 0x00000204u);
+    assert(bus.read8(0x320) == 0xa5u);
+
+    cpu.reset(0x152);
+    cpu.gbr = 0x300;
+    cpu.r[0] = 0x20;
+    bus.write8(0x320, 0xa5);
+    bus.put16(0x152, 0xcd3c); // AND.B #0x3c,@(R0,GBR)
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(bus.read8(0x320) == 0x24u);
+
+    cpu.reset(0x154);
+    cpu.gbr = 0x300;
+    cpu.r[0] = 0x20;
+    bus.write8(0x320, 0xa5);
+    bus.put16(0x154, 0xce0f); // XOR.B #0x0f,@(R0,GBR)
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(bus.read8(0x320) == 0xaau);
+
+    cpu.reset(0x156);
+    cpu.gbr = 0x300;
+    cpu.r[0] = 0x20;
+    bus.write8(0x320, 0xa0);
+    bus.put16(0x156, 0xcf05); // OR.B #0x05,@(R0,GBR)
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(bus.read8(0x320) == 0xa5u);
+
     std::cout << "SH-2 arithmetic edge-case tests passed\n";
     return 0;
 }
