@@ -184,6 +184,18 @@ StepResult Sh2Core::step(Bus& bus) {
         sr &= ~0x00000002u;
     } else if (op == 0x0058) { // SETS: set S bit
         sr |= 0x00000002u;
+    } else if ((op & 0xf0ff) == 0x0002) { // STC SR,Rn
+        r[n] = sr;
+    } else if ((op & 0xf0ff) == 0x0012) { // STC GBR,Rn
+        r[n] = gbr;
+    } else if ((op & 0xf0ff) == 0x0022) { // STC VBR,Rn
+        r[n] = vbr;
+    } else if ((op & 0xf0ff) == 0x400e) { // LDC Rm,SR
+        sr = r[n];
+    } else if ((op & 0xf0ff) == 0x401e) { // LDC Rm,GBR
+        gbr = r[n];
+    } else if ((op & 0xf0ff) == 0x402e) { // LDC Rm,VBR
+        vbr = r[n];
     } else if (op == 0x0028) { // CLRMAC
         mach = macl = 0;
     } else if ((op & 0xf00f) == 0x0007) { // MUL.L Rm,Rn
