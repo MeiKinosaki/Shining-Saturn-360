@@ -196,6 +196,18 @@ StepResult Sh2Core::step(Bus& bus) {
         gbr = r[n];
     } else if ((op & 0xf0ff) == 0x402e) { // LDC Rm,VBR
         vbr = r[n];
+    } else if ((op & 0xf0ff) == 0x000a) { // STS MACH,Rn
+        r[n] = mach;
+    } else if ((op & 0xf0ff) == 0x001a) { // STS MACL,Rn
+        r[n] = macl;
+    } else if ((op & 0xf0ff) == 0x002a) { // STS PR,Rn
+        r[n] = pr;
+    } else if ((op & 0xf0ff) == 0x400a) { // LDS Rm,MACH
+        mach = r[n];
+    } else if ((op & 0xf0ff) == 0x401a) { // LDS Rm,MACL
+        macl = r[n];
+    } else if ((op & 0xf0ff) == 0x402a) { // LDS Rm,PR
+        pr = r[n];
     } else if (op == 0x0028) { // CLRMAC
         mach = macl = 0;
     } else if ((op & 0xf00f) == 0x0007) { // MUL.L Rm,Rn
