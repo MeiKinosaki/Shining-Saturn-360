@@ -180,6 +180,10 @@ StepResult Sh2Core::step(Bus& bus) {
         sr &= ~kTBit;
     } else if (op == 0x0018) { // SETT
         sr |= kTBit;
+    } else if (op == 0x0048) { // CLRS: clear S bit
+        sr &= ~0x00000002u;
+    } else if (op == 0x0058) { // SETS: set S bit
+        sr |= 0x00000002u;
     } else if (op == 0x0028) { // CLRMAC
         mach = macl = 0;
     } else if ((op & 0xf00f) == 0x0007) { // MUL.L Rm,Rn
