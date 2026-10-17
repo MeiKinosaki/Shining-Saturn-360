@@ -290,6 +290,28 @@ int main() {
     assert(cpu.r[1] == 0x00000007u);
     assert((cpu.sr & 0x00000200u) != 0);
 
+    // TAS.B @Rn tests the previous byte for zero, then sets its sign bit in memory.
+    cpu.reset(0x14c);
+    cpu.r[3] = 0x200;
+    bus.write8(0x200, 0x00);
+    cpu.sr = 0x00000204u;
+    bus.put16(0x14c, 0x431b); // TAS.B @R3
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(bus.read8(0x200) == 0x80u);
+    assert((cpu.sr & Sh2Core::kTBit) != 0);
+    assert((cpu.sr & 0x00000204u) == 0x00000204u);
+
+    // A nonzero byte clears T and still sets the high bit without touching other bytes.
+    cpu.reset(0x14e);
+    cpu.r[3] = 0x201;
+    bus.write8(0x201, 0x35);
+    cpu.sr = 0x00000204u | Sh2Core::kTBit;
+    bus.put16(0x14e, 0x431b);
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(bus.read8(0x201) == 0xb5u);
+    assert((cpu.sr & Sh2Core::kTBit) == 0);
+    assert((cpu.sr & 0x00000204u) == 0x00000204u);
+
     std::cout << "SH-2 arithmetic edge-case tests passed\n";
     return 0;
 }
