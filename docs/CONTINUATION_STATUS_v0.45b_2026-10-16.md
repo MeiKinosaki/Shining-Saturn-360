@@ -41,3 +41,10 @@ A versão permanece v0.45b até que:
 5. as limitações de teste em hardware sejam explicitamente registradas.
 
 CI verde confirma apenas os jobs executados; não prova, por si só, boot em console ou compatibilidade com jogos comerciais.
+
+## Atualização incremental — 2026-10-17
+
+- Commit `b0ad2d3c`: ampliou `tests/test_sh2_arithmetic_edges.cpp` com casos de comparação assinada/não assinada, `CMP/STR` e preservação de SR em `AND`, `XOR` e `OR`. CI iniciada; resultado ainda não confirmado.
+- Commit `b6b8410d`: acrescentou casos de borda para `SHLL`, `SHLR`, `ROTCL` e `ROTCR`, verificando o bit T e a preservação dos bits não relacionados de SR. CI iniciada; resultado ainda não confirmado.
+- Estes commits ampliam a cobertura de testes; não representam por si só novas instruções implementadas nem avanço equivalente em todos os subsistemas.
+- A versão oficial continua **v0.45b**. Próxima promoção depende de CI verde para os commits relevantes, inspeção dos artefatos ELF32/XEX e validações documentadas.
