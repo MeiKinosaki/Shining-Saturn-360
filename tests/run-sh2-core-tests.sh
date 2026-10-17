@@ -6,6 +6,7 @@ cxx="${CXX:-g++}"; flags=(-std=c++17 -Wall -Wextra -Werror -pedantic)
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_core.cpp" -o "$tmpdir/test_sh2_core"; "$tmpdir/test_sh2_core"
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_memory_ops.cpp" -o "$tmpdir/test_sh2_memory_ops"; "$tmpdir/test_sh2_memory_ops"
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_arithmetic_edges.cpp" -o "$tmpdir/test_sh2_arithmetic_edges"; "$tmpdir/test_sh2_arithmetic_edges"
+"$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_sr_flags.cpp" -o "$tmpdir/test_sh2_sr_flags"; "$tmpdir/test_sh2_sr_flags"
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_delay_slots.cpp" -o "$tmpdir/test_sh2_delay_slots"; "$tmpdir/test_sh2_delay_slots"
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_control_flow.cpp" -o "$tmpdir/test_sh2_control_flow"; "$tmpdir/test_sh2_control_flow"
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/src/saturn/memory_bus.cpp" "$root/tests/test_memory_bus.cpp" -o "$tmpdir/test_memory_bus"; "$tmpdir/test_memory_bus"
