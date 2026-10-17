@@ -123,6 +123,55 @@ int main() {
     assert(cpu.step(bus) == StepResult::Executed);
     assert(cpu.r[5] == 9 && cpu.pc == 0x3a0);
 
+    // BRA executes the delay slot before applying a signed displacement.
+    cpu.reset(0x400);
+    bus.put16(0x400, 0xafff); // BRA -1 -> 0x402 (PC+4-2)
+    bus.put16(0x402, 0xeb0a); // MOV #10,R11 (delay slot)
+    assert(cpu.step(bus) == StepResult::Executed && cpu.pc == 0x402);
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[11] == 10 && cpu.pc == 0x402);
+
+    // BSR captures the return address after the delay slot.
+    cpu.reset(0x420);
+    bus.put16(0x420, 0xb001); // BSR +1 -> 0x426
+    bus.put16(0x422, 0xec0b); // MOV #11,R12 (delay slot)
+    bus.put16(0x426, 0x0009); // NOP target
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.pr == 0x424 && cpu.pc == 0x422);
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[12] == 11 && cpu.pc == 0x426);
+
+    // BRAF computes its target from the instruction after the delay slot.
+    cpu.reset(0x440);
+    cpu.r[3] = 6;
+    bus.put16(0x440, 0x2303); // BRAF R3
+    bus.put16(0x442, 0xed0c); // MOV #12,R13 (delay slot)
+    bus.put16(0x44a, 0x0009); // target = 0x444 + 6
+    assert(cpu.step(bus) == StepResult::Executed && cpu.pc == 0x442);
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[13] == 12 && cpu.pc == 0x44a);
+
+    // BSRF also records PR while using a register-relative target.
+    cpu.reset(0x460);
+    cpu.r[4] = 8;
+    bus.put16(0x460, 0x0403); // BSRF R4
+    bus.put16(0x462, 0xee0d); // MOV #13,R14 (delay slot)
+    bus.put16(0x46c, 0x0009); // target = 0x464 + 8
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.pr == 0x464 && cpu.pc == 0x462);
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[14] == 13 && cpu.pc == 0x46c);
+
+    // RTS waits for its delay slot before returning to PR.
+    cpu.reset(0x480);
+    cpu.pr = 0x4a0;
+    bus.put16(0x480, 0x000b); // RTS
+    bus.put16(0x482, 0xef0e); // MOV #14,R15 (delay slot)
+    bus.put16(0x4a0, 0x0009);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.pc == 0x482);
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[15] == 14 && cpu.pc == 0x4a0);
+
     std::cout << "SH-2 control-flow tests passed\n";
     return 0;
 }
