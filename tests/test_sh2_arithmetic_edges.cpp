@@ -236,6 +236,38 @@ int main() {
     assert(cpu.r[1] == 0xf000000fu);
     assert(cpu.sr == (0x00000204u | Sh2Core::kTBit));
 
+    // Shift/rotate boundaries update T from the shifted-out bit.
+    cpu.r[1] = 0x80000001u;
+    cpu.sr = 0x00000204u;
+    bus.put16(0x140, 0x4100); // SHLL R1
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[1] == 0x00000002u);
+    assert((cpu.sr & Sh2Core::kTBit) != 0);
+    assert((cpu.sr & 0x00000204u) == 0x00000204u);
+
+    cpu.r[1] = 3u;
+    cpu.sr = 0x00000204u;
+    bus.put16(0x142, 0x4101); // SHLR R1
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[1] == 1u);
+    assert((cpu.sr & Sh2Core::kTBit) != 0);
+
+    cpu.r[1] = 0x80000000u;
+    cpu.sr = 0x00000204u | Sh2Core::kTBit;
+    bus.put16(0x144, 0x4124); // ROTCL R1
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[1] == 1u);
+    assert((cpu.sr & Sh2Core::kTBit) != 0);
+    assert((cpu.sr & 0x00000204u) == 0x00000204u);
+
+    cpu.r[1] = 1u;
+    cpu.sr = 0x00000204u | Sh2Core::kTBit;
+    bus.put16(0x146, 0x4125); // ROTCR R1
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[1] == 0x80000000u);
+    assert((cpu.sr & Sh2Core::kTBit) != 0);
+    assert((cpu.sr & 0x00000204u) == 0x00000204u);
+
     std::cout << "SH-2 arithmetic edge-case tests passed\n";
     return 0;
 }
