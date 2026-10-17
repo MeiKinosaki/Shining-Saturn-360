@@ -268,6 +268,18 @@ StepResult Sh2Core::step(Bus& bus) {
         r[0] ^= op & 0xff;
     } else if ((op & 0xff00) == 0xcb00) { // OR #imm,R0
         r[0] |= op & 0xff;
+    } else if ((op & 0xff00) == 0xcc00) { // TST.B #imm,@(R0,GBR)
+        const std::uint8_t value = bus.read8(gbr + r[0]);
+        sr = (sr & ~kTBit) | ((value & (op & 0xffu)) == 0 ? kTBit : 0u);
+    } else if ((op & 0xff00) == 0xcd00) { // AND.B #imm,@(R0,GBR)
+        const std::uint32_t address = gbr + r[0];
+        bus.write8(address, static_cast<std::uint8_t>(bus.read8(address) & (op & 0xffu)));
+    } else if ((op & 0xff00) == 0xce00) { // XOR.B #imm,@(R0,GBR)
+        const std::uint32_t address = gbr + r[0];
+        bus.write8(address, static_cast<std::uint8_t>(bus.read8(address) ^ (op & 0xffu)));
+    } else if ((op & 0xff00) == 0xcf00) { // OR.B #imm,@(R0,GBR)
+        const std::uint32_t address = gbr + r[0];
+        bus.write8(address, static_cast<std::uint8_t>(bus.read8(address) | (op & 0xffu)));
     } else if ((op & 0xf00f) == 0x6000) { // MOV.B @Rm,Rn
         r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(static_cast<std::int8_t>(bus.read8(r[m]))));
     } else if ((op & 0xf00f) == 0x6001) { // MOV.W @Rm,Rn
