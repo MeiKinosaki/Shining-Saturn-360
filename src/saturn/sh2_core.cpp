@@ -235,6 +235,10 @@ StepResult Sh2Core::step(Bus& bus) {
         sr = (sr & ~kTBit) | (static_cast<std::int32_t>(r[n]) >= 0 ? kTBit : 0u);
     } else if ((op & 0xf0ff) == 0x4015) { // CMP/PL Rn
         sr = (sr & ~kTBit) | (static_cast<std::int32_t>(r[n]) > 0 ? kTBit : 0u);
+    } else if ((op & 0xf0ff) == 0x401b) { // TAS.B @Rn
+        const std::uint8_t value = bus.read8(r[n]);
+        sr = (sr & ~kTBit) | (value == 0 ? kTBit : 0u);
+        bus.write8(r[n], static_cast<std::uint8_t>(value | 0x80u));
     } else if ((op & 0xf00f) == 0x6007) { // NOT Rm,Rn
         r[n] = ~r[m];
     } else if ((op & 0xf00f) == 0x600b) { // NEG Rm,Rn
