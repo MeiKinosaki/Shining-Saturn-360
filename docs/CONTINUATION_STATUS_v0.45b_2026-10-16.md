@@ -48,3 +48,14 @@ CI verde confirma apenas os jobs executados; não prova, por si só, boot em con
 - Commit `b6b8410d`: acrescentou casos de borda para `SHLL`, `SHLR`, `ROTCL` e `ROTCR`, verificando o bit T e a preservação dos bits não relacionados de SR. CI iniciada; resultado ainda não confirmado.
 - Estes commits ampliam a cobertura de testes; não representam por si só novas instruções implementadas nem avanço equivalente em todos os subsistemas.
 - A versão oficial continua **v0.45b**. Próxima promoção depende de CI verde para os commits relevantes, inspeção dos artefatos ELF32/XEX e validações documentadas.
+
+## Atualização adicional — 2026-10-17 (rodada de regressões)
+
+- CI do commit `b0ad2d3c`: sucesso; testes de comparações e operações lógicas passaram.
+- CI do commit `b6b8410d`: sucesso; testes de deslocamentos/rotações passaram.
+- CI do commit `58c4e7ce`: sucesso; a codificação do opcode BRAF no teste foi corrigida após a primeira execução de controle de fluxo falhar.
+- CI do commit `8e0cae36`: sucesso; acessos big-endian de 16/32 bits na RAM passaram.
+- Commit `946adb05`: adiciona testes para orçamento DMA zero e cancelamento/reset; CI ainda precisa ser confirmada.
+- Commit `c96ee324`: adiciona testes para escritas em endereço não mapeado e isolamento entre bytes adjacentes da RAM; CI ainda precisa ser confirmada.
+- A execução de controle de fluxo em `841c0a6c` falhou em um teste BRAF; a causa no teste foi corrigida no commit subsequente `58c4e7ce`, cuja CI terminou com sucesso.
+- Esses avanços são testes de regressão. Não significam que todas as instruções, dispositivos ou jogos estejam completos. A versão oficial permanece **v0.45b** até validar os commits recentes, inspecionar artefatos e registrar limites de hardware.
