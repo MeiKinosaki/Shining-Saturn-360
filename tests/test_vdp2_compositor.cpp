@@ -46,6 +46,34 @@ int main() {
     scroll_test.compose();
     assert(scroll_test.output().size() == Vdp2Compositor::Width * Vdp2Compositor::Height);
 
+    // Layer enable/disable and backdrop updates are reflected on the next compose.
+    Vdp2Compositor toggle_test;
+    Vdp2Compositor::Layer stripe(Vdp2Compositor::Width * Vdp2Compositor::Height, 0);
+    stripe[2 * Vdp2Compositor::Width + 3] = 0x1357;
+    assert(toggle_test.set_layer(0, stripe, 1, false));
+    toggle_test.clear_backdrop(0x2468);
+    toggle_test.compose();
+    assert(toggle_test.pixel(3, 2) == 0x2468);
+    assert(toggle_test.set_layer(0, stripe, 1, true));
+    toggle_test.compose();
+    assert(toggle_test.pixel(3, 2) == 0x1357);
+    toggle_test.clear_backdrop(0x1111);
+    toggle_test.disable_layer(0);
+    toggle_test.compose();
+    assert(toggle_test.pixel(3, 2) == 0x1111);
+
+    // Transparent overlay pixels leave the opaque lower layer visible.
+    Vdp2Compositor::Layer base(Vdp2Compositor::Width * Vdp2Compositor::Height, 0);
+    Vdp2Compositor::Layer overlay(Vdp2Compositor::Width * Vdp2Compositor::Height, 0);
+    base[9] = 0x0123;
+    overlay[10] = 0x0456;
+    Vdp2Compositor transparency_test;
+    assert(transparency_test.set_layer(0, base, 1));
+    assert(transparency_test.set_layer(1, overlay, 2));
+    transparency_test.compose();
+    assert(transparency_test.pixel(9, 0) == 0x0123);
+    assert(transparency_test.pixel(10, 0) == 0x0456);
+
     // Equal priorities keep deterministic plane-index order: the later plane wins.
     Vdp2Compositor tie_test;
     Vdp2Compositor::Layer tie_a(Vdp2Compositor::Width * Vdp2Compositor::Height, 0);
