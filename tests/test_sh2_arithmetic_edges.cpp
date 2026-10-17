@@ -268,6 +268,28 @@ int main() {
     assert((cpu.sr & Sh2Core::kTBit) != 0);
     assert((cpu.sr & 0x00000204u) == 0x00000204u);
 
+    // DIV1 Rm,Rn: one unsigned division step updates Q/T and preserves M.
+    // Q=0, M=0, positive shifted dividend; subtraction does not borrow.
+    cpu.reset(0x148);
+    cpu.r[1] = 0x00000003u;
+    cpu.r[2] = 0x00000001u;
+    cpu.sr = 0x00000004u;
+    bus.put16(0x148, 0x3124); // DIV1 R2,R1
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[1] == 0x00000005u);
+    assert((cpu.sr & 0x00000301u) == 0x00000001u);
+    assert((cpu.sr & 0x00000004u) != 0);
+
+    // Q=0, M=1 follows the add path and keeps M unchanged.
+    cpu.reset(0x14a);
+    cpu.r[1] = 0x00000003u;
+    cpu.r[2] = 0x00000001u;
+    cpu.sr = 0x00000200u;
+    bus.put16(0x14a, 0x3124);
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[1] == 0x00000007u);
+    assert((cpu.sr & 0x00000200u) != 0);
+
     std::cout << "SH-2 arithmetic edge-case tests passed\n";
     return 0;
 }
