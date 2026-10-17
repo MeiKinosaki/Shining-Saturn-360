@@ -43,6 +43,21 @@ int main() {
     vdp.clear(0);
     vdp.fill_triangle(INT_MIN, INT_MIN, INT_MAX, 100, 100, INT_MAX, 0x4567);
     assert(vdp.nonzero_pixels() > 0);
+    // Degenerate triangles (all points collinear) must not draw.
+    vdp.clear(0);
+    vdp.fill_triangle(2, 2, 8, 8, 14, 14, 0x1234);
+    assert(vdp.nonzero_pixels() == 0);
+
+    // Reversing triangle winding preserves the filled interior.
+    vdp.fill_triangle(10, 10, 14, 10, 10, 14, 0x03E0);
+    const auto forward_count = vdp.nonzero_pixels();
+    assert(vdp.pixel(11, 11) == 0x03E0);
+    vdp.clear(0);
+    vdp.fill_triangle(10, 14, 14, 10, 10, 10, 0x03E0);
+    assert(vdp.nonzero_pixels() == forward_count);
+    assert(vdp.pixel(11, 11) == 0x03E0);
+    assert(vdp.pixel(14, 14) == 0);
+
     vdp.clear(0xFFFF);
     assert(vdp.pixel(0, 0) == 0x7FFF);
     assert(vdp.nonzero_pixels() == 320u * 224u);
