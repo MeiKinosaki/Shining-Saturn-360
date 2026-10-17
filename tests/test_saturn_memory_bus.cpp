@@ -44,5 +44,18 @@ int main() {
     assert(bus.read8(0x00100000u) == 0x19);
     assert(!bus.mapped_ram_or_rom(0x00400000u));
     assert(bus.read8(0x00400000u) == 0xff);
+    // Work RAM multi-width access uses big-endian ordering consistently.
+    bus.write16(0x00200020u, 0xa1b2u);
+    assert(bus.read8(0x00200020u) == 0xa1);
+    assert(bus.read8(0x00200021u) == 0xb2);
+    assert(bus.read16(0x00200020u) == 0xa1b2u);
+
+    bus.write32(0x06000020u, 0x10203040u);
+    assert(bus.read8(0x06000020u) == 0x10);
+    assert(bus.read8(0x06000021u) == 0x20);
+    assert(bus.read8(0x06000022u) == 0x30);
+    assert(bus.read8(0x06000023u) == 0x40);
+    assert(bus.read32(0x06000020u) == 0x10203040u);
+
     std::cout << "Saturn memory adapter tests passed\n";
 }
