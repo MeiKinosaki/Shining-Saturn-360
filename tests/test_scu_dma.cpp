@@ -84,5 +84,32 @@ int main() {
         assert(bus.bytes[180 + i] == bus.bytes[48 + i]);
     }
 
+    // A zero-byte budget must not advance or complete an active transfer.
+    dma.reset();
+    assert(dma.configure(0, 16, 200, 2));
+    assert(dma.start(0));
+    assert(dma.step(bus, 0) == 0);
+    assert(dma.channel(0)->active);
+    assert(!dma.channel(0)->completed);
+    assert(dma.channel(0)->remaining == 2);
+    assert(dma.step(bus, 1) == 1);
+    assert(dma.channel(0)->remaining == 1);
+    assert(dma.step(bus, 1) == 1);
+    assert(dma.channel(0)->completed);
+    assert(bus.bytes[200] == bus.bytes[16]);
+    assert(bus.bytes[201] == bus.bytes[17]);
+
+    // Reset cancels every active channel and clears per-channel progress.
+    dma.reset();
+    assert(dma.configure(0, 16, 210, 4));
+    assert(dma.configure(2, 32, 220, 3));
+    assert(dma.start(0) && dma.start(2));
+    assert(dma.step(bus, 2) == 2);
+    dma.reset();
+    assert(!dma.busy());
+    assert(!dma.channel(0)->active && !dma.channel(2)->active);
+    assert(dma.channel(0)->remaining == 0 && dma.channel(2)->remaining == 0);
+    assert(!dma.channel(0)->completed && !dma.channel(2)->completed);
+
     std::cout << "SCU DMA prototype tests passed\n";
 }
