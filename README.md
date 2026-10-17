@@ -175,3 +175,6 @@ sort=0
 ```
 
 Os valores são validados e limitados a intervalos seguros. **Limite atual:** a camada é testável com armazenamento simulado; ainda falta implementar o adaptador de arquivo real para o Xbox 360 e conectar essas opções à interface e aos subsistemas de vídeo/desempenho. A presença das opções no arquivo não significa que filtros gráficos ou VSync estejam funcionais.
+## Plano de desenvolvimento em 500 etapas
+
+O roteiro sequencial completo está em [ROADMAP_500_ETAPAS.md](ROADMAP_500_ETAPAS.md). Ele divide o trabalho em cinco blocos de 100 etapas: CPU SH-2; memória/barramento/SCU-DMA; VDP1/VDP2; CD Block/SCSP/SMPC; integração, interface e build Xenon. As etapas são planejamento e só devem ser marcadas como concluídas com implementação ou evidência de teste. A versão oficial continua v0.45b até a validação do próximo marco. Não há confirmação de boot em hardware real ou compatibilidade com jogos comerciais.
