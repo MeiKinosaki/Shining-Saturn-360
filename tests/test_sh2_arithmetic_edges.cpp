@@ -183,6 +183,59 @@ int main() {
     assert(cpu.mach == 0xffffffffu);
     assert(cpu.macl == 0xfffffffeu);
 
+    // Compare instructions update only T and cover signed/unsigned boundaries.
+    cpu.r[1] = 0x80000000u;
+    cpu.r[2] = 1u;
+    cpu.sr = 0x00000204u;
+    bus.put16(0x130, 0x3123); // CMP/GE R2,R1 (signed: INT_MIN >= 1 is false)
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert((cpu.sr & Sh2Core::kTBit) == 0);
+    assert((cpu.sr & 0x00000204u) == 0x00000204u);
+
+    cpu.r[1] = 0xffffffffu;
+    cpu.r[2] = 1u;
+    bus.put16(0x132, 0x3122); // CMP/HS R2,R1 (unsigned: UINT_MAX >= 1)
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert((cpu.sr & Sh2Core::kTBit) != 0);
+    bus.put16(0x134, 0x3126); // CMP/HI R2,R1 (UINT_MAX > 1)
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert((cpu.sr & Sh2Core::kTBit) != 0);
+
+    cpu.r[1] = 0x80000000u;
+    cpu.r[2] = 0x7fffffffu;
+    bus.put16(0x136, 0x3127); // CMP/GT R2,R1 (signed: INT_MIN > INT_MAX)
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert((cpu.sr & Sh2Core::kTBit) == 0);
+
+    cpu.r[1] = 0x12345678u;
+    cpu.r[2] = 0x87654378u; // one matching byte is sufficient for CMP/STR
+    bus.put16(0x138, 0x212c);
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert((cpu.sr & Sh2Core::kTBit) != 0);
+
+    // Register logical operations preserve SR, including T and unrelated flags.
+    cpu.r[1] = 0xf0f00ff0u;
+    cpu.r[2] = 0x0ff0330fu;
+    cpu.sr = 0x00000204u | Sh2Core::kTBit;
+    bus.put16(0x13a, 0x2129); // AND R2,R1
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[1] == 0x00f00300u);
+    assert(cpu.sr == (0x00000204u | Sh2Core::kTBit));
+
+    cpu.r[1] = 0xaaaa5555u;
+    cpu.r[2] = 0x0f0f0f0fu;
+    bus.put16(0x13c, 0x212au); // XOR R2,R1
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[1] == 0xa5a55a5au);
+    assert(cpu.sr == (0x00000204u | Sh2Core::kTBit));
+
+    cpu.r[1] = 0xf0000000u;
+    cpu.r[2] = 0x0000000fu;
+    bus.put16(0x13e, 0x212bu); // OR R2,R1
+    assert(cpu.step(bus) == StepResult::Executed);
+    assert(cpu.r[1] == 0xf000000fu);
+    assert(cpu.sr == (0x00000204u | Sh2Core::kTBit));
+
     std::cout << "SH-2 arithmetic edge-case tests passed\n";
     return 0;
 }
