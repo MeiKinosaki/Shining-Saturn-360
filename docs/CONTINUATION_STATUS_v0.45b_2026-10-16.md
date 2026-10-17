@@ -59,3 +59,11 @@ CI verde confirma apenas os jobs executados; não prova, por si só, boot em con
 - Commit `c96ee324`: adiciona testes para escritas em endereço não mapeado e isolamento entre bytes adjacentes da RAM; CI ainda precisa ser confirmada.
 - A execução de controle de fluxo em `841c0a6c` falhou em um teste BRAF; a causa no teste foi corrigida no commit subsequente `58c4e7ce`, cuja CI terminou com sucesso.
 - Esses avanços são testes de regressão. Não significam que todas as instruções, dispositivos ou jogos estejam completos. A versão oficial permanece **v0.45b** até validar os commits recentes, inspecionar artefatos e registrar limites de hardware.
+
+## Rodada de continuidade — 2026-10-17 (VDP1/VDP2)
+
+- `7221d760`: adicionados testes para triângulos degenerados e simetria da orientação dos vértices no rasterizador VDP1. CI em execução no momento do registro.
+- `5a3b559f`: adicionados testes de habilitar/desabilitar camada, atualizar cor de fundo e preservar camada inferior sob pixels transparentes no compositor VDP2. CI em execução no momento do registro.
+- `f2292475`: adicionados testes para orçamento zero na lista de comandos VDP1 e para impedir execução de comandos após END. CI na fila no momento do registro.
+- CI dos commits `946adb05` (DMA com orçamento zero/reset) e `c96ee324` (memória não mapeada/isolamento) concluída com sucesso.
+- A rodada ampliou regressões de VDP1/VDP2, mas não alterou o código de renderização nem prova compatibilidade com o hardware Saturn ou Xbox 360. A versão oficial segue **v0.45b** enquanto os novos testes e artefatos são validados.
