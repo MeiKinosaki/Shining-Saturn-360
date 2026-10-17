@@ -144,7 +144,7 @@ int main() {
     // BRAF computes its target from the instruction after the delay slot.
     cpu.reset(0x440);
     cpu.r[3] = 6;
-    bus.put16(0x440, 0x2303); // BRAF R3
+    bus.put16(0x440, 0x0323); // BRAF R3
     bus.put16(0x442, 0xed0c); // MOV #12,R13 (delay slot)
     bus.put16(0x44a, 0x0009); // target = 0x444 + 6
     assert(cpu.step(bus) == StepResult::Executed && cpu.pc == 0x442);
