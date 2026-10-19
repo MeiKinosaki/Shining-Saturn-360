@@ -9,11 +9,12 @@ namespace shining_saturn {
 // This is not the Saturn's real VDP1 command encoding.
 class Vdp1CommandList {
 public:
-    enum class Opcode : std::uint8_t { End = 0, Clear = 1, FillRect = 2 };
+    enum class Opcode : std::uint8_t { End = 0, Clear = 1, FillRect = 2, DrawLine = 3, FillTriangle = 4 };
     struct Command {
         Opcode opcode = Opcode::End;
         std::int16_t x = 0, y = 0, width = 0, height = 0;
         std::uint16_t color = 0;
+        std::int16_t x2 = 0, y2 = 0, x3 = 0, y3 = 0;
     };
     struct Result {
         std::size_t executed = 0;
