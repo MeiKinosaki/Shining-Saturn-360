@@ -38,6 +38,16 @@ int main() {
     scroll_test.compose();
     assert(scroll_test.pixel(1, 1) == 0x55AA);
     assert(scroll_test.pixel(0, 0) == 0);
+    // Zero horizontal scroll takes the non-wrapped scanline path unchanged.
+    assert(scroll_test.set_scroll(0, 0, 0));
+    scroll_test.compose();
+    assert(scroll_test.pixel(0, 0) == 0x55AA);
+    assert(scroll_test.pixel(1, 1) == 0);
+    // A one-pixel scroll wraps the source edge to destination x=0.
+    assert(scroll_test.set_scroll(0, 1, 0));
+    scroll_test.compose();
+    assert(scroll_test.pixel(0, 0) == 0x55AA);
+    assert(scroll_test.pixel(1, 0) == 0);
     assert(scroll_test.set_scroll(0, -1, -1));
     scroll_test.compose();
     assert(scroll_test.pixel(319, 223) == 0x55AA);
