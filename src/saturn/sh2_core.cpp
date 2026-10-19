@@ -61,6 +61,10 @@ StepResult Sh2Core::step(Bus& bus) {
     } else if ((op & 0xf000) == 0x1000) { // MOV.L Rm,@(disp,Rn)
         const std::uint32_t address = r[n] + static_cast<std::uint32_t>(op & 0x0f) * 4;
         bus.write32(address, r[m]);
+    } else if ((op & 0xff00) == 0x8800) { // CMP/EQ #imm,R0 (signed immediate)
+        const std::int32_t immediate = static_cast<std::int8_t>(op & 0xffu);
+        sr = (sr & ~kTBit) |
+             (static_cast<std::int32_t>(r[0]) == immediate ? kTBit : 0u);
     } else if ((op & 0xff00) == 0x8900) { // BT disp8, no delay slot
         if (sr & kTBit) pc = pc + 2 + static_cast<std::uint32_t>(imm8 * 2);
     } else if ((op & 0xff00) == 0x8b00) { // BF disp8, no delay slot
@@ -316,6 +320,22 @@ StepResult Sh2Core::step(Bus& bus) {
         r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(static_cast<std::int8_t>(r[m])));
     } else if ((op & 0xf00f) == 0x600f) { // EXTS.W Rm,Rn
         r[n] = static_cast<std::uint32_t>(static_cast<std::int32_t>(static_cast<std::int16_t>(r[m])));
+    } else if ((op & 0xff00) == 0xc000) { // MOV.B R0,@(disp,GBR)
+        bus.write8(gbr + static_cast<std::uint32_t>(op & 0xffu),
+                   static_cast<std::uint8_t>(r[0]));
+    } else if ((op & 0xff00) == 0xc100) { // MOV.W R0,@(disp,GBR)
+        bus.write16(gbr + static_cast<std::uint32_t>(op & 0xffu) * 2u,
+                    static_cast<std::uint16_t>(r[0]));
+    } else if ((op & 0xff00) == 0xc200) { // MOV.L R0,@(disp,GBR)
+        bus.write32(gbr + static_cast<std::uint32_t>(op & 0xffu) * 4u, r[0]);
+    } else if ((op & 0xff00) == 0xc400) { // MOV.B @(disp,GBR),R0
+        r[0] = static_cast<std::uint32_t>(static_cast<std::int32_t>(
+            static_cast<std::int8_t>(bus.read8(gbr + static_cast<std::uint32_t>(op & 0xffu)))));
+    } else if ((op & 0xff00) == 0xc500) { // MOV.W @(disp,GBR),R0
+        r[0] = static_cast<std::uint32_t>(static_cast<std::int32_t>(
+            static_cast<std::int16_t>(bus.read16(gbr + static_cast<std::uint32_t>(op & 0xffu) * 2u))));
+    } else if ((op & 0xff00) == 0xc600) { // MOV.L @(disp,GBR),R0
+        r[0] = bus.read32(gbr + static_cast<std::uint32_t>(op & 0xffu) * 4u);
     } else if ((op & 0xff00) == 0xc700) { // MOVA @(disp,PC),R0
         r[0] = ((pc + 2) & ~std::uint32_t(3)) + static_cast<std::uint32_t>(op & 0xff) * 4;
     } else if ((op & 0xff00) == 0xc800) { // TST #imm,R0
