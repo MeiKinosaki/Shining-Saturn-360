@@ -36,9 +36,16 @@ void Vdp2Compositor::compose() {
     // Draw all five prototype background planes from lower to higher priority.
     // Stable ordering preserves plane-index order for equal priorities.
     std::array<std::size_t, 5> order{{0, 1, 2, 3, 4}};
-    std::stable_sort(order.begin(), order.end(), [this](std::size_t a, std::size_t b) {
-        return layers_[a].priority < layers_[b].priority;
-    });
+    // Stable insertion sort is allocation-free and bounded for this fixed five-layer set.
+    for (std::size_t i = 1; i < order.size(); ++i) {
+        const std::size_t key = order[i];
+        std::size_t j = i;
+        while (j > 0 && layers_[order[j - 1]].priority > layers_[key].priority) {
+            order[j] = order[j - 1];
+            --j;
+        }
+        order[j] = key;
+    }
     // Scroll is normalized by set_scroll; use bounded wrap branches in the hot pixel loop.
     for (std::size_t n = 0; n < order.size(); ++n) {
         const auto& layer = layers_[order[n]];
