@@ -544,3 +544,12 @@
 - **Commits:** cabeçalho 256cdee6ff22edceebf1ee5c6b09a8636e641de6; implementação 2c121ca0d559767f4efff29433b89637c7c6019e; testes 907274c420a0b64305f484abe89213b169330a0b.
 - **CI:** execuções associadas aos commits estão em andamento/na fila no momento deste registro; atualizar o estado depois de terminarem.
 - **Limite:** o adaptador continua sendo uma representação interna de testes, não o formato real de comandos VDP1 do Sega Saturn. Não há evidência de boot físico ou compatibilidade comercial.
+
+
+## Registro incremental — estados de terminación VDP1 (v0.46b, CI pendente)
+
+- **Implementação:** o resultado do adaptador distingue término por opcode END, opcode inválido, orçamento insuficiente e fim do vetor sem END explícito.
+- **Regressões:** adicionados casos para lista sem END e separação entre fim da lista e orçamento esgotado; mantidos casos de orçamento zero e execução limitada.
+- **Commits:** cabeçalho b1ad7b73d8e72200da878aa9b645f86ead503abe; implementação 0ef3e64f3f9f0552a280f3f764f667e40b25dc5a; testes 9d906acd33ecf2ee1d008aa7ac01d0c991295dda.
+- **CI:** as execuções dos commits novos foram iniciadas, mas ainda estavam na fila/em execução no momento do registro.
+- **Limite técnico:** o adaptador continua sendo uma estrutura interna de teste e não implementa o formato real de comandos do VDP1 Saturn. Não há validação em hardware físico.
