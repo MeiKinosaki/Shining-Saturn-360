@@ -49,4 +49,21 @@ int main() {
     };
     result = executor.execute(bounded, invalid, 4);
     assert(result.invalid && result.executed == 0);
+
+    // The command adapter dispatches line and triangle drawing into the software renderer.
+    Vdp1Renderer primitives;
+    const std::vector<Vdp1CommandList::Command> primitive_commands = {
+        {Vdp1CommandList::Opcode::Clear, 0, 0, 0, 0, 0},
+        {Vdp1CommandList::Opcode::DrawLine, 1, 1, 0, 0, 0x001F, 5, 1},
+        {Vdp1CommandList::Opcode::FillTriangle, 10, 10, 0, 0, 0x03E0, 14, 10, 10, 14},
+        {Vdp1CommandList::Opcode::End, 0, 0, 0, 0, 0}
+    };
+    result = executor.execute(primitives, primitive_commands, 8);
+    assert(result.ended && !result.invalid && result.executed == 3);
+    assert(primitives.pixel(1, 1) == 0x001F);
+    assert(primitives.pixel(3, 1) == 0x001F);
+    assert(primitives.pixel(5, 1) == 0x001F);
+    assert(primitives.pixel(10, 10) == 0x03E0);
+    assert(primitives.pixel(11, 11) == 0x03E0);
+    assert(primitives.pixel(14, 14) == 0);
 }
