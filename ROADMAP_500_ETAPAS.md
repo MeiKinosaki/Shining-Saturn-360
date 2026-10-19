@@ -553,3 +553,11 @@
 - **Commits:** cabeçalho b1ad7b73d8e72200da878aa9b645f86ead503abe; implementação 0ef3e64f3f9f0552a280f3f764f667e40b25dc5a; testes 9d906acd33ecf2ee1d008aa7ac01d0c991295dda.
 - **CI:** as execuções dos commits novos foram iniciadas, mas ainda estavam na fila/em execução no momento do registro.
 - **Limite técnico:** o adaptador continua sendo uma estrutura interna de teste e não implementa o formato real de comandos do VDP1 Saturn. Não há validação em hardware físico.
+
+
+## Registro de aceleração transversal — v0.46b (CI pendente)
+
+- **SCU/DMA:** reforçada a validação de limites para impedir configurações cujo cursor de endereço de 32 bits possa transbordar; adicionados testes para endereços no limite superior e caso válido imediatamente abaixo.
+- **VDP2:** normalização do scroll passou a ser calculada uma vez por camada, em vez de repetir a normalização do deslocamento configurado para cada pixel; mantida a composição de referência e adicionada regressão com deslocamentos extremos.
+- **Commits:** SCU/DMA 50f7998ca7f8dd05fbbfa14b7d94ba952c114a6d; testes DMA f66f29b3c60c2ec87702ca913d15e244a40cf62d; compositor VDP2 fb17f085eabedc10460122555c6373903d0d9b7d; testes VDP2 1b86f5fbac42d6d4e6c61c05a130be55bee1ac1b.
+- **Limites:** SCU DMA continua sendo protótipo de cópia de bytes, não SCU real com registradores/timing/IRQ; VDP2 continua compositor experimental, não emulação fiel do hardware. CI dos commits recentes precisa ser consultado antes de marcar regressões como aprovadas.
