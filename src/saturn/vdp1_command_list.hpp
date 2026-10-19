@@ -21,6 +21,7 @@ public:
         bool ended = false;
         bool invalid = false;
         bool budget_exhausted = false;
+        bool list_exhausted = false;
     };
 
     Result execute(Vdp1Renderer& renderer, const std::vector<Command>& commands,
