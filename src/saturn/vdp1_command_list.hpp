@@ -20,6 +20,7 @@ public:
         std::size_t executed = 0;
         bool ended = false;
         bool invalid = false;
+        bool budget_exhausted = false;
     };
 
     Result execute(Vdp1Renderer& renderer, const std::vector<Command>& commands,
