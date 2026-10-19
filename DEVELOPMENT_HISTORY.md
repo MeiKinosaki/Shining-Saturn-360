@@ -388,3 +388,14 @@ Este lote registra uma alteração real no repositório e 50 itens de trabalho/v
 - Corrigida a ordem esperada dos bits Q/M/T conforme a semântica implementada (commit `491d4af3ef5453c3b7c28c3d5a0a6f869d655834`).
 - A execução seguinte precisa confirmar a correção antes de considerar esta matriz de testes estável.
 - O sucesso da compilação ELF32 não comprova boot físico, nem confirma por si só a geração funcional do `default.xex`.
+
+
+## Continuação — integração de SCU DMA com barramento Saturn (19/10/2026)
+
+- Criado `tests/test_scu_dma_saturn_bus.cpp` para validar cópia DMA usando o adaptador de memória Saturn real, incluindo RAM de trabalho e janela de registradores VDP2 com armazenamento genérico.
+- Adicionado o novo teste ao runner `tests/run-sh2-core-tests.sh`, para que seja compilado e executado no CI host.
+- Evidência de implementação: commit `bc4c245b03b0cc7984d48bc713de7b12bb858fdc`.
+- Evidência de integração no runner: commit `f4275630b73af50c861748707bd1e97f508aa03b`.
+- Limitação: a janela MMIO ainda é armazenamento genérico; este teste não prova efeitos colaterais reais do VDP2 nem integração do DMA com o ciclo de quadro.
+- Validação pendente: GitHub Actions `39336093615`; não declarar o teste verde até a conclusão do job.
+- Versão oficial mantida em v0.46b; nenhuma alegação de boot físico ou compatibilidade comercial.
