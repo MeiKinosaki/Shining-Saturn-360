@@ -22,8 +22,8 @@ bool Vdp2Compositor::set_layer(std::size_t index, const Layer& pixels, int prior
 
 bool Vdp2Compositor::set_scroll(std::size_t index, int x, int y) {
     if (index >= layers_.size()) return false;
-    layers_[index].scroll_x = x % static_cast<int>(Width);
-    layers_[index].scroll_y = y % static_cast<int>(Height);
+    layers_[index].scroll_x = ((x % static_cast<int>(Width)) + static_cast<int>(Width)) % static_cast<int>(Width);
+    layers_[index].scroll_y = ((y % static_cast<int>(Height)) + static_cast<int>(Height)) % static_cast<int>(Height);
     return true;
 }
 
@@ -39,21 +39,22 @@ void Vdp2Compositor::compose() {
     std::stable_sort(order.begin(), order.end(), [this](std::size_t a, std::size_t b) {
         return layers_[a].priority < layers_[b].priority;
     });
-    // Normalize scroll once per layer rather than doing signed modulo per pixel.
-    const auto wrap = [](int value, int extent) {
-        value %= extent;
-        return value < 0 ? value + extent : value;
-    };
+    // Scroll is normalized by set_scroll; use bounded wrap branches in the hot pixel loop.
     for (std::size_t n = 0; n < order.size(); ++n) {
         const auto& layer = layers_[order[n]];
         if (!layer.enabled) continue;
-        const int scroll_x = wrap(layer.scroll_x, static_cast<int>(Width));
-        const int scroll_y = wrap(layer.scroll_y, static_cast<int>(Height));
+        const int scroll_x = layer.scroll_x;
+        const int scroll_y = layer.scroll_y;
         for (std::size_t y = 0; y < Height; ++y) {
-            const std::size_t source_row = static_cast<std::size_t>(wrap(static_cast<int>(y) - scroll_y, static_cast<int>(Height))) * Width;
+            const std::size_t source_y = y >= static_cast<std::size_t>(scroll_y)
+                ? y - static_cast<std::size_t>(scroll_y)
+                : y + Height - static_cast<std::size_t>(scroll_y);
+            const std::size_t source_row = source_y * Width;
             const std::size_t destination_row = y * Width;
             for (std::size_t x = 0; x < Width; ++x) {
-                const std::size_t source_x = static_cast<std::size_t>(wrap(static_cast<int>(x) - scroll_x, static_cast<int>(Width)));
+                const std::size_t source_x = x >= static_cast<std::size_t>(scroll_x)
+                    ? x - static_cast<std::size_t>(scroll_x)
+                    : x + Width - static_cast<std::size_t>(scroll_x);
                 const std::size_t source = source_row + source_x;
                 const std::size_t destination = destination_row + x;
                 // Prototype transparency; Saturn color math/priority rules remain unmodeled.
