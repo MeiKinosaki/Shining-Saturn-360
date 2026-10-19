@@ -35,7 +35,7 @@ int main() {
     // Reject transfers whose next-address cursor would wrap the 32-bit bus.
     assert(!dma.configure(2, UINT32_MAX, 0x40, 1));
     assert(!dma.configure(2, 0x40, UINT32_MAX, 1));
-    assert(dma.configure(2, UINT32_MAX - 1u, 0x40, 2));
+    assert(dma.configure(2, UINT32_MAX - 2u, 0x40, 2));
     dma.reset();
     assert(!dma.configure(2, 0x20, UINT32_MAX - 1u, 4));
     assert(dma.channel(ScuDma::ChannelCount) == nullptr);
