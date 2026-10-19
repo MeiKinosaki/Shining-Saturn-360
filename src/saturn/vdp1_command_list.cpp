@@ -36,6 +36,7 @@ Vdp1CommandList::Result Vdp1CommandList::execute(
         }
     }
     result.budget_exhausted = limit < commands.size();
+    result.list_exhausted = limit == commands.size() && !result.ended;
     return result;
 }
 
