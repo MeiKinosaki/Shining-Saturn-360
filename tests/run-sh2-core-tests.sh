@@ -33,3 +33,4 @@ cxx="${CXX:-g++}"; flags=(-std=c++17 -Wall -Wextra -Werror -pedantic)
 
 "$cxx" "${flags[@]}" "$root/src/saturn/vdp2_compositor.cpp" "$root/tests/test_vdp2_compositor.cpp" -o "$tmpdir/test_vdp2_compositor"; "$tmpdir/test_vdp2_compositor"
 "$cxx" "${flags[@]}" "$root/src/saturn/scu_dma.cpp" "$root/tests/test_scu_dma.cpp" -o "$tmpdir/test_scu_dma"; "$tmpdir/test_scu_dma"
+"$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/src/saturn/memory_bus.cpp" "$root/src/saturn/saturn_mmio.cpp" "$root/src/saturn/saturn_memory_bus.cpp" "$root/src/saturn/scu_dma.cpp" "$root/tests/test_scu_dma_saturn_bus.cpp" -o "$tmpdir/test_scu_dma_saturn_bus"; "$tmpdir/test_scu_dma_saturn_bus"
