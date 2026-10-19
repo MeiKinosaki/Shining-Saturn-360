@@ -12,7 +12,7 @@ int main() {
         {Vdp1CommandList::Opcode::End, 0, 0, 0, 0, 0}
     };
     auto result = executor.execute(renderer, commands, 8);
-    assert(result.ended && !result.invalid && result.executed == 2);
+    assert(result.ended && !result.invalid && !result.budget_exhausted && result.executed == 2);
     assert(renderer.pixel(0, 0) == 0x001F);
     assert(renderer.pixel(4, 5) == 0x7FFF);
     assert(renderer.pixel(6, 6) == 0x7FFF);
@@ -20,7 +20,7 @@ int main() {
 
     Vdp1Renderer bounded;
     result = executor.execute(bounded, commands, 1);
-    assert(!result.ended && result.executed == 1);
+    assert(!result.ended && result.executed == 1 && result.budget_exhausted);
     assert(bounded.pixel(0, 0) == 0x001F);
     assert(bounded.pixel(4, 5) == 0x001F); // untouched pixels retain the clear color
 
@@ -31,7 +31,7 @@ int main() {
         {Vdp1CommandList::Opcode::End, 0, 0, 0, 0, 0}
     };
     result = executor.execute(zero_budget_renderer, single, 0);
-    assert(!result.ended && !result.invalid && result.executed == 0);
+    assert(!result.ended && !result.invalid && result.executed == 0 && result.budget_exhausted);
     assert(zero_budget_renderer.pixel(1, 1) == 0);
 
     // Commands after END must not execute.
@@ -59,7 +59,7 @@ int main() {
         {Vdp1CommandList::Opcode::End, 0, 0, 0, 0, 0}
     };
     result = executor.execute(primitives, primitive_commands, 8);
-    assert(result.ended && !result.invalid && result.executed == 3);
+    assert(result.ended && !result.invalid && !result.budget_exhausted && result.executed == 3);
     assert(primitives.pixel(1, 1) == 0x001F);
     assert(primitives.pixel(3, 1) == 0x001F);
     assert(primitives.pixel(5, 1) == 0x001F);
