@@ -561,3 +561,12 @@
 - **VDP2:** normalização do scroll passou a ser calculada uma vez por camada, em vez de repetir a normalização do deslocamento configurado para cada pixel; mantida a composição de referência e adicionada regressão com deslocamentos extremos.
 - **Commits:** SCU/DMA 50f7998ca7f8dd05fbbfa14b7d94ba952c114a6d; testes DMA f66f29b3c60c2ec87702ca913d15e244a40cf62d; compositor VDP2 fb17f085eabedc10460122555c6373903d0d9b7d; testes VDP2 1b86f5fbac42d6d4e6c61c05a130be55bee1ac1b.
 - **Limites:** SCU DMA continua sendo protótipo de cópia de bytes, não SCU real com registradores/timing/IRQ; VDP2 continua compositor experimental, não emulação fiel do hardware. CI dos commits recentes precisa ser consultado antes de marcar regressões como aprovadas.
+
+
+## Aceleração adicional — compositor VDP2 (v0.46b, CI pendente)
+
+- Corrigido o teste de coordenadas de destino para considerar a posição original do pixel e o scroll normalizado.
+- Otimizado o loop quente do compositor: os deslocamentos passam a ser normalizados positivamente ao configurar a camada; no loop por pixel, a seleção da coordenada de origem usa comparações e subtrações com wrap limitado, evitando módulo inteiro por pixel.
+- Commits: correção do teste 6595ffc1dcabd6ec638bbfbdc9371a17aac18dd5; otimização do loop 01f0a5be64b7ddd8bef56df0a69a0588e90e6399.
+- CI da correção do teste estava na fila na última consulta. A falha anterior de regressão VDP2 não deve ser tratada como aprovada; confirmar a nova execução antes de fechar a tarefa.
+- Limite: otimização ainda precisa de benchmark e teste de regressão aprovado; compositor permanece protótipo, não VDP2 fiel ao hardware.
