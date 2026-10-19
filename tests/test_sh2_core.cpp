@@ -169,6 +169,28 @@ int main() {
     bus.put16(0x15c, 0xc703); // MOVA @(3,PC),R0 -> aligned (0x160) + 12 = 0x16c
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 0x16c);
 
+    // CMP/EQ immediate uses signed 8-bit sign extension.
+    cpu.reset(0x1c8); cpu.r[0] = 0xffffffffu;
+    bus.put16(0x1c8, 0x88ff); // CMP/EQ #-1,R0 -> T=1
+    bus.put16(0x1ca, 0x8801); // CMP/EQ #1,R0 -> T=0
+    assert(cpu.step(bus) == StepResult::Executed && (cpu.sr & Sh2Core::kTBit));
+    assert(cpu.step(bus) == StepResult::Executed && !(cpu.sr & Sh2Core::kTBit));
+
+    // GBR-relative byte/word/long loads and stores.
+    cpu.reset(0x1cc); cpu.gbr = 0x800; cpu.r[0] = 0x1234abcd;
+    bus.put16(0x1cc, 0xc003); // MOV.B R0,@(3,GBR)
+    bus.put16(0x1ce, 0xc104); // MOV.W R0,@(4,GBR)
+    bus.put16(0x1d0, 0xc205); // MOV.L R0,@(5,GBR)
+    bus.put16(0x1d2, 0xc403); // MOV.B @(3,GBR),R0
+    bus.put16(0x1d4, 0xc504); // MOV.W @(4,GBR),R0
+    bus.put16(0x1d6, 0xc605); // MOV.L @(5,GBR),R0
+    assert(cpu.step(bus) == StepResult::Executed && bus.read8(0x803) == 0xcd);
+    assert(cpu.step(bus) == StepResult::Executed && bus.read16(0x808) == 0xabcd);
+    assert(cpu.step(bus) == StepResult::Executed && bus.read32(0x814) == 0x1234abcdu);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 0xffffffcdu);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 0xffffabcdu);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[0] == 0x1234abcdu);
+
     // Delayed conditional branches and PC-relative branch/call forms.
     cpu.reset(0x160); cpu.sr = Sh2Core::kTBit;
     bus.put16(0x160, 0x8d02); // BT/S +2 -> target 0x168
