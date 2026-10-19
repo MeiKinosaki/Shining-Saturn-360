@@ -570,3 +570,11 @@
 - Commits: correção do teste 6595ffc1dcabd6ec638bbfbdc9371a17aac18dd5; otimização do loop 01f0a5be64b7ddd8bef56df0a69a0588e90e6399.
 - CI da correção do teste estava na fila na última consulta. A falha anterior de regressão VDP2 não deve ser tratada como aprovada; confirmar a nova execução antes de fechar a tarefa.
 - Limite: otimização ainda precisa de benchmark e teste de regressão aprovado; compositor permanece protótipo, não VDP2 fiel ao hardware.
+
+
+## Continuação — VDP2 ordenação de camadas e regressão (v0.46b, CI pendente)
+
+- Substituída a ordenação estável genérica por insertion sort estável, sem alocação, limitada a cinco planos fixos; empates preservam a ordem dos índices.
+- Estendida a regressão de scroll extremo para verificar também que o pixel vizinho permanece transparente.
+- Commits: ordenação 479d2cd1b46d8319144beb012347ba123ddcc672; teste 9a5efcefed17f2343217179d233ed04ba78c66d5.
+- A otimização é estruturalmente limitada e evita overhead genérico, mas ainda não há benchmark quantitativo. A regressão anterior VDP2 e o CI desses novos commits devem ser verificados; não assumir aprovação antes do resultado.
