@@ -58,13 +58,20 @@ void Vdp2Compositor::compose() {
                 : y + Height - static_cast<std::size_t>(scroll_y);
             const std::size_t source_row = source_y * Width;
             const std::size_t destination_row = y * Width;
-            for (std::size_t x = 0; x < Width; ++x) {
-                const std::size_t source_x = x >= static_cast<std::size_t>(scroll_x)
-                    ? x - static_cast<std::size_t>(scroll_x)
-                    : x + Width - static_cast<std::size_t>(scroll_x);
-                const std::size_t source = source_row + source_x;
+            const std::size_t wrapped_width = static_cast<std::size_t>(scroll_x);
+            const std::size_t first_span = wrapped_width;
+            // Split each scanline at the wrap boundary so the hot loops contain
+            // no per-pixel coordinate branch or modulo operation.
+            for (std::size_t x = 0; x < first_span; ++x) {
+                const std::size_t source = source_row + (Width - wrapped_width + x);
                 const std::size_t destination = destination_row + x;
                 // Prototype transparency; Saturn color math/priority rules remain unmodeled.
+                if (layer.pixels[source] != 0)
+                    output_[destination] = static_cast<std::uint16_t>(layer.pixels[source] & 0x7FFFu);
+            }
+            for (std::size_t x = first_span; x < Width; ++x) {
+                const std::size_t source = source_row + (x - first_span);
+                const std::size_t destination = destination_row + x;
                 if (layer.pixels[source] != 0)
                     output_[destination] = static_cast<std::uint16_t>(layer.pixels[source] & 0x7FFFu);
             }
