@@ -20,7 +20,7 @@ int main() {
 
     Vdp1Renderer bounded;
     result = executor.execute(bounded, commands, 1);
-    assert(!result.ended && result.executed == 1 && result.budget_exhausted);
+    assert(!result.ended && result.executed == 1 && result.budget_exhausted && !result.list_exhausted);
     assert(bounded.pixel(0, 0) == 0x001F);
     assert(bounded.pixel(4, 5) == 0x001F); // untouched pixels retain the clear color
 
@@ -31,8 +31,17 @@ int main() {
         {Vdp1CommandList::Opcode::End, 0, 0, 0, 0, 0}
     };
     result = executor.execute(zero_budget_renderer, single, 0);
-    assert(!result.ended && !result.invalid && result.executed == 0 && result.budget_exhausted);
+    assert(!result.ended && !result.invalid && result.executed == 0 && result.budget_exhausted && !result.list_exhausted);
     assert(zero_budget_renderer.pixel(1, 1) == 0);
+
+    // Reaching the vector end without an explicit END opcode differs from budget exhaustion.
+    Vdp1Renderer exhausted_list_renderer;
+    const std::vector<Vdp1CommandList::Command> no_end = {
+        {Vdp1CommandList::Opcode::FillRect, 3, 3, 1, 1, 0x001F}
+    };
+    result = executor.execute(exhausted_list_renderer, no_end, 1);
+    assert(!result.ended && !result.invalid && !result.budget_exhausted && result.list_exhausted);
+    assert(exhausted_list_renderer.pixel(3, 3) == 0x001F);
 
     // Commands after END must not execute.
     Vdp1Renderer end_renderer;
