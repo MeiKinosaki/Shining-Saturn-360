@@ -61,7 +61,8 @@ void Vdp2Compositor::compose() {
                     output_[destination] = static_cast<std::uint16_t>(layer.pixels[source] & 0x7FFFu);
             }
         }
-    }}
+    }
+}
 
 std::uint16_t Vdp2Compositor::pixel(std::size_t x, std::size_t y) const {
     if (x >= Width || y >= Height) return 0;
