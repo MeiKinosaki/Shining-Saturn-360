@@ -97,6 +97,9 @@ int main() {
     assert(extreme_scroll.set_scroll(0, INT_MIN, INT_MAX));
     extreme_scroll.compose();
     assert(extreme_scroll.output().size() == Vdp2Compositor::Width * Vdp2Compositor::Height);
+    const int expected_extreme_x = ((INT_MIN % static_cast<int>(Vdp2Compositor::Width)) + static_cast<int>(Vdp2Compositor::Width)) % static_cast<int>(Vdp2Compositor::Width);
+    const int expected_extreme_y = ((INT_MAX % static_cast<int>(Vdp2Compositor::Height)) + static_cast<int>(Vdp2Compositor::Height)) % static_cast<int>(Vdp2Compositor::Height);
+    assert(extreme_scroll.pixel(static_cast<std::size_t>(expected_extreme_x), static_cast<std::size_t>(expected_extreme_y)) == 0x0311);
 
 }
 
