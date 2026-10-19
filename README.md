@@ -2,7 +2,7 @@
 
 Emulador de Sega Saturn para Xbox 360 (RGH/JTAG).
 
-## Estado técnico — v0.45b
+## Estado técnico — v0.46b
 
 ## Versão publicada no repositório
 
@@ -31,7 +31,9 @@ A documentação da versão atual está em [VERSION_v0.45b.md](VERSION_v0.45b.md
 
 O `src/saturn/saturn_main_loop.hpp/.cpp` conecta o SH-2 Runner ao barramento Saturn e executa orçamentos limitados por quadro. Os testes de integração e MMIO passaram no GitHub Actions: [ciclo principal](https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38503506652) e [MMIO](https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38503177536). Isso valida somente os testes automatizados; não comprova boot no console nem execução de jogos. A CPU segue parcial, os registradores MMIO ainda não possuem handlers reais dos dispositivos, e VDPs, CD-ROM e áudio continuam pendentes.
 
-## Núcleo SH-2 experimental (em desenvolvimento)
+## Núcleo SH-2 experimental (em desenvolvimento — v0.46b)
+
+Na v0.46b foram adicionados `CMP/EQ #imm,R0` com imediato assinado e as transferências `MOV.B/W/L` relativas ao GBR, com regressões correspondentes em `tests/test_sh2_core.cpp`. A aprovação do CI para os commits novos deve ser confirmada nas Actions; isso não implica boot no console.
 
 Foi adicionada uma base independente de interpretador SH-2 em `src/saturn/sh2_core.hpp` e `src/saturn/sh2_core.cpp`, com um teste compilável em `tests/test_sh2_core.cpp`. A implementação cobre um subconjunto experimental de instruções: movimentação, aritmética e lógica, acessos básicos à memória, operações de deslocamento, testes de condição e desvios condicionais sem atraso e com slot de atraso, chamadas relativas ao PC e saltos indiretos. Foram acrescentados modos de memória com pós-incremento/pré-decremento, acessos relativos ao PC e com deslocamento, comparações signed/unsigned, operações com carry/borrow, rotações, multiplicação de 32/64 bits, SWAP, EXTU/EXTS, XTRCT e novas formas de desvio condicional/relativo. A cobertura é parcial e ainda exige validação e expansão para a arquitetura SH-2 completa. Os testes exercitam instruções imediatas, registradores, endianness e tratamento explícito de opcode não suportado. Não é uma CPU SH-2 completa.
 
@@ -47,7 +49,7 @@ Foi adicionada uma camada genérica em `src/saturn/memory_bus.hpp` e `src/saturn
 
 O `default.xex` é um bootstrap técnico. A geração do arquivo e as verificações estruturais não comprovam que ele inicializa num Xbox 360 real, nem que o núcleo de emulação Sega Saturn esteja funcional ou execute jogos. A inicialização no console ainda não foi testada.
 
-A versão de desenvolvimento passa a `v0.43b`, para registrar o adaptador inicial de memória. O núcleo SH-2 ainda não está integrado ao `default.xex`. A versão não representa um emulador funcional completo.
+Histórico: o adaptador inicial de memória foi registrado na `v0.43b`; o marco atual é `v0.46b`. O núcleo SH-2 ainda não está integrado ao `default.xex`. A versão não representa um emulador funcional completo.
 
 ## Compilação na nuvem
 
@@ -142,7 +144,7 @@ Se o artefato não estiver disponível ou tiver expirado, execute novamente o wo
 
 ## Estado das funcionalidades (resumo)
 
-O marco de desenvolvimento atual é **v0.43b**; veja [VERSION_v0.43b.md](VERSION_v0.43b.md). O adaptador inicial liga regiões de RAM/ROM ao barramento genérico, mas ainda não implementa MMIO nem dispositivos Saturn funcionais.
+O marco de desenvolvimento atual é **v0.46b**; veja [VERSION_v0.46b.md](VERSION_v0.46b.md). O adaptador inicial liga regiões de RAM/ROM ao barramento genérico, mas ainda não implementa MMIO nem dispositivos Saturn funcionais.
 
 | Recurso | Estado |
 |---|---|
