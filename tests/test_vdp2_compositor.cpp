@@ -89,5 +89,14 @@ int main() {
     assert(tie_test.set_layer(1, tie_b, 4, false));
     tie_test.compose();
     assert(tie_test.pixel(7, 0) == 0x7FFF);
+    // Extreme scroll offsets must remain deterministic and bounded.
+    Vdp2Compositor extreme_scroll;
+    Vdp2Compositor::Layer corner(Vdp2Compositor::Width * Vdp2Compositor::Height, 0);
+    corner[(Vdp2Compositor::Height - 1) * Vdp2Compositor::Width + (Vdp2Compositor::Width - 1)] = 0x0311;
+    assert(extreme_scroll.set_layer(0, corner, 1));
+    assert(extreme_scroll.set_scroll(0, INT_MIN, INT_MAX));
+    extreme_scroll.compose();
+    assert(extreme_scroll.output().size() == Vdp2Compositor::Width * Vdp2Compositor::Height);
+
 }
 
