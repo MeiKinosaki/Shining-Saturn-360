@@ -1,13 +1,13 @@
 # Shining Saturn 360 — plano sequencial de 500 etapas
 
-**Versão oficial mantida:** v0.45b até os critérios de aceitação do próximo marco serem satisfeitos.  
+**Versão documentada mais recente:** v0.46b (incremento do SH-2 registrado; validação CI dos novos commits ainda deve ser confirmada).  
 **Estado deste documento:** planejamento; as etapas não são declaradas concluídas por estarem listadas.  
 **Regra de conclusão:** marcar uma etapa como concluída somente com alteração real no repositório ou teste/evidência correspondente. CI verde não prova execução em Xbox 360 físico nem compatibilidade com jogos comerciais.
 
 ## Como acompanhar
 - As 500 etapas estão numeradas sequencialmente e divididas em cinco blocos de 100.
 - Atualizar status e links de commits conforme cada etapa for implementada e validada.
-- Promover para v0.46b somente após revisar testes SH-2, build ELF32, empacotamento `default.xex` e notas de versão.
+- Para validar v0.46b, revisar testes SH-2, build ELF32, empacotamento `default.xex` e notas de versão. A promoção não prova boot em hardware real.
 - Não declarar um subsistema completo enquanto o comportamento real do hardware e a integração não estiverem demonstrados.
 
 ## Bloco 1 — etapas 1–100: CPU SH-2, registradores, instruções e exceções
@@ -527,3 +527,11 @@
 3. Artefatos publicados com logs/checksums e ligação ao commit de origem.
 4. Nenhuma alegação de boot físico ou jogo compatível sem evidência de teste em console.
 5. Cada subsistema permanece marcado como parcial até implementar comportamento real específico do hardware Saturn.
+
+
+## Registro de progresso — v0.46b
+
+- **Implementado no repositório:** comparação imediata SH-2 `CMP/EQ #imm,R0` e seis formas de transferência byte/palavra/palavra longa relativas ao GBR.
+- **Testes adicionados:** imediato assinado; leitura/escrita GBR relativa; extensão de sinal de byte/palavra e acessos de 8/16/32 bits.
+- **Commits:** core SH-2 `9ff6db75f294587702f80af7a8273be7f6756be9`; testes `7e69c15a48a49842b93735e3d6d0071168e07a51`; notas de versão `72cfbaf8e5527e0d54fd74a2826335c04663718d`; README `f5e0de7e20182d97c72088dcc528ea838de225c2`.
+- **Status:** código versionado; não declarar CI aprovado até consultar uma execução que inclua estes commits. Não há teste de boot em hardware real.
