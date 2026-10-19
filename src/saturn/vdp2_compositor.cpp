@@ -39,27 +39,29 @@ void Vdp2Compositor::compose() {
     std::stable_sort(order.begin(), order.end(), [this](std::size_t a, std::size_t b) {
         return layers_[a].priority < layers_[b].priority;
     });
+    // Normalize scroll once per layer rather than doing signed modulo per pixel.
+    const auto wrap = [](int value, int extent) {
+        value %= extent;
+        return value < 0 ? value + extent : value;
+    };
     for (std::size_t n = 0; n < order.size(); ++n) {
         const auto& layer = layers_[order[n]];
         if (!layer.enabled) continue;
+        const int scroll_x = wrap(layer.scroll_x, static_cast<int>(Width));
+        const int scroll_y = wrap(layer.scroll_y, static_cast<int>(Height));
         for (std::size_t y = 0; y < Height; ++y) {
+            const std::size_t source_row = static_cast<std::size_t>(wrap(static_cast<int>(y) - scroll_y, static_cast<int>(Height))) * Width;
+            const std::size_t destination_row = y * Width;
             for (std::size_t x = 0; x < Width; ++x) {
-                // Positive scroll moves the image right/down; coordinates wrap at the framebuffer edge.
-                const auto wrap = [](int value, int extent) {
-                    value %= extent;
-                    return value < 0 ? value + extent : value;
-                };
-                const int source_x = wrap(static_cast<int>(x) - layer.scroll_x, static_cast<int>(Width));
-                const int source_y = wrap(static_cast<int>(y) - layer.scroll_y, static_cast<int>(Height));
-                const std::size_t source = static_cast<std::size_t>(source_y) * Width + source_x;
-                const std::size_t destination = y * Width + x;
-                // In this prototype, zero is transparent; Saturn color math/priority rules are not modeled.
+                const std::size_t source_x = static_cast<std::size_t>(wrap(static_cast<int>(x) - scroll_x, static_cast<int>(Width)));
+                const std::size_t source = source_row + source_x;
+                const std::size_t destination = destination_row + x;
+                // Prototype transparency; Saturn color math/priority rules remain unmodeled.
                 if (layer.pixels[source] != 0)
                     output_[destination] = static_cast<std::uint16_t>(layer.pixels[source] & 0x7FFFu);
             }
         }
-    }
-}
+    }}
 
 std::uint16_t Vdp2Compositor::pixel(std::size_t x, std::size_t y) const {
     if (x >= Width || y >= Height) return 0;
