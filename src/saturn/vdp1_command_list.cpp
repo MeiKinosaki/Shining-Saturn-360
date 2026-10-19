@@ -21,6 +21,15 @@ Vdp1CommandList::Result Vdp1CommandList::execute(
             renderer.fill_rect(command.x, command.y, command.width, command.height, command.color);
             ++result.executed;
             break;
+        case Opcode::DrawLine:
+            renderer.draw_line(command.x, command.y, command.x2, command.y2, command.color);
+            ++result.executed;
+            break;
+        case Opcode::FillTriangle:
+            renderer.fill_triangle(command.x, command.y, command.x2, command.y2,
+                                   command.x3, command.y3, command.color);
+            ++result.executed;
+            break;
         default:
             result.invalid = true;
             return result;
