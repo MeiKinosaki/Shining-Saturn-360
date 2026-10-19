@@ -535,3 +535,12 @@
 - **Testes adicionados:** imediato assinado; leitura/escrita GBR relativa; extensão de sinal de byte/palavra e acessos de 8/16/32 bits.
 - **Commits:** core SH-2 `9ff6db75f294587702f80af7a8273be7f6756be9`; testes `7e69c15a48a49842b93735e3d6d0071168e07a51`; notas de versão `72cfbaf8e5527e0d54fd74a2826335c04663718d`; README `f5e0de7e20182d97c72088dcc528ea838de225c2`.
 - **Status:** código versionado; não declarar CI aprovado até consultar uma execução que inclua estes commits. Não há teste de boot em hardware real.
+
+
+## Registro incremental — VDP1 command budget (v0.46b, aguardando CI)
+
+- **Implementação:** o adaptador de comandos VDP1 agora distingue explicitamente o fim da lista (ended), opcode inválido (invalid) e orçamento insuficiente para consumir a lista (budget_exhausted). Isso evita confundir uma execução limitada por quadro com uma lista concluída.
+- **Testes adicionados/ajustados:** orçamento menor que a lista, orçamento zero, fim explícito e execução completa de primitivas.
+- **Commits:** cabeçalho 256cdee6ff22edceebf1ee5c6b09a8636e641de6; implementação 2c121ca0d559767f4efff29433b89637c7c6019e; testes 907274c420a0b64305f484abe89213b169330a0b.
+- **CI:** execuções associadas aos commits estão em andamento/na fila no momento deste registro; atualizar o estado depois de terminarem.
+- **Limite:** o adaptador continua sendo uma representação interna de testes, não o formato real de comandos VDP1 do Sega Saturn. Não há evidência de boot físico ou compatibilidade comercial.
