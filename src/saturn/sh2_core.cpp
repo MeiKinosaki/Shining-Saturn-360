@@ -58,6 +58,9 @@ StepResult Sh2Core::step(Bus& bus) {
         const std::uint32_t address = ((pc + 2) & ~std::uint32_t(3)) +
                                       static_cast<std::uint32_t>(op & 0xff) * 4;
         r[n] = bus.read32(address);
+    } else if ((op & 0xff00) == 0xc700) { // MOVA @(disp,PC),R0
+        r[0] = ((pc + 2) & ~std::uint32_t(3)) +
+               static_cast<std::uint32_t>(op & 0xffu) * 4u;
     } else if ((op & 0xf000) == 0x1000) { // MOV.L Rm,@(disp,Rn)
         const std::uint32_t address = r[n] + static_cast<std::uint32_t>(op & 0x0f) * 4;
         bus.write32(address, r[m]);
