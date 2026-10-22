@@ -418,3 +418,12 @@ Este lote registra uma alteração real no repositório e 50 itens de trabalho/v
 - Commit do novo teste: `f4b4a2bedc91c484d555efc5af7eb60f70b93f80`.
 - Validação CI deste novo caso ainda pendente; não marcar como concluído antes do resultado.
 - A cobertura usa o protótipo DMA e a memória mapeada atual; não equivale ao controlador SCU real nem prova efeitos de registradores de hardware.
+
+
+## Aceleração — cobertura de bordas do DMA (22/10/2026)
+
+- O CI `39744441626` concluiu com sucesso o teste de alternância round-robin entre canais DMA no barramento Saturn.
+- Adicionados casos de borda para índice de canal inválido, overflow de endereços, transferência de tamanho zero, reconfiguração proibida durante transferência ativa e reconfiguração após conclusão.
+- Commit da cobertura adicional: `68ce863ddc35f655afd1ba991618356d6c687290`.
+- CI para esses casos está pendente; manter status separado até confirmação.
+- Escopo ainda é o protótipo DMA com barramento mapeado; não declara fidelidade completa da SCU nem boot em console.
