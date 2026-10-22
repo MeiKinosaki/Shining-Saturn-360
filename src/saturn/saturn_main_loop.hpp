@@ -4,6 +4,7 @@
 #include "scu_dma.hpp"
 #include "vdp2_compositor.hpp"
 #include "vdp1_renderer.hpp"
+#include "vdp1_command_list.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -17,6 +18,8 @@ struct MainLoopFrame {
     std::size_t dma_bytes_moved = 0;
     bool vdp2_composed = false;
     std::size_t vdp1_nonzero_pixels = 0;
+    std::size_t vdp1_commands_executed = 0;
+    bool vdp1_command_list_ended = false;
     std::uint64_t frame_number = 0;
 };
 
@@ -28,6 +31,8 @@ public:
     ScuDma& dma() { return dma_; }
     Vdp2Compositor& vdp2() { return vdp2_; }
     Vdp1Renderer& vdp1() { return vdp1_; }
+    Vdp1CommandList::Result execute_vdp1_commands(
+        const std::vector<Vdp1CommandList::Command>& commands, std::size_t budget);
     MainLoopFrame run_frame(std::size_t instruction_budget, std::size_t dma_byte_budget = 256);
     std::uint64_t frame_number() const { return frame_number_; }
 private:
@@ -36,6 +41,7 @@ private:
     ScuDma dma_;
     Vdp2Compositor vdp2_;
     Vdp1Renderer vdp1_;
+    Vdp1CommandList vdp1_command_list_;
     std::uint64_t frame_number_ = 0;
 };
 
