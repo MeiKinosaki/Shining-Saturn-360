@@ -12,6 +12,7 @@ MainLoopFrame SaturnMainLoop::run_frame(std::size_t instruction_budget,
     // then software VDP2 composition. This is not cycle-accurate arbitration.
     frame.cpu = run_instructions(cpu_, bus_, instruction_budget);
     frame.dma_bytes_moved = dma_.step(bus_, dma_byte_budget);
+    frame.vdp1_nonzero_pixels = vdp1_.nonzero_pixels();
     vdp2_.compose();
     frame.vdp2_composed = true;
     ++frame_number_;
