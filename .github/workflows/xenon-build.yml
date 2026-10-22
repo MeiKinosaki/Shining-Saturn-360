@@ -11,6 +11,7 @@ on:
       - 'Makefile'
       - 'makefile'
       - 'tests/**'
+      - 'docs/**'
       - 'README.md'
       - 'VERSION*'
       - '.github/workflows/xenon-build.yml'
