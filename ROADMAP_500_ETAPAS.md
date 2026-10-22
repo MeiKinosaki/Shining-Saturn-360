@@ -1,6 +1,6 @@
 # Shining Saturn 360 — plano sequencial de 500 etapas
 
-**Versão documentada mais recente:** v0.46b (incremento do SH-2 registrado; validação CI dos novos commits ainda deve ser confirmada).  
+**Versão documentada mais recente:** v0.47b (MOVA e TST integrados à suíte; CI dessas alterações aprovado).  
 **Estado deste documento:** planejamento; as etapas não são declaradas concluídas por estarem listadas.  
 **Regra de conclusão:** marcar uma etapa como concluída somente com alteração real no repositório ou teste/evidência correspondente. CI verde não prova execução em Xbox 360 físico nem compatibilidade com jogos comerciais.
 
