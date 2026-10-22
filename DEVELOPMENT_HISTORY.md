@@ -427,3 +427,15 @@ Este lote registra uma alteração real no repositório e 50 itens de trabalho/v
 - Commit da cobertura adicional: `68ce863ddc35f655afd1ba991618356d6c687290`.
 - CI para esses casos está pendente; manter status separado até confirmação.
 - Escopo ainda é o protótipo DMA com barramento mapeado; não declara fidelidade completa da SCU nem boot em console.
+
+
+## Marco v0.47b — SH-2 MOVA e TST (22/10/2026)
+
+- Implementada a instrução SH-2 `MOVA @(disp,PC),R0`, calculando a base PC+4 alinhada a 4 bytes e o deslocamento multiplicado por quatro.
+- Implementada `TST Rm,Rn`, atualizando o bit T de SR pelo AND entre os operandos e preservando os registradores.
+- Testes específicos adicionados e integrados a `tests/run-sh2-core-tests.sh`.
+- CI da suíte após MOVA: https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/39766978254 — sucesso.
+- CI da suíte após TST: https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/39767699164 — sucesso.
+- A documentação do marco foi criada em `VERSION_v0.47b.md`; versão de desenvolvimento registrada como v0.47b.
+- Limites: esse CI não comprova que o último pacote `default.xex` foi testado no Xbox 360 físico; boot de hardware e compatibilidade comercial seguem não comprovados.
+- Próximo marco proposto: v0.48b, priorizando exceções/interrupções e integração do SH-2 ao barramento/ciclo principal.
