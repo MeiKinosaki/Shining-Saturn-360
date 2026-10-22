@@ -2,11 +2,11 @@
 
 Emulador de Sega Saturn para Xbox 360 (RGH/JTAG).
 
-## Estado técnico — v0.46b
+## Estado técnico — v0.47b
 
 ## Versão publicada no repositório
 
-A documentação da versão atual está em [VERSION_v0.45b.md](VERSION_v0.45b.md). A execução de CI 38691857824 passou nos testes de regressão, compilação Xenon ELF32 e empacotamento XEX. Isso não comprova inicialização em hardware real nem compatibilidade com jogos comerciais.
+A documentação do marco atual está em [VERSION_v0.47b.md](VERSION_v0.47b.md). Os testes CI das alterações MOVA e TST passaram; consulte [CI MOVA](https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/39766978254) e [CI TST](https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/39767699164). Isso não comprova inicialização em hardware real nem compatibilidade com jogos comerciais.
 
 - Testes de regressão no Ubuntu: aprovados na execução [mais recente validada](https://github.com/MeiKinosaki/Shining-Saturn-360/actions/runs/38366824872) (compilação Xenon ELF32, testes do núcleo SH-2 e empacotamento XEX). A aprovação do CI não comprova inicialização em hardware real.
 - Toolchain libXenon: verificada.
