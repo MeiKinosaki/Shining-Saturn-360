@@ -4,7 +4,14 @@
 
 int main() {
     shining_saturn::SaturnMainLoop loop;
-    loop.vdp1().fill_rect(10, 10, 2, 2, 0x1234);
+    const std::vector<shining_saturn::Vdp1CommandList::Command> vdp1_commands = {
+        {shining_saturn::Vdp1CommandList::Opcode::Clear, 0, 0, 0, 0, 0},
+        {shining_saturn::Vdp1CommandList::Opcode::FillRect, 10, 10, 2, 2, 0x1234},
+        {shining_saturn::Vdp1CommandList::Opcode::End, 0, 0, 0, 0, 0}
+    };
+    const auto vdp1_result = loop.execute_vdp1_commands(vdp1_commands, 8);
+    assert(vdp1_result.ended && vdp1_result.executed == 2);
+    assert(loop.vdp1().pixel(10, 10) == 0x1234);
     loop.bus().write16(0x00200000, 0x0009);
     loop.bus().write16(0x00200002, 0x0009);
     loop.cpu().reset(0x00200000);
