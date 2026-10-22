@@ -39,5 +39,29 @@ int main() {
     assert(bus.read16(0x05F80020u) == 0x1234u);
     assert(dma.channel(1)->completed);
 
+    // Verify round-robin fairness using the real Saturn memory adapter.
+    dma.reset();
+    for (std::uint32_t i = 0; i < 3; ++i) {
+        bus.write8(0x00200100u + i, static_cast<std::uint8_t>(0x30u + i));
+        bus.write8(0x00200120u + i, static_cast<std::uint8_t>(0x60u + i));
+    }
+    assert(dma.configure(0, 0x00200100u, 0x00200200u, 3));
+    assert(dma.configure(1, 0x00200120u, 0x00200220u, 3));
+    assert(dma.start(0) && dma.start(1));
+    assert(dma.step(bus, 1) == 1);
+    assert(dma.channel(0)->remaining == 2);
+    assert(dma.channel(1)->remaining == 3);
+    assert(dma.step(bus, 1) == 1);
+    assert(dma.channel(0)->remaining == 2);
+    assert(dma.channel(1)->remaining == 2);
+    assert(bus.read8(0x00200200u) == 0x30u);
+    assert(bus.read8(0x00200220u) == 0x60u);
+    assert(dma.step(bus, 4) == 4);
+    assert(!dma.busy());
+    for (std::uint32_t i = 0; i < 3; ++i) {
+        assert(bus.read8(0x00200200u + i) == static_cast<std::uint8_t>(0x30u + i));
+        assert(bus.read8(0x00200220u + i) == static_cast<std::uint8_t>(0x60u + i));
+    }
+
     std::cout << "SCU DMA Saturn memory integration tests passed\\n";
 }
