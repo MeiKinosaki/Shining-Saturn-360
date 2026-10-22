@@ -18,6 +18,17 @@ public:
 
 enum class StepResult { Executed, UnsupportedOpcode, Halted };
 
+// Portable CPU-only checkpoint. Memory and device state must be captured separately.
+struct Sh2Snapshot {
+    std::array<std::uint32_t, 16> r{};
+    std::uint32_t pc = 0, pr = 0, gbr = 0, vbr = 0, mach = 0, macl = 0, sr = 0;
+    bool halted = false;
+    bool branch_pending = false;
+    std::uint32_t branch_target = 0;
+    std::uint16_t last_opcode = 0;
+    std::uint32_t fault_pc = 0;
+};
+
 // Initial SH-2 interpreter foundation; not a complete Saturn CPU.
 class Sh2Core {
 public:
@@ -30,6 +41,8 @@ public:
     void reset(std::uint32_t start_pc);
     std::uint16_t last_opcode() const { return last_opcode_; }
     std::uint32_t fault_pc() const { return fault_pc_; }
+    Sh2Snapshot snapshot() const;
+    void restore(const Sh2Snapshot& state);
 
 private:
     bool branch_pending_ = false;
