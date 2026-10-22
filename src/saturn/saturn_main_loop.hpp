@@ -42,6 +42,8 @@ private:
     Vdp2Compositor vdp2_;
     Vdp1Renderer vdp1_;
     Vdp1CommandList vdp1_command_list_;
+    std::size_t pending_vdp1_commands_executed_ = 0;
+    bool pending_vdp1_command_list_ended_ = false;
     std::uint64_t frame_number_ = 0;
 };
 
