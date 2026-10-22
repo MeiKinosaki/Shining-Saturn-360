@@ -399,3 +399,13 @@ Este lote registra uma alteração real no repositório e 50 itens de trabalho/v
 - Limitação: a janela MMIO ainda é armazenamento genérico; este teste não prova efeitos colaterais reais do VDP2 nem integração do DMA com o ciclo de quadro.
 - Validação pendente: GitHub Actions `39336093615`; não declarar o teste verde até a conclusão do job.
 - Versão oficial mantida em v0.46b; nenhuma alegação de boot físico ou compatibilidade comercial.
+
+
+## Continuação — regressão DMA parcial e correção (22/10/2026)
+
+- A execução CI `39336093615` identificou expectativa incorreta no novo teste de DMA: após orçamento de 3 bytes, o teste esperava que o quarto byte já tivesse sido transferido.
+- Corrigida a expectativa para verificar os três bytes efetivamente transferidos e confirmar que o byte seguinte ainda não foi escrito.
+- Commit da correção: `ab8b2b9f186a25a15713031e1e223e891f108155`.
+- CI da correção: `39744175850`, aguardando resultado na última consulta.
+- Os testes host anteriores ao caso novo passaram; o build Xenon ELF32 e o empacotamento XEX da execução que detectou a falha também passaram. Isso não prova boot em console.
+- Limitação permanece: registradores VDP2 ainda são armazenamento genérico; o teste verifica transferência de bytes, não efeitos reais do dispositivo.
