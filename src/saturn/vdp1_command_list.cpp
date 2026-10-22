@@ -5,13 +5,28 @@ namespace shining_saturn {
 Vdp1CommandList::Result Vdp1CommandList::execute(
     Vdp1Renderer& renderer, const std::vector<Command>& commands,
     std::size_t budget) const {
+    return execute_slice(renderer, commands, 0, budget);
+}
+
+Vdp1CommandList::Result Vdp1CommandList::execute_slice(
+    Vdp1Renderer& renderer, const std::vector<Command>& commands,
+    std::size_t start_index, std::size_t budget) const {
     Result result{};
-    const std::size_t limit = commands.size() < budget ? commands.size() : budget;
-    for (std::size_t i = 0; i < limit; ++i) {
+    if (start_index > commands.size()) {
+        result.invalid = true;
+        result.next_index = commands.size();
+        return result;
+    }
+    const std::size_t remaining = commands.size() - start_index;
+    const std::size_t count = remaining < budget ? remaining : budget;
+    const std::size_t limit = start_index + count;
+    result.next_index = start_index;
+    for (std::size_t i = start_index; i < limit; ++i) {
         const Command& command = commands[i];
         switch (command.opcode) {
         case Opcode::End:
             result.ended = true;
+            result.next_index = i + 1;
             return result;
         case Opcode::Clear:
             renderer.clear(command.color);
@@ -32,9 +47,11 @@ Vdp1CommandList::Result Vdp1CommandList::execute(
             break;
         default:
             result.invalid = true;
+            result.next_index = i;
             return result;
         }
     }
+    result.next_index = limit;
     result.budget_exhausted = limit < commands.size();
     result.list_exhausted = limit == commands.size() && !result.ended;
     return result;
