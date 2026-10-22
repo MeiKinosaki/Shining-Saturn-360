@@ -53,6 +53,23 @@ int main() {
     assert(result.ended && !result.invalid && result.executed == 0);
     assert(end_renderer.pixel(2, 2) == 0);
 
+    // Sliced execution resumes exactly where the previous bounded call stopped.
+    Vdp1Renderer sliced;
+    const std::vector<Vdp1CommandList::Command> sliced_commands = {
+        {Vdp1CommandList::Opcode::FillRect, 1, 1, 1, 1, 0x001F},
+        {Vdp1CommandList::Opcode::FillRect, 2, 2, 1, 1, 0x03E0},
+        {Vdp1CommandList::Opcode::End, 0, 0, 0, 0, 0}
+    };
+    auto slice = executor.execute_slice(sliced, sliced_commands, 0, 1);
+    assert(slice.executed == 1 && slice.budget_exhausted && slice.next_index == 1);
+    assert(sliced.pixel(1, 1) == 0x001F && sliced.pixel(2, 2) == 0);
+    slice = executor.execute_slice(sliced, sliced_commands, slice.next_index, 1);
+    assert(slice.executed == 1 && slice.budget_exhausted && slice.next_index == 2);
+    slice = executor.execute_slice(sliced, sliced_commands, slice.next_index, 1);
+    assert(slice.ended && slice.next_index == 3 && slice.executed == 0);
+    const auto invalid_cursor = executor.execute_slice(sliced, sliced_commands, 99, 1);
+    assert(invalid_cursor.invalid && invalid_cursor.next_index == sliced_commands.size());
+
     const std::vector<Vdp1CommandList::Command> invalid = {
         {static_cast<Vdp1CommandList::Opcode>(255), 0, 0, 1, 1, 0x7FFF}
     };
