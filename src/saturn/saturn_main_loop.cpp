@@ -5,6 +5,11 @@ namespace shining_saturn {
 SaturnMainLoop::SaturnMainLoop(const std::vector<std::uint8_t>& boot_rom)
     : bus_(boot_rom) {}
 
+Vdp1CommandList::Result SaturnMainLoop::execute_vdp1_commands(
+    const std::vector<Vdp1CommandList::Command>& commands, std::size_t budget) {
+    return vdp1_command_list_.execute(vdp1_, commands, budget);
+}
+
 MainLoopFrame SaturnMainLoop::run_frame(std::size_t instruction_budget,
                                         std::size_t dma_byte_budget) {
     MainLoopFrame frame{};
