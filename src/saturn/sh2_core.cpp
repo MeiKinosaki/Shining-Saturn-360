@@ -426,4 +426,29 @@ StepResult Sh2Core::step(Bus& bus) {
     return StepResult::Executed;
 }
 
+
+Sh2Snapshot Sh2Core::snapshot() const {
+    Sh2Snapshot state;
+    state.r = r;
+    state.pc = pc; state.pr = pr; state.gbr = gbr; state.vbr = vbr;
+    state.mach = mach; state.macl = macl; state.sr = sr;
+    state.halted = halted;
+    state.branch_pending = branch_pending_;
+    state.branch_target = branch_target_;
+    state.last_opcode = last_opcode_;
+    state.fault_pc = fault_pc_;
+    return state;
+}
+
+void Sh2Core::restore(const Sh2Snapshot& state) {
+    r = state.r;
+    pc = state.pc; pr = state.pr; gbr = state.gbr; vbr = state.vbr;
+    mach = state.mach; macl = state.macl; sr = state.sr;
+    halted = state.halted;
+    branch_pending_ = state.branch_pending;
+    branch_target_ = state.branch_target;
+    last_opcode_ = state.last_opcode;
+    fault_pc_ = state.fault_pc;
+}
+
 } // namespace shining_saturn
