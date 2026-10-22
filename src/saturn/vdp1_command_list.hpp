@@ -18,6 +18,7 @@ public:
     };
     struct Result {
         std::size_t executed = 0;
+        std::size_t next_index = 0;
         bool ended = false;
         bool invalid = false;
         bool budget_exhausted = false;
@@ -26,6 +27,8 @@ public:
 
     Result execute(Vdp1Renderer& renderer, const std::vector<Command>& commands,
                    std::size_t budget) const;
+    Result execute_slice(Vdp1Renderer& renderer, const std::vector<Command>& commands,
+                         std::size_t start_index, std::size_t budget) const;
 };
 
 } // namespace shining_saturn
