@@ -21,6 +21,8 @@ int main() {
     assert(first.cpu.pc_after_run == 0x00200002);
     assert(first.vdp2_composed);
     assert(first.vdp1_nonzero_pixels == 4);
+    assert(first.vdp1_commands_executed == 2);
+    assert(first.vdp1_command_list_ended);
     assert(first.dma_bytes_moved == 0);
 
     loop.bus().write32(0x00200100, 0x12345678);
@@ -34,4 +36,6 @@ int main() {
     assert(loop.bus().read32(0x00200200) == 0x12345678);
     assert(second.vdp2_composed);
     assert(second.vdp1_nonzero_pixels == 4);
+    assert(second.vdp1_commands_executed == 0);
+    assert(!second.vdp1_command_list_ended);
 }
