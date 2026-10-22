@@ -1,15 +1,20 @@
 #pragma once
 #include "sh2_runner.hpp"
 #include "saturn_memory_bus.hpp"
+#include "scu_dma.hpp"
+#include "vdp2_compositor.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <vector>
 
 namespace shining_saturn {
 
-// Experimental scheduler slice: runs a bounded SH-2 budget against the Saturn bus.
-// Timing conversion and device arbitration are intentionally not modeled yet.
+// Experimental scheduler: SH-2, byte-copy DMA and software VDP2 composition
+// advance in deterministic order. Hardware timing and IRQ arbitration remain TODO.
 struct MainLoopFrame {
     RunResult cpu;
+    std::size_t dma_bytes_moved = 0;
+    bool vdp2_composed = false;
     std::uint64_t frame_number = 0;
 };
 
@@ -18,11 +23,15 @@ public:
     explicit SaturnMainLoop(const std::vector<std::uint8_t>& boot_rom = {});
     Sh2Core& cpu() { return cpu_; }
     SaturnMemoryBus& bus() { return bus_; }
-    MainLoopFrame run_frame(std::size_t instruction_budget);
+    ScuDma& dma() { return dma_; }
+    Vdp2Compositor& vdp2() { return vdp2_; }
+    MainLoopFrame run_frame(std::size_t instruction_budget, std::size_t dma_byte_budget = 256);
     std::uint64_t frame_number() const { return frame_number_; }
 private:
     Sh2Core cpu_;
     SaturnMemoryBus bus_;
+    ScuDma dma_;
+    Vdp2Compositor vdp2_;
     std::uint64_t frame_number_ = 0;
 };
 
