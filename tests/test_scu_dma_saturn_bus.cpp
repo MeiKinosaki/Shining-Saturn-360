@@ -63,5 +63,24 @@ int main() {
         assert(bus.read8(0x00200220u + i) == static_cast<std::uint8_t>(0x60u + i));
     }
 
+    // Validate channel bounds, overflow rejection, and lifecycle transitions.
+    assert(dma.configure(ScuDma::ChannelCount, 0x100u, 0x200u, 1) == false);
+    assert(dma.configure(0, 0xFFFFFFFFu, 0x200u, 2) == false);
+    assert(dma.configure(0, 0x100u, 0x200u, 0));
+    assert(dma.start(0));
+    assert(dma.channel(0)->completed);
+    assert(!dma.channel(0)->active);
+    assert(!dma.start(0)); // completed transfers must be reconfigured first
+
+    assert(dma.configure(2, 0x00200100u, 0x00200300u, 2));
+    assert(dma.start(2));
+    assert(!dma.configure(2, 0x00200100u, 0x00200300u, 1)); // active channel
+    assert(dma.step(bus, 2) == 2);
+    assert(dma.channel(2)->completed);
+    assert(dma.configure(2, 0x00200100u, 0x00200300u, 1)); // completed can be reconfigured
+    assert(dma.start(2));
+    assert(dma.step(bus, 1) == 1);
+    assert(dma.channel(2)->completed);
+
     std::cout << "SCU DMA Saturn memory integration tests passed\\n";
 }
