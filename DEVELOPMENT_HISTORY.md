@@ -409,3 +409,12 @@ Este lote registra uma alteração real no repositório e 50 itens de trabalho/v
 - CI da correção: `39744175850`, aguardando resultado na última consulta.
 - Os testes host anteriores ao caso novo passaram; o build Xenon ELF32 e o empacotamento XEX da execução que detectou a falha também passaram. Isso não prova boot em console.
 - Limitação permanece: registradores VDP2 ainda são armazenamento genérico; o teste verifica transferência de bytes, não efeitos reais do dispositivo.
+
+
+## Continuação — justiça entre canais DMA no barramento Saturn (22/10/2026)
+
+- A execução CI `39744175850` passou nos jobs `host-regression-tests`, `build-xenon-elf32` e `package-xex` após a correção do teste de transferência parcial.
+- Novo teste acrescentado para verificar alternância round-robin entre dois canais DMA usando o adaptador de memória Saturn: cada canal deve receber um byte em duas chamadas de orçamento unitário, e os dados finais devem corresponder às fontes.
+- Commit do novo teste: `f4b4a2bedc91c484d555efc5af7eb60f70b93f80`.
+- Validação CI deste novo caso ainda pendente; não marcar como concluído antes do resultado.
+- A cobertura usa o protótipo DMA e a memória mapeada atual; não equivale ao controlador SCU real nem prova efeitos de registradores de hardware.
