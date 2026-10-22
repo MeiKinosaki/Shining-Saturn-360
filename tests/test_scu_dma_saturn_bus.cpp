@@ -19,7 +19,8 @@ int main() {
     assert(dma.step(bus, 3) == 3);
     assert(dma.channel(0)->remaining == 5);
     assert(bus.read8(0x00200020u) == 0xA0u);
-    assert(bus.read8(0x00200023u) == 0xA3u);
+    assert(bus.read8(0x00200022u) == 0xA2u);
+    assert(bus.read8(0x00200023u) == 0x00u);
     assert(bus.read8(0x00200024u) == 0x00u);
 
     assert(dma.step(bus, 16) == 5);
