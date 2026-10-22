@@ -5,6 +5,8 @@ tmpdir="$(mktemp -d)"; trap 'rm -rf "$tmpdir"' EXIT
 cxx="${CXX:-g++}"; flags=(-std=c++17 -Wall -Wextra -Werror -pedantic)
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_core.cpp" -o "$tmpdir/test_sh2_core"; "$tmpdir/test_sh2_core"
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_memory_ops.cpp" -o "$tmpdir/test_sh2_memory_ops"; "$tmpdir/test_sh2_memory_ops"
+
+"$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_mova.cpp" -o "$tmpdir/test_sh2_mova"; "$tmpdir/test_sh2_mova"
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_arithmetic_edges.cpp" -o "$tmpdir/test_sh2_arithmetic_edges"; "$tmpdir/test_sh2_arithmetic_edges"
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_sr_flags.cpp" -o "$tmpdir/test_sh2_sr_flags"; "$tmpdir/test_sh2_sr_flags"
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_system_registers.cpp" -o "$tmpdir/test_sh2_system_registers"; "$tmpdir/test_sh2_system_registers"
