@@ -20,6 +20,17 @@ permissions:
   contents: read
 
 jobs:
+  sh2-profile-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current source
+        uses: actions/checkout@v4
+      - name: Compile and profile current SH-2 core
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash tests/run-sh2-benchmark.sh
+
   prepare-source:
     runs-on: ubuntu-latest
     outputs:
