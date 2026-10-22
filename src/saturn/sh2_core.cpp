@@ -135,6 +135,8 @@ StepResult Sh2Core::step(Bus& bus) {
         const std::uint32_t lhs = r[n], rhs = r[m], result = lhs - rhs;
         r[n] = result;
         sr = (sr & ~kTBit) | ((((lhs ^ rhs) & (lhs ^ result)) >> 31) ? kTBit : 0u);
+    } else if ((op & 0xf00f) == 0x2008) { // TST Rm,Rn: T=1 when (Rn & Rm)==0
+        sr = (sr & ~kTBit) | ((r[n] & r[m]) == 0 ? kTBit : 0u);
     } else if ((op & 0xf00f) == 0x2009) { // AND Rm,Rn
         r[n] &= r[m];
     } else if ((op & 0xf00f) == 0x200a) { // XOR Rm,Rn
