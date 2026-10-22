@@ -29,7 +29,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          bash tests/run-sh2-benchmark.sh
+          bash tests/run-sh2-benchmark.sh | tee sh2-benchmark.txt
+      - name: Upload SH-2 benchmark report
+        uses: actions/upload-artifact@v4
+        with:
+          name: sh2-benchmark-report
+          path: sh2-benchmark.txt
+          if-no-files-found: error
+          retention-days: 30
 
   prepare-source:
     runs-on: ubuntu-latest
