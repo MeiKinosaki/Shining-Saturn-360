@@ -38,6 +38,25 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  saturn-device-benchmarks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current source
+        uses: actions/checkout@v4
+      - name: Compile and run DMA, VDP1 and VDP2 host benchmarks
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x tests/run-saturn-device-benchmarks.sh
+          tests/run-saturn-device-benchmarks.sh | tee saturn-device-benchmarks.txt
+      - name: Upload device benchmark report
+        uses: actions/upload-artifact@v4
+        with:
+          name: saturn-device-benchmark-report
+          path: saturn-device-benchmarks.txt
+          if-no-files-found: error
+          retention-days: 30
+
   prepare-source:
     runs-on: ubuntu-latest
     outputs:
