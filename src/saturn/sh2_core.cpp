@@ -420,7 +420,16 @@ StepResult Sh2Core::step(Bus& bus) {
         return StepResult::UnsupportedOpcode;
     }
     if (completing_delay_slot) {
-        if (branch_pending_) { halted = true; return StepResult::UnsupportedOpcode; }
+        if (branch_pending_) {
+            // A delayed control transfer in another delay slot is not supported
+            // by this interpreter. Keep diagnostics anchored at the offending
+            // instruction and discard both pending transfers deterministically.
+            pc = fault_pc_;
+            branch_pending_ = false;
+            branch_target_ = 0;
+            halted = true;
+            return StepResult::UnsupportedOpcode;
+        }
         pc = delayed_target;
     }
     return StepResult::Executed;
