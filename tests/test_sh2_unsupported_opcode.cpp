@@ -61,6 +61,27 @@ int main() {
         repeated_state.sr != saved.sr)
         return fail("unsupported-opcode result must be deterministic");
 
+
+    // Unsupported instructions in a branch delay slot stop deterministically.
+    // The pending branch target must not be applied after this fault.
+    Sh2Core delay_slot_cpu;
+    delay_slot_cpu.reset(0x120);
+    bus.write16(0x120, 0xa000); // BRA with displacement zero; target 0x124
+    bus.write16(0x122, 0xffff); // unsupported opcode in the delay slot
+    if (delay_slot_cpu.step(bus) != StepResult::Executed)
+        return fail("BRA setup instruction must execute");
+    if (delay_slot_cpu.pc != 0x122)
+        return fail("BRA must enter its delay slot before applying target");
+    if (delay_slot_cpu.step(bus) != StepResult::UnsupportedOpcode)
+        return fail("unsupported delay-slot opcode must be reported");
+    if (!delay_slot_cpu.halted)
+        return fail("unsupported delay-slot opcode must stop deterministically");
+    if (delay_slot_cpu.pc != 0x122 || delay_slot_cpu.fault_pc() != 0x122 ||
+        delay_slot_cpu.last_opcode() != 0xffff)
+        return fail("delay-slot diagnostics must identify the failing instruction");
+    if (delay_slot_cpu.pc == 0x124)
+        return fail("pending branch target must not be applied after a delay-slot fault");
+
     std::cout << "SH-2 unsupported-opcode diagnostic tests passed\n";
     return 0;
 }
