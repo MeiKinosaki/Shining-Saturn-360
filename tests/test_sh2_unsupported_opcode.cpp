@@ -101,6 +101,33 @@ int main() {
     if (nested_branch_cpu.step(bus) != StepResult::Halted)
         return fail("nested delay-slot failure must remain halted");
 
+    // CMP/STR Rm,Rn sets T when any corresponding byte is equal.
+    // These cases guard the decoder cleanup and verify unrelated SR bits survive.
+    Sh2Core cmpstr_cpu;
+    cmpstr_cpu.reset(0x180);
+    cmpstr_cpu.r[1] = 0x11223344u;
+    cmpstr_cpu.r[2] = 0xaabb33ddu; // byte 0x33 matches
+    cmpstr_cpu.sr = 0x120u; // T clear, upper status bits set
+    bus.write16(0x180, 0x212c); // CMP/STR R2,R1
+    if (cmpstr_cpu.step(bus) != StepResult::Executed)
+        return fail("CMP/STR matching-byte opcode must execute");
+    if ((cmpstr_cpu.sr & Sh2Core::kTBit) == 0)
+        return fail("CMP/STR must set T when any corresponding byte matches");
+    if ((cmpstr_cpu.sr & ~Sh2Core::kTBit) != (0x120u & ~Sh2Core::kTBit))
+        return fail("CMP/STR must preserve SR bits other than T");
+
+    cmpstr_cpu.reset(0x182);
+    cmpstr_cpu.r[1] = 0x11223344u;
+    cmpstr_cpu.r[2] = 0xaabbccddu; // no corresponding bytes match
+    cmpstr_cpu.sr = 0x121u; // T set before instruction
+    bus.write16(0x182, 0x212c); // CMP/STR R2,R1
+    if (cmpstr_cpu.step(bus) != StepResult::Executed)
+        return fail("CMP/STR non-matching-byte opcode must execute");
+    if ((cmpstr_cpu.sr & Sh2Core::kTBit) != 0)
+        return fail("CMP/STR must clear T when no corresponding byte matches");
+    if ((cmpstr_cpu.sr & ~Sh2Core::kTBit) != (0x121u & ~Sh2Core::kTBit))
+        return fail("CMP/STR must preserve non-T SR bits when clearing T");
+
     std::cout << "SH-2 unsupported-opcode diagnostic tests passed\n";
     return 0;
 }

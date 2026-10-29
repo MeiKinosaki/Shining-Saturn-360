@@ -135,13 +135,6 @@ StepResult Sh2Core::step(Bus& bus) {
         const std::uint32_t lhs = r[n], rhs = r[m], result = lhs - rhs;
         r[n] = result;
         sr = (sr & ~kTBit) | ((((lhs ^ rhs) & (lhs ^ result)) >> 31) ? kTBit : 0u);
-    } else if ((op & 0xf00f) == 0x200c) { // CMP/STR Rm,Rn: T=1 if any byte matches
-        const std::uint32_t different = r[n] ^ r[m];
-        const bool equal_byte = ((different & 0x000000ffu) == 0) ||
-                                ((different & 0x0000ff00u) == 0) ||
-                                ((different & 0x00ff0000u) == 0) ||
-                                ((different & 0xff000000u) == 0);
-        sr = (sr & ~kTBit) | (equal_byte ? kTBit : 0u);
     } else if ((op & 0xf00f) == 0x2008) { // TST Rm,Rn: T=1 when (Rn & Rm)==0
         sr = (sr & ~kTBit) | ((r[n] & r[m]) == 0 ? kTBit : 0u);
     } else if ((op & 0xf00f) == 0x2009) { // AND Rm,Rn
