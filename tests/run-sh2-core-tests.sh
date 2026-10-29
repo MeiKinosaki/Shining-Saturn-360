@@ -4,6 +4,7 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 tmpdir="$(mktemp -d)"; trap 'rm -rf "$tmpdir"' EXIT
 cxx="${CXX:-g++}"; flags=(-std=c++17 -Wall -Wextra -Werror -pedantic)
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_core.cpp" -o "$tmpdir/test_sh2_core"; "$tmpdir/test_sh2_core"
+"$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_unsupported_opcode.cpp" -o "$tmpdir/test_sh2_unsupported_opcode"; "$tmpdir/test_sh2_unsupported_opcode"
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_snapshot.cpp" -o "$tmpdir/test_sh2_snapshot"; "$tmpdir/test_sh2_snapshot"
 "$cxx" "${flags[@]}" "$root/tests/test_sh2_state_codec.cpp" -o "$tmpdir/test_sh2_state_codec"; "$tmpdir/test_sh2_state_codec"
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_gbr_byte_ops.cpp" -o "$tmpdir/test_sh2_gbr_byte_ops"; "$tmpdir/test_sh2_gbr_byte_ops"
