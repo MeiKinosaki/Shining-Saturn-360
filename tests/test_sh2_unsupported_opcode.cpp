@@ -82,6 +82,25 @@ int main() {
     if (delay_slot_cpu.pc == 0x124)
         return fail("pending branch target must not be applied after a delay-slot fault");
 
+
+    // A second delayed transfer inside an existing delay slot is rejected.
+    // Verify that diagnostics remain on the offending instruction and that
+    // both pending transfers are discarded instead of jumping unpredictably.
+    Sh2Core nested_branch_cpu;
+    nested_branch_cpu.reset(0x140);
+    bus.write16(0x140, 0xa001); // BRA to 0x146, delay slot at 0x142
+    bus.write16(0x142, 0xa001); // BRA inside delay slot: unsupported
+    if (nested_branch_cpu.step(bus) != StepResult::Executed)
+        return fail("outer BRA must execute");
+    if (nested_branch_cpu.step(bus) != StepResult::UnsupportedOpcode)
+        return fail("nested delayed branch must be rejected");
+    if (!nested_branch_cpu.halted || nested_branch_cpu.pc != 0x142 ||
+        nested_branch_cpu.fault_pc() != 0x142 ||
+        nested_branch_cpu.last_opcode() != 0xa001)
+        return fail("nested delay-slot failure diagnostics must remain at the offending instruction");
+    if (nested_branch_cpu.step(bus) != StepResult::Halted)
+        return fail("nested delay-slot failure must remain halted");
+
     std::cout << "SH-2 unsupported-opcode diagnostic tests passed\n";
     return 0;
 }
