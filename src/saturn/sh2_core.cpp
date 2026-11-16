@@ -45,8 +45,6 @@ bool Sh2Core::enter_exception(Bus& bus, std::uint8_t vector,
     bus.write32(r[15], sr);
     r[15] -= 4u;
     bus.write32(r[15], saved_pc);
-    sr |= 0x10000000u; // BL: block further maskable interrupts during entry
-    sr |= 0x40000000u; // MD: privileged mode
     if (level != 0) {
         sr = (sr & ~0x000000f0u) | (std::uint32_t(level & 0x0fu) << 4);
     }
@@ -66,7 +64,7 @@ StepResult Sh2Core::step(Bus& bus) {
     if (halted) return StepResult::Halted;
     const std::uint8_t mask = static_cast<std::uint8_t>((sr >> 4) & 0x0fu);
     if (interrupt_level_ != 0 && interrupt_level_ > mask &&
-        !(sr & 0x10000000u) && !branch_pending_) {
+        !branch_pending_) {
         const std::uint8_t level = interrupt_level_, vector = interrupt_vector_;
         interrupt_level_ = interrupt_vector_ = 0;
         enter_exception(bus, vector, pc, level);
@@ -473,7 +471,7 @@ StepResult Sh2Core::step(Bus& bus) {
         }
         pc = delayed_target;
         if (rte_pending_) {
-            sr = rte_sr_;
+            sr = rte_sr_ & 0x000003f3u;
             rte_pending_ = false;
             rte_sr_ = 0;
         }
