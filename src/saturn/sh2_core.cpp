@@ -82,7 +82,9 @@ StepResult Sh2Core::step(Bus& bus) {
     const std::int32_t disp12 = (op & 0x0800) ? (std::int32_t(op & 0x0fff) - 0x1000)
                                                 : std::int32_t(op & 0x0fff);
 
-    if (op == 0x002b) { // RTE: delayed return; SR is restored after delay slot
+    if ((op & 0xff00u) == 0xc300u) { // TRAPA #imm: save next PC/SR and fetch vector
+        enter_exception(bus, static_cast<std::uint8_t>(op & 0xffu), pc, 0);
+    } else if (op == 0x002b) { // RTE: delayed return; SR is restored after delay slot
         const std::uint32_t target = bus.read32(r[15]);
         r[15] += 4u;
         rte_sr_ = bus.read32(r[15]);
