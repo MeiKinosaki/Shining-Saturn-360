@@ -11,6 +11,9 @@ int main() {
     };
     const auto vdp1_result = loop.execute_vdp1_commands(vdp1_commands, 8);
     assert(vdp1_result.ended && vdp1_result.executed == 2);
+    shining_saturn::InterruptRequest vdp1_irq{};
+    assert(loop.bus().interrupt_controller().acknowledge(0, vdp1_irq));
+    assert(vdp1_irq.vector == 0x4du && vdp1_irq.level == 2);
     assert(loop.vdp1().pixel(10, 10) == 0x1234);
     loop.bus().write16(0x00200000, 0x0009);
     loop.bus().write16(0x00200002, 0x0009);
@@ -24,6 +27,9 @@ int main() {
     assert(first.vdp1_commands_executed == 2);
     assert(first.vdp1_command_list_ended);
     assert(first.dma_bytes_moved == 0);
+    shining_saturn::InterruptRequest vdp2_irq{};
+    assert(loop.bus().interrupt_controller().acknowledge(0, vdp2_irq));
+    assert(vdp2_irq.vector == 0x40u && vdp2_irq.level == 15);
 
     loop.bus().write32(0x00200100, 0x12345678);
     assert(loop.dma().configure(0, 0x00200100, 0x00200200, 4));
