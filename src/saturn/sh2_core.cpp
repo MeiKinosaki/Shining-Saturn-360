@@ -63,12 +63,18 @@ bool Sh2Core::raise_exception(Bus& bus, std::uint8_t vector,
 StepResult Sh2Core::step(Bus& bus) {
     if (halted) return StepResult::Halted;
     const std::uint8_t mask = static_cast<std::uint8_t>((sr >> 4) & 0x0fu);
-    if (interrupt_level_ != 0 && interrupt_level_ > mask &&
-        !branch_pending_) {
-        const std::uint8_t level = interrupt_level_, vector = interrupt_vector_;
-        interrupt_level_ = interrupt_vector_ = 0;
-        enter_exception(bus, vector, pc, level);
-        return StepResult::Executed;
+    if (!branch_pending_) {
+        InterruptRequest request{};
+        if (bus.acknowledge_interrupt(mask, request)) {
+            enter_exception(bus, request.vector, pc, request.nmi ? 0 : request.level);
+            return StepResult::Executed;
+        }
+        if (interrupt_level_ != 0 && interrupt_level_ > mask) {
+            const std::uint8_t level = interrupt_level_, vector = interrupt_vector_;
+            interrupt_level_ = interrupt_vector_ = 0;
+            enter_exception(bus, vector, pc, level);
+            return StepResult::Executed;
+        }
     }
     const bool completing_delay_slot = branch_pending_;
     const std::uint32_t delayed_target = branch_target_;
