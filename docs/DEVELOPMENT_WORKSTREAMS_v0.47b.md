@@ -69,3 +69,24 @@ Antes de portar código de outro emulador, registrar URL/revisão, licença, arq
 - limites do bootstrap Xenon documentados e sem alegação de que ele já emula jogos;
 - logs e checksums anexados aos artefatos disponíveis;
 - documento de versão atualizado apenas depois das validações.
+
+## Progresso técnico — fluxo de exceções SH-2 (protótipo)
+
+A branch de trabalho contém agora uma primeira implementação do caminho de exceção:
+- quadro na pilha R15 com SR no endereço mais alto e PC no topo da pilha;
+- leitura do vetor em VBR + (vetor * 4);
+- entrada de interrupção mascarável por comparação entre prioridade solicitada e SR.IMASK;
+- elevação de IMASK ao nível aceito;
+- instrução TRAPA #imm;
+- RTE com slot de atraso e restauração de SR após o slot, aplicando a máscara arquitetural SH-2;
+- persistência do pedido de interrupção e do estado pendente de RTE no snapshot de CPU;
+- testes adicionados para quadro de pilha, vetores, prioridade, RTE, TRAPA e execução pela SaturnMemoryBus.
+
+Limites ainda não resolvidos:
+- os pedidos de interrupção chegam por API; os registradores reais do INTC/on-chip (ICR, IPRA/IPRB, VCRA e fontes periféricas) ainda não estão ligados;
+- NMI, interrupções simultâneas com arbitragem completa, temporização/ciclos e prioridades por fonte ainda faltam;
+- exceções de endereço/alinhamento e faults reportados pelo barramento ainda não estão modelados;
+- opcode ilegal continua retornando UnsupportedOpcode para diagnóstico, sem entrada automática no vetor 4;
+- os testes foram adicionados ao runner, mas precisam ser executados no CI antes de considerar o caminho validado.
+
+Este trabalho não promove a versão: v0.47b permanece até a suíte de regressão passar no commit candidato.
