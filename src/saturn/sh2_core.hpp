@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstdint>
+#include "sh2_interrupt_controller.hpp"
 
 namespace shining_saturn {
 
@@ -10,6 +11,7 @@ public:
     virtual ~Bus() = default;
     virtual std::uint8_t read8(std::uint32_t address) = 0;
     virtual void write8(std::uint32_t address, std::uint8_t value) = 0;
+    virtual bool acknowledge_interrupt(std::uint8_t sr_mask, InterruptRequest& out) { (void)sr_mask; (void)out; return false; }
     std::uint16_t read16(std::uint32_t address);
     std::uint32_t read32(std::uint32_t address);
     void write16(std::uint32_t address, std::uint16_t value);
