@@ -90,3 +90,29 @@ Limites ainda não resolvidos:
 - os testes foram adicionados ao runner, mas precisam ser executados no CI antes de considerar o caminho validado.
 
 Este trabalho não promove a versão: v0.47b permanece até a suíte de regressão passar no commit candidato.
+
+## INTC / exceções — protótipo em desenvolvimento (branch workstreams)
+
+Arquivos adicionados/alterados:
+- `src/saturn/sh2_interrupt_controller.hpp/.cpp`: banco inicial para ICR, IPRA, IPRB e VCRA; mascaramento de bits reservados; latch de NMI por borda; fila simples de pedidos e arbitragem pelo nível solicitado.
+- `src/saturn/saturn_memory_bus.hpp/.cpp`: janela de registradores INTC acessível pelo barramento e API de entrada para pedidos de dispositivos; a CPU consulta o barramento durante `step()`.
+- `tests/test_sh2_interrupt_controller.cpp`: testes de máscara dos registradores, NMI e prioridade.
+- `tests/test_saturn_memory_bus.cpp`: testes de acesso MMIO e aceitação de IRQ pelo SH-2.
+- `tests/run-sh2-core-tests.sh`: novo teste incluído e liga o controlador nos alvos que compilam o SaturnMemoryBus.
+- `.github/workflows/xenon-build.yml`: suíte de regressão da fonte atual executada em job independente e push habilitado para a branch de trabalho.
+
+Limitações importantes — isto ainda NÃO é um INTC Saturn completo:
+- IPRA/IPRB/VCRA estão expostos com máscaras básicas; a decodificação exata de cada campo para todas as fontes SH-2 e os vetores por fonte ainda não foi fechada contra a tabela específica do SH-2 usado no Saturn.
+- SCU, VDP1, VDP2, CD Block, SCSP e SMPC ainda não chamam automaticamente a API de IRQ quando seus eventos ocorrem. A API de entrada existe, mas o roteamento por evento/fonte está pendente.
+- A arbitragem é simplificada; ainda falta modelar corretamente todas as fontes, empates, prioridade fixa, NMI/SMPC reset e estados pendentes/acknowledge específicos do hardware.
+- O estado do INTC ainda não está integrado ao save state global.
+- Opcode não suportado continua sendo reportado como diagnóstico; não é seguro converter todo opcode ainda não implementado em exceção de instrução ilegal. A distinção entre opcode ilegal e instrução válida ainda ausente precisa ser completada.
+- Exceções de alinhamento ainda não são levantadas automaticamente pelo caminho de acesso à memória.
+- A integração do barramento expõe o bloco INTC; não significa que todos os dispositivos Saturn estejam gerando IRQs reais.
+
+Validação e XEX:
+- O novo job de regressão foi adicionado ao workflow, mas a consulta ao GitHub Actions ainda não mostrou nenhuma execução para esta branch. Nenhum teste pode ser marcado como aprovado.
+- O workflow Xenon existente seleciona um arquivo ZIP legado com Makefile para compilar o bootstrap. Ele ainda não compila diretamente o conjunto atual de `src/saturn/`; por isso, mesmo uma geração XEX desse pipeline não comprovaria que este novo INTC foi incluído no executável.
+- O ELF é um intermediário interno necessário ao empacotamento XEX; o artefato final pretendido para entrega é somente `default.xex`. Não há novo XEX gerado nesta alteração.
+
+A versão permanece v0.47b até CI aprovado, exceções de alinhamento/ilegais integradas, roteamento dos dispositivos e build XEX que use efetivamente a fonte atual.
