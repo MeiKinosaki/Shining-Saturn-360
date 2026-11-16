@@ -85,5 +85,19 @@ int main() {
     assert(bus.interrupt_controller().acknowledge(15, irq) && irq.nmi);
     bus.set_nmi_line(true);
 
+    // CPU step consumes a device IRQ through Bus::acknowledge_interrupt.
+    Sh2Core irq_cpu;
+    irq_cpu.reset(0x00200080u);
+    irq_cpu.vbr = 0x00201000u;
+    irq_cpu.r[15] = 0x0020f000u;
+    irq_cpu.sr = 0x10u;
+    bus.write32(0x00201120u, 0x00200200u); // vector 0x48
+    bus.raise_device_interrupt(SaturnInterruptSource::Vdp1, 6, 0x48);
+    assert(irq_cpu.step(bus) == StepResult::Executed);
+    assert(irq_cpu.pc == 0x00200200u);
+    assert(bus.read32(0x0020eff8u) == 0x00200080u);
+    assert(bus.read32(0x0020effcu) == 0x10u);
+    assert(((irq_cpu.sr >> 4) & 0xfu) == 6u);
+
     std::cout << "Saturn memory adapter tests passed\n";
 }
