@@ -47,6 +47,9 @@ std::size_t ScuDma::step(Bus& bus, std::size_t byte_budget) {
         if (ch.remaining == 0) {
             ch.active = false;
             ch.completed = true;
+            const std::uint8_t vector = index == 2 ? 0x49u : (index == 1 ? 0x4au : 0x4bu);
+            const std::uint8_t level = index == 2 ? 6u : (index == 1 ? 6u : 5u);
+            bus.raise_device_interrupt(SaturnInterruptSource::Scu, level, vector);
         }
     }
     return moved;
