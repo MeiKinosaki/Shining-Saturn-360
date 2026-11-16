@@ -23,9 +23,11 @@ int main() {
 
     // Unsupported opcodes are reported and PC is restored to the faulting
     // instruction so a debugger or diagnostic screen can inspect it.
+    cpu.vbr = 0x00201000u; cpu.r[15] = 0x0020f000u;
+    bus.write32(0x00201010u, 0x00200280u);
     bus.write16(0x00200006u, 0xffffu);
     assert(cpu.step(bus) == StepResult::UnsupportedOpcode);
-    assert(cpu.pc == 0x00200006u);
+    assert(cpu.pc == 0x00200280u);
     assert(cpu.fault_pc() == 0x00200006u);
     assert(cpu.last_opcode() == 0xffffu);
 
