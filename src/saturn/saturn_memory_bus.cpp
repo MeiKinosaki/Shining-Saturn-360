@@ -62,4 +62,8 @@ void SaturnMemoryBus::raise_device_interrupt(SaturnInterruptSource source, std::
 
 void SaturnMemoryBus::set_nmi_line(bool high) { interrupt_controller_.request_nmi(high); }
 
+bool SaturnMemoryBus::acknowledge_interrupt(std::uint8_t sr_mask, InterruptRequest& out) {
+    return interrupt_controller_.acknowledge(sr_mask, out);
+}
+
 } // namespace shining_saturn
