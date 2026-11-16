@@ -3,19 +3,23 @@
 namespace shining_saturn {
 
 std::uint16_t Bus::read16(std::uint32_t a) {
+    if (a & 1u) { address_error_ = true; return 0xFFFFu; }
     if (a > UINT32_MAX - 1u) return 0xFFFFu;
     return (std::uint16_t(read8(a)) << 8) | read8(a + 1u);
 }
 std::uint32_t Bus::read32(std::uint32_t a) {
+    if (a & 3u) { address_error_ = true; return 0xFFFFFFFFu; }
     if (a > UINT32_MAX - 3u) return 0xFFFFFFFFu;
     return (std::uint32_t(read8(a)) << 24) | (std::uint32_t(read8(a + 1u)) << 16) |
            (std::uint32_t(read8(a + 2u)) << 8) | std::uint32_t(read8(a + 3u));
 }
 void Bus::write16(std::uint32_t a, std::uint16_t v) {
+    if (a & 1u) { address_error_ = true; return; }
     if (a > UINT32_MAX - 1u) return;
     write8(a, std::uint8_t(v >> 8)); write8(a + 1u, std::uint8_t(v));
 }
 void Bus::write32(std::uint32_t a, std::uint32_t v) {
+    if (a & 3u) { address_error_ = true; return; }
     if (a > UINT32_MAX - 3u) return;
     write8(a, std::uint8_t(v >> 24)); write8(a + 1u, std::uint8_t(v >> 16));
     write8(a + 2u, std::uint8_t(v >> 8)); write8(a + 3u, std::uint8_t(v));
@@ -80,7 +84,13 @@ StepResult Sh2Core::step(Bus& bus) {
     const std::uint32_t delayed_target = branch_target_;
     branch_pending_ = false;
     fault_pc_ = pc;
+    bus.clear_address_error();
     last_opcode_ = bus.read16(pc);
+    if (bus.address_error()) {
+        pc = fault_pc_;
+        enter_exception(bus, 9, fault_pc_, 0);
+        return StepResult::Executed;
+    }
     const std::uint16_t op = last_opcode_;
     pc += 2;
     const unsigned n = (op >> 8) & 0x0f, m = (op >> 4) & 0x0f;
@@ -465,6 +475,13 @@ StepResult Sh2Core::step(Bus& bus) {
         pc = fault_pc_;
         if (completing_delay_slot) halted = true;
         return StepResult::UnsupportedOpcode;
+    }
+    if (bus.address_error()) {
+        pc = fault_pc_;
+        branch_pending_ = false;
+        rte_pending_ = false;
+        enter_exception(bus, 9, fault_pc_, 0);
+        return StepResult::Executed;
     }
     if (completing_delay_slot) {
         if (branch_pending_) {
