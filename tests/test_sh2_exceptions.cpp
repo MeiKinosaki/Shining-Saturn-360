@@ -71,5 +71,17 @@ int main() {
     assert(cpu.step(bus) == StepResult::Executed && cpu.pc == 0x700);
     assert(bus.read32(0x9ff8) == 0x602);
 
+    // TRAPA #imm uses its immediate vector and saves the following PC.
+    cpu.reset(0x800);
+    cpu.vbr = 0x1000;
+    cpu.r[15] = 0xb000;
+    cpu.sr = 0x31u;
+    bus.write32(0x1000 + 0x22 * 4, 0x900);
+    bus.write16(0x800, 0xc322);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.pc == 0x900);
+    assert(cpu.r[15] == 0xaff8);
+    assert(bus.read32(0xaff8) == 0x802);
+    assert(bus.read32(0xaffc) == 0x31u);
+
     std::cout << "SH-2 exception and interrupt tests passed\n";
 }
