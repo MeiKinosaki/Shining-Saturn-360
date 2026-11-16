@@ -25,6 +25,10 @@ struct Sh2Snapshot {
     bool halted = false;
     bool branch_pending = false;
     std::uint32_t branch_target = 0;
+    bool rte_pending = false;
+    std::uint32_t rte_sr = 0;
+    std::uint8_t interrupt_level = 0;
+    std::uint8_t interrupt_vector = 0;
     std::uint16_t last_opcode = 0;
     std::uint32_t fault_pc = 0;
 };
@@ -39,6 +43,8 @@ public:
 
     StepResult step(Bus& bus);
     void reset(std::uint32_t start_pc);
+    void request_interrupt(std::uint8_t level, std::uint8_t vector);
+    bool raise_exception(Bus& bus, std::uint8_t vector, std::uint32_t saved_pc);
     std::uint16_t last_opcode() const { return last_opcode_; }
     std::uint32_t fault_pc() const { return fault_pc_; }
     Sh2Snapshot snapshot() const;
@@ -47,9 +53,14 @@ public:
 private:
     bool branch_pending_ = false;
     std::uint32_t branch_target_ = 0;
+    bool rte_pending_ = false;
+    std::uint32_t rte_sr_ = 0;
+    std::uint8_t interrupt_level_ = 0;
+    std::uint8_t interrupt_vector_ = 0;
     std::uint16_t last_opcode_ = 0;
     std::uint32_t fault_pc_ = 0;
     void schedule_branch(std::uint32_t target);
+    bool enter_exception(Bus& bus, std::uint8_t vector, std::uint32_t saved_pc, std::uint8_t level);
 };
 
 } // namespace shining_saturn
