@@ -52,6 +52,11 @@ int main() {
     assert(bus.read32(0x8ff8) == 0x444);
     assert(bus.read32(0x8ffc) == 0x12345678u);
     assert(cpu.sr == 0x12345678u); // synchronous entry preserves SR until handler changes it
+    bus.write16(0x500, 0x002b); // RTE from synchronous exception
+    bus.write16(0x502, 0x0009); // delay slot
+    assert(cpu.step(bus) == StepResult::Executed && cpu.pc == 0x502);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.pc == 0x444);
+    assert(cpu.sr == (0x12345678u & 0x000003f3u));
 
     // Masked interrupts remain pending and are accepted after the mask is lowered.
     cpu.reset(0x600);
