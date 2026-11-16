@@ -11,6 +11,7 @@ cxx="${CXX:-g++}"; flags=(-std=c++17 -Wall -Wextra -Werror -pedantic)
 "$cxx" "${flags[@]}" "$root/tests/test_sh2_state_codec.cpp" -o "$tmpdir/test_sh2_state_codec"; "$tmpdir/test_sh2_state_codec"
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_gbr_byte_ops.cpp" -o "$tmpdir/test_sh2_gbr_byte_ops"; "$tmpdir/test_sh2_gbr_byte_ops"
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_memory_ops.cpp" -o "$tmpdir/test_sh2_memory_ops"; "$tmpdir/test_sh2_memory_ops"
+"$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_address_errors.cpp" -o "$tmpdir/test_sh2_address_errors"; "$tmpdir/test_sh2_address_errors"
 
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_mova.cpp" -o "$tmpdir/test_sh2_mova"; "$tmpdir/test_sh2_mova"
 "$cxx" "${flags[@]}" "$root/src/saturn/sh2_core.cpp" "$root/tests/test_sh2_tst_register.cpp" -o "$tmpdir/test_sh2_tst_register"; "$tmpdir/test_sh2_tst_register"
