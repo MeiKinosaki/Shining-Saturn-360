@@ -30,7 +30,7 @@ int main() {
     assert(cpu.r[15] == 0x7ff8);
     assert(bus.read32(0x7ff8) == 0x100); // saved PC
     assert(bus.read32(0x7ffc) == 0x10);  // saved SR
-    assert((cpu.sr & 0x70000000u) == 0x50000000u); // MD and BL
+    assert(cpu.sr == 0x40u); // interrupt mask raised to accepted priority
     assert(((cpu.sr >> 4) & 0xfu) == 4u);
 
     assert(cpu.step(bus) == StepResult::Executed); // RTE schedules delayed return
@@ -51,7 +51,7 @@ int main() {
     assert(cpu.pc == 0x500 && cpu.r[15] == 0x8ff8);
     assert(bus.read32(0x8ff8) == 0x444);
     assert(bus.read32(0x8ffc) == 0x12345678u);
-    assert((cpu.sr & 0x50000000u) == 0x50000000u);
+    assert(cpu.sr == 0x12345678u); // synchronous entry preserves SR until handler changes it
 
     // Masked interrupts remain pending and are accepted after the mask is lowered.
     cpu.reset(0x600);
