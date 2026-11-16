@@ -472,8 +472,15 @@ StepResult Sh2Core::step(Bus& bus) {
     } else if ((op & 0xf0ff) == 0x400b) { // JSR @Rn, delay slot
         pr = pc + 2; schedule_branch(r[n]);
     } else {
+        // 0xFFFF is a reserved SH-2 encoding. Other unimplemented encodings
+        // remain diagnostic-only until the complete ISA decoder can distinguish
+        // valid-but-unimplemented instructions from architecturally illegal ones.
         pc = fault_pc_;
-        if (completing_delay_slot) halted = true;
+        if (op == 0xffffu) {
+            enter_exception(bus, completing_delay_slot ? 6u : 4u, fault_pc_, 0);
+        } else if (completing_delay_slot) {
+            halted = true;
+        }
         return StepResult::UnsupportedOpcode;
     }
     if (bus.address_error()) {
