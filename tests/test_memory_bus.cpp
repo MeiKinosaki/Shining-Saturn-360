@@ -14,6 +14,10 @@ int main() {
     assert(!bus.map_ram(0xffffffffu, 2)); // range must not wrap past 32-bit address space
     assert(!bus.map_rom(0xffffffffu, {0xaa, 0xbb})); // ROM range must obey same boundary
     assert(!bus.map_rom(0x00300000, {})); // empty ROM is rejected
+    assert(bus.map_ram(0xffffffffu, 1)); // final address byte is a valid one-byte region
+    bus.write8(0xffffffffu, 0x5a);
+    assert(bus.mapped(0xffffffffu) && bus.read8(0xffffffffu) == 0x5a);
+    assert(!bus.mapped(0xfffffffeu)); // rejected ranges did not create wrapped mappings
     assert(bus.map_rom(0x00000000, {0x12, 0x34, 0x56, 0x78}));
     assert(!bus.map_ram(0x00000002, 4)); // cannot overlap ROM
 
