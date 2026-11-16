@@ -31,6 +31,7 @@ public:
     void request(SaturnInterruptSource source, std::uint8_t level, std::uint8_t vector);
     void request_nmi(bool line_high = true);
     bool acknowledge(std::uint8_t sr_mask, InterruptRequest& out);
+    bool pending(SaturnInterruptSource source) const;
     std::uint16_t ipra() const { return ipra_; }
     std::uint16_t iprb() const { return iprb_; }
     std::uint16_t icr() const { return icr_; }
