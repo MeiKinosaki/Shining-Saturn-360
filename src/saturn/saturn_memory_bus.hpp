@@ -17,6 +17,7 @@ public:
 
     std::uint8_t read8(std::uint32_t address) override;
     void write8(std::uint32_t address, std::uint8_t value) override;
+    bool acknowledge_interrupt(std::uint8_t sr_mask, InterruptRequest& out) override;
     bool mapped_ram_or_rom(std::uint32_t address) const;
     saturn_map::Device device_at(std::uint32_t address) const;
     Sh2InterruptController& interrupt_controller() { return interrupt_controller_; }
