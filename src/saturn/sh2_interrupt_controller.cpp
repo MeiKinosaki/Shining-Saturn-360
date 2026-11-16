@@ -57,6 +57,10 @@ void Sh2InterruptController::request_nmi(bool line_high) {
     if (!line_high && nmi_line_high_) nmi_pending_ = true;
     nmi_line_high_ = line_high;
 }
+bool Sh2InterruptController::pending(SaturnInterruptSource source) const {
+    const unsigned i = static_cast<unsigned>(source);
+    return i < 9 && pending_[i];
+}
 bool Sh2InterruptController::acknowledge(std::uint8_t sr_mask, InterruptRequest& out) {
     if (nmi_pending_) {
         nmi_pending_ = false;
