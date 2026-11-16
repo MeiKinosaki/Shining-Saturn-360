@@ -12,10 +12,13 @@ public:
     virtual std::uint8_t read8(std::uint32_t address) = 0;
     virtual void write8(std::uint32_t address, std::uint8_t value) = 0;
     virtual bool acknowledge_interrupt(std::uint8_t sr_mask, InterruptRequest& out) { (void)sr_mask; (void)out; return false; }
+    virtual void raise_device_interrupt(SaturnInterruptSource source, std::uint8_t level, std::uint8_t vector) { (void)source; (void)level; (void)vector; }
     std::uint16_t read16(std::uint32_t address);
     std::uint32_t read32(std::uint32_t address);
     void write16(std::uint32_t address, std::uint16_t value);
     void write32(std::uint32_t address, std::uint32_t value);
+    bool address_error() const { return address_error_; }
+    void clear_address_error() { address_error_ = false; }
 };
 
 enum class StepResult { Executed, UnsupportedOpcode, Halted };
@@ -61,6 +64,7 @@ private:
     std::uint8_t interrupt_vector_ = 0;
     std::uint16_t last_opcode_ = 0;
     std::uint32_t fault_pc_ = 0;
+    bool address_error_ = false;
     void schedule_branch(std::uint32_t target);
     bool enter_exception(Bus& bus, std::uint8_t vector, std::uint32_t saved_pc, std::uint8_t level);
 };
