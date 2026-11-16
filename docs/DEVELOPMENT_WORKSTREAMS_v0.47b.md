@@ -116,3 +116,35 @@ Validação e XEX:
 - O ELF é um intermediário interno necessário ao empacotamento XEX; o artefato final pretendido para entrega é somente `default.xex`. Não há novo XEX gerado nesta alteração.
 
 A versão permanece v0.47b até CI aprovado, exceções de alinhamento/ilegais integradas, roteamento dos dispositivos e build XEX que use efetivamente a fonte atual.
+
+## Interrupções de dispositivos e faults — integração incremental (2026-11-16)
+
+Alterações recentes nesta branch:
+- `ScuDma::step()` agora solicita IRQ ao completar canais DMA: canal 0 → vetor 0x4B/nível 5; canal 1 → 0x4A/nível 6; canal 2 → 0x49/nível 6. A origem entra no barramento pelo callback de dispositivo.
+- O término da lista experimental de comandos VDP1 solicita vetor 0x4D/nível 2.
+- O limite de quadro atual do scheduler solicita V-Blank-IN VDP2, vetor 0x40/nível 15. É uma aproximação de frame boundary, ainda não um evento temporizado derivado do contador de linhas do VDP2.
+- Bus::read16/read32/write16/write32 agora detectam alinhamento inválido; o SH-2 limpa a flag por instrução e entra no vetor 9 com PC da instrução que causou o fault.
+- A codificação reservada 0xFFFF entra no vetor 4; quando encontrada no delay slot, entra no vetor 6. Outras codificações ainda não implementadas continuam diagnosticadas como UnsupportedOpcode, pois não é correto confundir automaticamente instrução válida não implementada com opcode ilegal.
+- Foram acrescentados testes para acessos word/long desalinhados, DMA IRQ, VDP1 draw-end e VDP2 frame-boundary.
+
+Referência para os vetores SCU/VDP2/VDP1 e níveis de interrupção: Sega Saturn Developer's Manual / SCU User's Manual, tabela de fatores de interrupção (vetores 0x40–0x5F). A tabela separa V-Blank-IN (0x40/F), V-Blank-OUT (0x41/E), H-Blank-IN (0x42/D), DMA end L2/L1/L0 (0x49/6, 0x4A/6, 0x4B/5) e VDP1 sprite draw end (0x4D/2).
+
+Pendências que impedem marcar INTC completo:
+- O SCU ainda não possui registradores IST/IMS com acknowledge/máscara e timer 0/1/DSP-end implementados; DMA end é a única fonte SCU ligada a evento neste momento.
+- VDP2 ainda não gera V-Blank-IN/OUT e H-Blank-IN a partir do contador de linha e timing de vídeo. O sinal atual é apenas emitido por chamada de frame no scheduler.
+- VDP1 ainda usa command-list sintética; o End dessa lista não prova término real do processamento da lista de sprites VDP1.
+- A fila atual de interrupções agrupa várias fontes SCU sob um único slot de origem; precisa de pendências independentes por fator e acknowledge/máscara SCU real.
+- O controlador IPRA/IPRB/VCRA ainda precisa da decodificação campo-a-campo verificada no SH-2 integrado ao Saturn, além de sincronização de estado em save states.
+- A exceção de endereço está implementada para operações word/long acessadas por Bus; faults de fetch, DMA e outras unidades precisam de seus caminhos próprios.
+- Apenas 0xFFFF foi classificado explicitamente como codificação reservada; classificação completa de instruções ilegais e illegal-slot depende do decoder integral.
+
+CI:
+- O push mais recente disparou workflows para os commits 20dc825, fd25d08, 6ae10b1 e 3e231a1; no momento da consulta, as execuções estavam em fila (queued). Os commits posteriores de DMA/VDP e address-error também acionam o workflow, mas ainda aguardam execução.
+- Nenhum resultado verde foi confirmado; portanto a regressão completa continua pendente.
+
+XEX:
+- A raiz atual do repositório não possui `build-xenon/Makefile`, entry point Xenon nem target que compile os arquivos atuais `src/saturn/*.cpp` como aplicação Xbox 360. O workflow atual ainda compila um ZIP legado. Não publicar esse XEX como build da fonte atual.
+- O ELF é aceitável somente como intermediário privado de empacotamento dentro do job; a saída distribuída deve ser `default.xex` e seu checksum, sem artefato ELF separado.
+- O empacotamento atual deve ser refeito somente depois que existir target libXenon real que inclua o núcleo/barramento/dispositivos atuais; até lá, não há XEX válido desta revisão.
+
+A versão continua v0.47b; a porcentagem não aumenta até a regressão passar e a integração dos dispositivos estar sustentada por testes.
