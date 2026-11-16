@@ -26,31 +26,33 @@ int main() {
     OpcodeTestBus bus;
     Sh2Core cpu;
     cpu.reset(0x100);
+    cpu.vbr = 0x40; cpu.r[15] = 0x1f0;
+    bus.write32(0x50, 0x180); // illegal instruction vector 4
     cpu.sr = 0x123;
     bus.write16(0x100, 0xffff); // unsupported by the current interpreter subset
 
     const auto result = cpu.step(bus);
     if (result != StepResult::UnsupportedOpcode)
         return fail("unsupported opcode must be reported");
-    if (cpu.pc != 0x100)
-        return fail("PC must identify the faulting instruction");
+    if (cpu.pc != 0x180)
+        return fail("reserved opcode must enter illegal-instruction vector 4");
     if (cpu.last_opcode() != 0xffff)
         return fail("last opcode must be retained for diagnostics");
     if (cpu.fault_pc() != 0x100)
         return fail("fault PC must be retained for diagnostics");
     if (cpu.halted)
-        return fail("unsupported opcode outside a delay slot must not silently halt");
+        return fail("illegal-instruction exception must enter its handler");
 
     const auto saved = cpu.snapshot();
     Sh2Core restored;
     restored.restore(saved);
-    if (restored.pc != 0x100 || restored.last_opcode() != 0xffff ||
+    if (restored.pc != 0x180 || restored.last_opcode() != 0xffff ||
         restored.fault_pc() != 0x100 || restored.sr != 0x123)
         return fail("snapshot must preserve unsupported-opcode diagnostics and CPU state");
 
     // Repeating the same initial condition must produce the same diagnostic state.
     Sh2Core repeated;
-    repeated.reset(0x100);
+    repeated.reset(0x100); repeated.vbr = 0x40; repeated.r[15] = 0x1f0;
     repeated.sr = 0x123;
     if (repeated.step(bus) != StepResult::UnsupportedOpcode)
         return fail("repeat execution must report unsupported opcode");
@@ -65,7 +67,8 @@ int main() {
     // Unsupported instructions in a branch delay slot stop deterministically.
     // The pending branch target must not be applied after this fault.
     Sh2Core delay_slot_cpu;
-    delay_slot_cpu.reset(0x120);
+    delay_slot_cpu.reset(0x120); delay_slot_cpu.vbr = 0x40; delay_slot_cpu.r[15] = 0x1f0;
+    bus.write32(0x58, 0x1a0); // illegal delay-slot vector 6
     bus.write16(0x120, 0xa000); // BRA with displacement zero; target 0x124
     bus.write16(0x122, 0xffff); // unsupported opcode in the delay slot
     if (delay_slot_cpu.step(bus) != StepResult::Executed)
@@ -74,9 +77,9 @@ int main() {
         return fail("BRA must enter its delay slot before applying target");
     if (delay_slot_cpu.step(bus) != StepResult::UnsupportedOpcode)
         return fail("unsupported delay-slot opcode must be reported");
-    if (!delay_slot_cpu.halted)
-        return fail("unsupported delay-slot opcode must stop deterministically");
-    if (delay_slot_cpu.pc != 0x122 || delay_slot_cpu.fault_pc() != 0x122 ||
+    if (delay_slot_cpu.halted || delay_slot_cpu.pc != 0x1a0)
+        return fail("illegal delay-slot opcode must enter vector 6");
+    if (delay_slot_cpu.fault_pc() != 0x122 ||
         delay_slot_cpu.last_opcode() != 0xffff)
         return fail("delay-slot diagnostics must identify the failing instruction");
     if (delay_slot_cpu.pc == 0x124)
