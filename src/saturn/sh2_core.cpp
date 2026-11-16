@@ -23,14 +23,55 @@ void Bus::write32(std::uint32_t a, std::uint32_t v) {
 void Sh2Core::reset(std::uint32_t start_pc) {
     r.fill(0); pc = start_pc; pr = gbr = vbr = mach = macl = sr = 0;
     halted = false; branch_pending_ = false; branch_target_ = 0;
+    rte_pending_ = false; rte_sr_ = 0; interrupt_level_ = interrupt_vector_ = 0;
     last_opcode_ = 0; fault_pc_ = 0;
 }
 void Sh2Core::schedule_branch(std::uint32_t target) {
     branch_pending_ = true; branch_target_ = target;
 }
 
+void Sh2Core::request_interrupt(std::uint8_t level, std::uint8_t vector) {
+    if (level == 0 || level > 15) return;
+    if (interrupt_level_ == 0 || level >= interrupt_level_) {
+        interrupt_level_ = level;
+        interrupt_vector_ = vector;
+    }
+}
+
+bool Sh2Core::enter_exception(Bus& bus, std::uint8_t vector,
+                              std::uint32_t saved_pc, std::uint8_t level) {
+    // SH-2 exception frame: push SR first, then PC; RTE pops PC then SR.
+    r[15] -= 4u;
+    bus.write32(r[15], sr);
+    r[15] -= 4u;
+    bus.write32(r[15], saved_pc);
+    sr |= 0x10000000u; // BL: block further maskable interrupts during entry
+    sr |= 0x40000000u; // MD: privileged mode
+    if (level != 0) {
+        sr = (sr & ~0x000000f0u) | (std::uint32_t(level & 0x0fu) << 4);
+    }
+    pc = bus.read32(vbr + std::uint32_t(vector) * 4u);
+    branch_pending_ = false;
+    rte_pending_ = false;
+    halted = false;
+    return true;
+}
+
+bool Sh2Core::raise_exception(Bus& bus, std::uint8_t vector,
+                              std::uint32_t saved_pc) {
+    return enter_exception(bus, vector, saved_pc, 0);
+}
+
 StepResult Sh2Core::step(Bus& bus) {
     if (halted) return StepResult::Halted;
+    const std::uint8_t mask = static_cast<std::uint8_t>((sr >> 4) & 0x0fu);
+    if (interrupt_level_ != 0 && interrupt_level_ > mask &&
+        !(sr & 0x10000000u) && !branch_pending_) {
+        const std::uint8_t level = interrupt_level_, vector = interrupt_vector_;
+        interrupt_level_ = interrupt_vector_ = 0;
+        enter_exception(bus, vector, pc, level);
+        return StepResult::Executed;
+    }
     const bool completing_delay_slot = branch_pending_;
     const std::uint32_t delayed_target = branch_target_;
     branch_pending_ = false;
@@ -43,7 +84,14 @@ StepResult Sh2Core::step(Bus& bus) {
     const std::int32_t disp12 = (op & 0x0800) ? (std::int32_t(op & 0x0fff) - 0x1000)
                                                 : std::int32_t(op & 0x0fff);
 
-    if (op == 0x0009) { // NOP
+    if (op == 0x002b) { // RTE: delayed return; SR is restored after delay slot
+        const std::uint32_t target = bus.read32(r[15]);
+        r[15] += 4u;
+        rte_sr_ = bus.read32(r[15]);
+        r[15] += 4u;
+        rte_pending_ = true;
+        schedule_branch(target);
+    } else if (op == 0x0009) { // NOP
     } else if (op == 0x000b) { // RTS, delay slot
         schedule_branch(pr);
     } else if ((op & 0xf000) == 0xe000) { // MOV #imm,Rn
@@ -424,6 +472,11 @@ StepResult Sh2Core::step(Bus& bus) {
             return StepResult::UnsupportedOpcode;
         }
         pc = delayed_target;
+        if (rte_pending_) {
+            sr = rte_sr_;
+            rte_pending_ = false;
+            rte_sr_ = 0;
+        }
     }
     return StepResult::Executed;
 }
@@ -437,6 +490,8 @@ Sh2Snapshot Sh2Core::snapshot() const {
     state.halted = halted;
     state.branch_pending = branch_pending_;
     state.branch_target = branch_target_;
+    state.rte_pending = rte_pending_; state.rte_sr = rte_sr_;
+    state.interrupt_level = interrupt_level_; state.interrupt_vector = interrupt_vector_;
     state.last_opcode = last_opcode_;
     state.fault_pc = fault_pc_;
     return state;
@@ -449,6 +504,8 @@ void Sh2Core::restore(const Sh2Snapshot& state) {
     halted = state.halted;
     branch_pending_ = state.branch_pending;
     branch_target_ = state.branch_target;
+    rte_pending_ = state.rte_pending; rte_sr_ = state.rte_sr;
+    interrupt_level_ = state.interrupt_level; interrupt_vector_ = state.interrupt_vector;
     last_opcode_ = state.last_opcode;
     fault_pc_ = state.fault_pc;
 }
