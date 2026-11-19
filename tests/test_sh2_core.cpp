@@ -7,8 +7,12 @@ using namespace shining_saturn;
 class TestBus final : public Bus {
 public:
     std::array<std::uint8_t, 65536> bytes{};
-    std::uint8_t read8(std::uint32_t a) override { return bytes.at(a); }
-    void write8(std::uint32_t a, std::uint8_t v) override { bytes.at(a) = v; }
+    std::uint8_t read8(std::uint32_t a) override {
+        return a < bytes.size() ? bytes[static_cast<std::size_t>(a)] : 0xffu;
+    }
+    void write8(std::uint32_t a, std::uint8_t v) override {
+        if (a < bytes.size()) bytes[static_cast<std::size_t>(a)] = v;
+    }
     void put16(std::uint32_t a, std::uint16_t op) { write16(a, op); }
 };
 int main() {
