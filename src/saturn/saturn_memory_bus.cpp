@@ -34,11 +34,13 @@ SaturnMemoryBus::SaturnMemoryBus(const std::vector<std::uint8_t>& boot_rom)
 }
 
 std::uint8_t SaturnMemoryBus::read8(std::uint32_t address) {
+    if (interrupt_controller_.handles(address)) return interrupt_controller_.read8(address);
     if (mmio_.handles(address)) return mmio_.read8(address);
     return storage_.read8(address);
 }
 
 void SaturnMemoryBus::write8(std::uint32_t address, std::uint8_t value) {
+    if (interrupt_controller_.handles(address)) { interrupt_controller_.write8(address, value); return; }
     if (mmio_.handles(address)) {
         mmio_.write8(address, value);
         return;
@@ -52,6 +54,16 @@ bool SaturnMemoryBus::mapped_ram_or_rom(std::uint32_t address) const {
 
 saturn_map::Device SaturnMemoryBus::device_at(std::uint32_t address) const {
     return saturn_map::decode_physical(address);
+}
+
+void SaturnMemoryBus::raise_device_interrupt(SaturnInterruptSource source, std::uint8_t level, std::uint8_t vector) {
+    interrupt_controller_.request(source, level, vector);
+}
+
+void SaturnMemoryBus::set_nmi_line(bool high) { interrupt_controller_.request_nmi(high); }
+
+bool SaturnMemoryBus::acknowledge_interrupt(std::uint8_t sr_mask, InterruptRequest& out) {
+    return interrupt_controller_.acknowledge(sr_mask, out);
 }
 
 } // namespace shining_saturn

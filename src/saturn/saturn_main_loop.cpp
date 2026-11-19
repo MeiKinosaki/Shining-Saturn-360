@@ -10,6 +10,7 @@ Vdp1CommandList::Result SaturnMainLoop::execute_vdp1_commands(
     const auto result = vdp1_command_list_.execute(vdp1_, commands, budget);
     pending_vdp1_commands_executed_ += result.executed;
     pending_vdp1_command_list_ended_ = pending_vdp1_command_list_ended_ || result.ended;
+    if (result.ended) bus_.raise_device_interrupt(SaturnInterruptSource::Vdp1, 2, 0x4du);
     return result;
 }
 
@@ -27,6 +28,8 @@ MainLoopFrame SaturnMainLoop::run_frame(std::size_t instruction_budget,
     pending_vdp1_command_list_ended_ = false;
     vdp2_.compose();
     frame.vdp2_composed = true;
+    // run_frame() is the current frame-boundary approximation for V-Blank-IN.
+    bus_.raise_device_interrupt(SaturnInterruptSource::Vdp2, 15, 0x40u);
     ++frame_number_;
     frame.frame_number = frame_number_;
     return frame;

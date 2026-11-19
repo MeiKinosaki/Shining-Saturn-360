@@ -69,3 +69,82 @@ Antes de portar código de outro emulador, registrar URL/revisão, licença, arq
 - limites do bootstrap Xenon documentados e sem alegação de que ele já emula jogos;
 - logs e checksums anexados aos artefatos disponíveis;
 - documento de versão atualizado apenas depois das validações.
+
+## Progresso técnico — fluxo de exceções SH-2 (protótipo)
+
+A branch de trabalho contém agora uma primeira implementação do caminho de exceção:
+- quadro na pilha R15 com SR no endereço mais alto e PC no topo da pilha;
+- leitura do vetor em VBR + (vetor * 4);
+- entrada de interrupção mascarável por comparação entre prioridade solicitada e SR.IMASK;
+- elevação de IMASK ao nível aceito;
+- instrução TRAPA #imm;
+- RTE com slot de atraso e restauração de SR após o slot, aplicando a máscara arquitetural SH-2;
+- persistência do pedido de interrupção e do estado pendente de RTE no snapshot de CPU;
+- testes adicionados para quadro de pilha, vetores, prioridade, RTE, TRAPA e execução pela SaturnMemoryBus.
+
+Limites ainda não resolvidos:
+- os pedidos de interrupção chegam por API; os registradores reais do INTC/on-chip (ICR, IPRA/IPRB, VCRA e fontes periféricas) ainda não estão ligados;
+- NMI, interrupções simultâneas com arbitragem completa, temporização/ciclos e prioridades por fonte ainda faltam;
+- exceções de endereço/alinhamento e faults reportados pelo barramento ainda não estão modelados;
+- opcode ilegal continua retornando UnsupportedOpcode para diagnóstico, sem entrada automática no vetor 4;
+- os testes foram adicionados ao runner, mas precisam ser executados no CI antes de considerar o caminho validado.
+
+Este trabalho não promove a versão: v0.47b permanece até a suíte de regressão passar no commit candidato.
+
+## INTC / exceções — protótipo em desenvolvimento (branch workstreams)
+
+Arquivos adicionados/alterados:
+- `src/saturn/sh2_interrupt_controller.hpp/.cpp`: banco inicial para ICR, IPRA, IPRB e VCRA; mascaramento de bits reservados; latch de NMI por borda; fila simples de pedidos e arbitragem pelo nível solicitado.
+- `src/saturn/saturn_memory_bus.hpp/.cpp`: janela de registradores INTC acessível pelo barramento e API de entrada para pedidos de dispositivos; a CPU consulta o barramento durante `step()`.
+- `tests/test_sh2_interrupt_controller.cpp`: testes de máscara dos registradores, NMI e prioridade.
+- `tests/test_saturn_memory_bus.cpp`: testes de acesso MMIO e aceitação de IRQ pelo SH-2.
+- `tests/run-sh2-core-tests.sh`: novo teste incluído e liga o controlador nos alvos que compilam o SaturnMemoryBus.
+- `.github/workflows/xenon-build.yml`: suíte de regressão da fonte atual executada em job independente e push habilitado para a branch de trabalho.
+
+Limitações importantes — isto ainda NÃO é um INTC Saturn completo:
+- IPRA/IPRB/VCRA estão expostos com máscaras básicas; a decodificação exata de cada campo para todas as fontes SH-2 e os vetores por fonte ainda não foi fechada contra a tabela específica do SH-2 usado no Saturn.
+- SCU, VDP1, VDP2, CD Block, SCSP e SMPC ainda não chamam automaticamente a API de IRQ quando seus eventos ocorrem. A API de entrada existe, mas o roteamento por evento/fonte está pendente.
+- A arbitragem é simplificada; ainda falta modelar corretamente todas as fontes, empates, prioridade fixa, NMI/SMPC reset e estados pendentes/acknowledge específicos do hardware.
+- O estado do INTC ainda não está integrado ao save state global.
+- Opcode não suportado continua sendo reportado como diagnóstico; não é seguro converter todo opcode ainda não implementado em exceção de instrução ilegal. A distinção entre opcode ilegal e instrução válida ainda ausente precisa ser completada.
+- Exceções de alinhamento ainda não são levantadas automaticamente pelo caminho de acesso à memória.
+- A integração do barramento expõe o bloco INTC; não significa que todos os dispositivos Saturn estejam gerando IRQs reais.
+
+Validação e XEX:
+- O novo job de regressão foi adicionado ao workflow, mas a consulta ao GitHub Actions ainda não mostrou nenhuma execução para esta branch. Nenhum teste pode ser marcado como aprovado.
+- O workflow Xenon existente seleciona um arquivo ZIP legado com Makefile para compilar o bootstrap. Ele ainda não compila diretamente o conjunto atual de `src/saturn/`; por isso, mesmo uma geração XEX desse pipeline não comprovaria que este novo INTC foi incluído no executável.
+- O ELF é um intermediário interno necessário ao empacotamento XEX; o artefato final pretendido para entrega é somente `default.xex`. Não há novo XEX gerado nesta alteração.
+
+A versão permanece v0.47b até CI aprovado, exceções de alinhamento/ilegais integradas, roteamento dos dispositivos e build XEX que use efetivamente a fonte atual.
+
+## Interrupções de dispositivos e faults — integração incremental (2026-11-16)
+
+Alterações recentes nesta branch:
+- `ScuDma::step()` agora solicita IRQ ao completar canais DMA: canal 0 → vetor 0x4B/nível 5; canal 1 → 0x4A/nível 6; canal 2 → 0x49/nível 6. A origem entra no barramento pelo callback de dispositivo.
+- O término da lista experimental de comandos VDP1 solicita vetor 0x4D/nível 2.
+- O limite de quadro atual do scheduler solicita V-Blank-IN VDP2, vetor 0x40/nível 15. É uma aproximação de frame boundary, ainda não um evento temporizado derivado do contador de linhas do VDP2.
+- Bus::read16/read32/write16/write32 agora detectam alinhamento inválido; o SH-2 limpa a flag por instrução e entra no vetor 9 com PC da instrução que causou o fault.
+- A codificação reservada 0xFFFF entra no vetor 4; quando encontrada no delay slot, entra no vetor 6. Outras codificações ainda não implementadas continuam diagnosticadas como UnsupportedOpcode, pois não é correto confundir automaticamente instrução válida não implementada com opcode ilegal.
+- Foram acrescentados testes para acessos word/long desalinhados, DMA IRQ, VDP1 draw-end e VDP2 frame-boundary.
+
+Referência para os vetores SCU/VDP2/VDP1 e níveis de interrupção: Sega Saturn Developer's Manual / SCU User's Manual, tabela de fatores de interrupção (vetores 0x40–0x5F). A tabela separa V-Blank-IN (0x40/F), V-Blank-OUT (0x41/E), H-Blank-IN (0x42/D), DMA end L2/L1/L0 (0x49/6, 0x4A/6, 0x4B/5) e VDP1 sprite draw end (0x4D/2).
+
+Pendências que impedem marcar INTC completo:
+- O SCU ainda não possui registradores IST/IMS com acknowledge/máscara e timer 0/1/DSP-end implementados; DMA end é a única fonte SCU ligada a evento neste momento.
+- VDP2 ainda não gera V-Blank-IN/OUT e H-Blank-IN a partir do contador de linha e timing de vídeo. O sinal atual é apenas emitido por chamada de frame no scheduler.
+- VDP1 ainda usa command-list sintética; o End dessa lista não prova término real do processamento da lista de sprites VDP1.
+- A fila atual de interrupções agrupa várias fontes SCU sob um único slot de origem; precisa de pendências independentes por fator e acknowledge/máscara SCU real.
+- O controlador IPRA/IPRB/VCRA ainda precisa da decodificação campo-a-campo verificada no SH-2 integrado ao Saturn, além de sincronização de estado em save states.
+- A exceção de endereço está implementada para operações word/long acessadas por Bus; faults de fetch, DMA e outras unidades precisam de seus caminhos próprios.
+- Apenas 0xFFFF foi classificado explicitamente como codificação reservada; classificação completa de instruções ilegais e illegal-slot depende do decoder integral.
+
+CI:
+- O push mais recente disparou workflows para os commits 20dc825, fd25d08, 6ae10b1 e 3e231a1; no momento da consulta, as execuções estavam em fila (queued). Os commits posteriores de DMA/VDP e address-error também acionam o workflow, mas ainda aguardam execução.
+- Nenhum resultado verde foi confirmado; portanto a regressão completa continua pendente.
+
+XEX:
+- A raiz atual do repositório não possui `build-xenon/Makefile`, entry point Xenon nem target que compile os arquivos atuais `src/saturn/*.cpp` como aplicação Xbox 360. O workflow atual ainda compila um ZIP legado. Não publicar esse XEX como build da fonte atual.
+- O ELF é aceitável somente como intermediário privado de empacotamento dentro do job; a saída distribuída deve ser `default.xex` e seu checksum, sem artefato ELF separado.
+- O empacotamento atual deve ser refeito somente depois que existir target libXenon real que inclua o núcleo/barramento/dispositivos atuais; até lá, não há XEX válido desta revisão.
+
+A versão continua v0.47b; a porcentagem não aumenta até a regressão passar e a integração dos dispositivos estar sustentada por testes.

@@ -26,6 +26,9 @@ int main() {
     assert(dma.step(bus, 16) == 5);
     assert(!dma.busy());
     assert(dma.channel(0)->completed);
+    InterruptRequest dma_irq{};
+    assert(bus.interrupt_controller().acknowledge(0, dma_irq));
+    assert(dma_irq.vector == 0x4bu && dma_irq.level == 5);
     for (std::uint32_t i = 0; i < 8; ++i)
         assert(bus.read8(0x00200020u + i) == static_cast<std::uint8_t>(0xA0u + i));
 

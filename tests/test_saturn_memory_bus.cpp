@@ -70,5 +70,34 @@ int main() {
     assert(bus.read16(0x00200030u) == 0x5ac3u);
     assert(bus.read16(0x00200032u) == 0x1234u);
 
+    // SH-2 on-chip INTC register window is mapped by the Saturn bus.
+    bus.write16(Sh2InterruptController::IPRA, 0xabcdu);
+    bus.write16(Sh2InterruptController::IPRB, 0x9876u);
+    bus.write16(Sh2InterruptController::VCRA, 0xffffu);
+    assert(bus.read16(Sh2InterruptController::IPRA) == 0xabc0u);
+    assert(bus.read16(Sh2InterruptController::IPRB) == 0x9800u);
+    assert(bus.read16(Sh2InterruptController::VCRA) == 0x7f7fu);
+    bus.raise_device_interrupt(SaturnInterruptSource::Vdp1, 6, 0x48);
+    InterruptRequest irq{};
+    assert(bus.interrupt_controller().acknowledge(5, irq));
+    assert(irq.source == SaturnInterruptSource::Vdp1 && irq.level == 6 && irq.vector == 0x48);
+    bus.set_nmi_line(false);
+    assert(bus.interrupt_controller().acknowledge(15, irq) && irq.nmi);
+    bus.set_nmi_line(true);
+
+    // CPU step consumes a device IRQ through Bus::acknowledge_interrupt.
+    Sh2Core irq_cpu;
+    irq_cpu.reset(0x00200080u);
+    irq_cpu.vbr = 0x00201000u;
+    irq_cpu.r[15] = 0x0020f000u;
+    irq_cpu.sr = 0x10u;
+    bus.write32(0x00201120u, 0x00200200u); // vector 0x48
+    bus.raise_device_interrupt(SaturnInterruptSource::Vdp1, 6, 0x48);
+    assert(irq_cpu.step(bus) == StepResult::Executed);
+    assert(irq_cpu.pc == 0x00200200u);
+    assert(bus.read32(0x0020eff8u) == 0x00200080u);
+    assert(bus.read32(0x0020effcu) == 0x10u);
+    assert(((irq_cpu.sr >> 4) & 0xfu) == 6u);
+
     std::cout << "Saturn memory adapter tests passed\n";
 }

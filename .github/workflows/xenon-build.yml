@@ -3,7 +3,7 @@ name: Shining Saturn 360 - Xenon audit and build
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, reverse-engineering/workstreams-2026-10-29]
     paths:
       - '**/*.zip'
       - 'src/**'
@@ -20,6 +20,18 @@ permissions:
   contents: read
 
 jobs:
+  current-source-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+      - name: Run complete current-source host regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x tests/run-sh2-core-tests.sh
+          tests/run-sh2-core-tests.sh
+
   sh2-profile-smoke:
     runs-on: ubuntu-latest
     steps:
