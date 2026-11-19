@@ -21,7 +21,7 @@ int main() {
     assert(cpu.r[15]==0x7f8);
     assert(bus.read32(0x7f8)==0x100);
     assert(bus.read32(0x7fc)==0);
-    assert(!bus.address_error());
+    assert(bus.address_error()); // The bus fault flag remains latched until the next CPU step clears it.
 
     cpu.reset(0x120); cpu.vbr=0x200; cpu.r[15]=0x900;
     bus.write32(0x200+9*4,0x320);
