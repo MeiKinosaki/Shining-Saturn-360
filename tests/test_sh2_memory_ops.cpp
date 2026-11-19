@@ -21,15 +21,16 @@ int main() {
 
     // Signed byte/word loads through Rm, with post-increment.
     bus.write8(0x300, 0x80);
-    bus.write16(0x301, 0x8001);
-    bus.write32(0x303, 0x1234abcd);
+    bus.write16(0x302, 0x8001);
+    bus.write32(0x304, 0x1234abcd);
     cpu.r[3] = 0x300;
     bus.put16(0x100, 0x6234); // MOV.B @R3+,R2
     bus.put16(0x102, 0x6235); // MOV.W @R3+,R2
     bus.put16(0x104, 0x6236); // MOV.L @R3+,R2
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[2] == 0xffffff80u && cpu.r[3] == 0x301);
-    assert(cpu.step(bus) == StepResult::Executed && cpu.r[2] == 0xffff8001u && cpu.r[3] == 0x303);
-    assert(cpu.step(bus) == StepResult::Executed && cpu.r[2] == 0x1234abcdu && cpu.r[3] == 0x307);
+    cpu.r[3] = 0x302; // Word access is aligned; preserve the architectural post-increment.
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[2] == 0xffff8001u && cpu.r[3] == 0x304);
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[2] == 0x1234abcdu && cpu.r[3] == 0x308);
 
     // Pre-decrement stores must update the address before writing big-endian data.
     cpu.r[4] = 0x380;
@@ -38,8 +39,10 @@ int main() {
     bus.put16(0x108, 0x2455); // MOV.W R5,@-R4
     bus.put16(0x10a, 0x2456); // MOV.L R5,@-R4
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 0x37f && bus.read8(0x37f) == 0xef);
-    assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 0x37d && bus.read16(0x37d) == 0xcdef);
-    assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 0x379 && bus.read32(0x379) == 0x89abcdefu);
+    cpu.r[4] = 0x382;
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 0x380 && bus.read16(0x380) == 0xcdef);
+    cpu.r[4] = 0x384;
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 0x380 && bus.read32(0x380) == 0x89abcdefu);
 
     // Direct stores preserve register values and byte order.
     cpu.r[6] = 0x3a0;
