@@ -70,7 +70,8 @@ int main() {
     bus.put16(0x128, 0x2456); // MOV.L R5,@-R4
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 0x400 && bus.read8(0x400) == 0x78);
     assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 0x3fe && bus.read16(0x3fe) == 0x5678);
-    assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 0x3fa && bus.read32(0x3fa) == 0x12345678);
+    cpu.r[4] = 0x404; // Longword pre-decrement must begin at an aligned address.
+    assert(cpu.step(bus) == StepResult::Executed && cpu.r[4] == 0x400 && bus.read32(0x400) == 0x12345678);
 
     // Arithmetic carry, borrow, signed/unsigned compares and byte-string compare.
     cpu.r[1] = 0xffffffffu; cpu.r[2] = 1; cpu.sr = 0;
