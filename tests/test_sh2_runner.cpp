@@ -23,7 +23,7 @@ int main() {
     assert(cpu.r[1] == 5);
 
     const RunResult second = run_instructions(cpu, bus, 10);
-    assert(second.instructions_executed == 0);
+    assert(second.instructions_executed == 1); // NOP at 0x200004 executed before the illegal opcode
     assert(second.last_result == StepResult::UnsupportedOpcode);
     assert(cpu.pc == 0x00200020u); // exception handler, not the faulting PC
     assert(bus.read32(0x00201fe8u) == 0x00200006u); // saved faulting PC
