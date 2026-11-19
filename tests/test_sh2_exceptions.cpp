@@ -22,7 +22,7 @@ int main() {
     bus.write32(0x1000 + 0x40 * 4, 0x200);
     bus.write16(0x200, 0x002b); // RTE
     bus.write16(0x202, 0xe109); // delay slot: MOV #9,R1
-    bus.write16(0x300, 0xe20a); // resumed instruction
+    bus.write16(0x100, 0xe20a); // resumed instruction after RTE
 
     cpu.request_interrupt(4, 0x40);
     assert(cpu.step(bus) == StepResult::Executed);
